@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/views/auth/screens/sign_in_screen.dart';
 import 'package:gyaanplant/views/auth/screens/sign_up_screen.dart';
+import 'package:gyaanplant/views/role_/screens/role_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -24,6 +25,11 @@ class AppRouter {
         path: '/signup',
         name: 'signup',
         builder: (context, state) => const SignUpScreen(),
+      ),
+      GoRoute(
+        path: '/role',
+        name: 'role',
+        builder: (context, state) => const RoleScreen(),
       ),
     ],
   );

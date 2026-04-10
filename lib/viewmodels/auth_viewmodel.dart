@@ -74,11 +74,11 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     // For now, just show success and navigate
-    _showError(context, "Login Successful! Redirecting to dashboard...");
+    _showError(context, "Login Successful! Redirecting to role selection...");
 
-    // Navigate to dashboard or home screen
+    // Navigate to role selection screen
     Future.delayed(const Duration(seconds: 2), () {
-      context.go('/dashboard');
+      context.goNamed('role');
     });
   }
 
