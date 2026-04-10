@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/role_viewmodel.dart';
+import 'package:go_router/go_router.dart';
 
 class RoleCard extends StatelessWidget {
   final RoleModel role;
@@ -8,62 +9,70 @@ class RoleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+    return GestureDetector(
+      onTap: () {
+        if (role.title.toLowerCase().contains('student')) {
+          context.push('/student-dashboard');
+        }
+        // Add other role navigation here as needed
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
 
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
 
-        border: Border.all(color: Color(0xFF0B2F25), width: 1.2),
+          border: Border.all(color: Color(0xFF0B2F25), width: 1.2),
 
-        color: const Color(0xFF0A0F0D),
-      ),
+          color: const Color(0xFF0A0F0D),
+        ),
 
-      child: Row(
-        children: [
-          //  Icon box
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F2A22),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Color(0xFF00C853).withOpacity(0.35)),
+        child: Row(
+          children: [
+            //  Icon box
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F2A22),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Color(0xFF00C853).withOpacity(0.35)),
+              ),
+              child: Text(role.icon, style: const TextStyle(fontSize: 20)),
             ),
-            child: Text(role.icon, style: const TextStyle(fontSize: 20)),
-          ),
 
-          const SizedBox(width: 16),
+            const SizedBox(width: 16),
 
-          //  Text section
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  role.title,
-                  style: const TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+            //  Text section
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    role.title,
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  role.subtitle,
-                  style: const TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 13,
-                    color: Color(0xFF9E9E9E),
+                  const SizedBox(height: 4),
+                  Text(
+                    role.subtitle,
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 13,
+                      color: Color(0xFF9E9E9E),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          const Icon(Icons.arrow_forward, size: 18, color: Color(0xFFBDBDBD)),
-        ],
+            const Icon(Icons.arrow_forward, size: 18, color: Color(0xFFBDBDBD)),
+          ],
+        ),
       ),
     );
   }

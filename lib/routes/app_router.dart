@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/views/auth/screens/sign_in_screen.dart';
 import 'package:gyaanplant/views/auth/screens/sign_up_screen.dart';
 import 'package:gyaanplant/views/role_/screens/role_screen.dart';
+import 'package:gyaanplant/views/student/screens/student_dashboard.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -30,6 +31,11 @@ class AppRouter {
         path: '/role',
         name: 'role',
         builder: (context, state) => const RoleScreen(),
+      ),
+      GoRoute(
+        path: '/student-dashboard',
+        name: 'studentDashboard',
+        builder: (context, state) => const StudentDashboard(),
       ),
     ],
   );
