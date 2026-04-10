@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/views/student/screens/learn_screen.dart';
 
 class ActiveCoursesSection extends StatelessWidget {
   const ActiveCoursesSection({super.key});
@@ -8,11 +9,11 @@ class ActiveCoursesSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 🔹 Title Row
+        //  Title Row
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Text(
+          children: [
+            const Text(
               "Active Courses",
               style: TextStyle(
                 color: Colors.white,
@@ -20,20 +21,27 @@ class ActiveCoursesSection extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            Text(
-              "See all →",
-              style: TextStyle(
-                color: Color(0xFF00C853),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LearnScreen()),
+                );
+              },
+              child: const Text(
+                "See all →",
+                style: TextStyle(
+                  color: Color(0xFF00C853),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
         ),
 
         const SizedBox(height: 16),
-
-        // 🔹 Course List
+        // Course List
         const CourseItem(
           iconBg: Color(0xFF0F2A22),
           icon: "📊",
