@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/views/student/widgets/course_progress_card.dart';
-import 'package:gyaanplant/views/student/widgets/filter_chips.dart';
+import 'package:gyaanplant/views/learn/widgets/course_progress_card.dart';
+import 'package:gyaanplant/views/learn/widgets/filter_chips.dart';
 import 'package:gyaanplant/core/common_widgets/common_bottom_nav.dart';
 
-import 'package:gyaanplant/views/student/widgets/learning_header.dart';
-import 'package:gyaanplant/views/student/widgets/search_input_field.dart';
-import 'package:gyaanplant/views/student/widgets/sprint_banner_card.dart';
+import 'package:gyaanplant/views/learn/widgets/learning_header.dart';
+import 'package:gyaanplant/views/learn/widgets/search_input_field.dart';
+import 'package:gyaanplant/views/learn/widgets/sprint_banner_card.dart';
 
 class LearnScreen extends StatefulWidget {
   const LearnScreen({super.key});
@@ -37,7 +37,7 @@ class _LearnScreenState extends State<LearnScreen> {
 
             const SizedBox(height: 12),
 
-            const FilterChips(),
+            FilterChips(),
 
             const SizedBox(height: 16),
 
@@ -56,8 +56,8 @@ class _LearnScreenState extends State<LearnScreen> {
               ),
             ),
             Column(
-              children: const [
-                CourseProgressCard(
+              children: [
+                const CourseProgressCard(
                   title: "Data Structures & Algorithms",
                   subtitle: "TCS Pattern",
                   percentText: "68%",
@@ -67,7 +67,7 @@ class _LearnScreenState extends State<LearnScreen> {
                   tag: "Resume of progress",
                   tagColor: Colors.green,
                 ),
-                CourseProgressCard(
+                const CourseProgressCard(
                   title: "Quantitative Aptitude",
                   subtitle: "All Companies",
                   percentText: "45%",
@@ -77,7 +77,7 @@ class _LearnScreenState extends State<LearnScreen> {
                   tag: "In Progress",
                   tagColor: Colors.orange,
                 ),
-                CourseProgressCard(
+                const CourseProgressCard(
                   title: "Core Java Programming",
                   subtitle: "Infosys + TCS",
                   percentText: "32%",

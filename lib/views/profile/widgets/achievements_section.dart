@@ -27,17 +27,27 @@ class AchievementsSection extends StatelessWidget {
           mainAxisSpacing: 10,
           physics: const NeverScrollableScrollPhysics(),
           children: const [
-            AchievementCard(icon: Text("🔥"), title: "14-Day Streak"),
-            AchievementCard(icon: Text("🎯"), title: "Mock Master"),
-            AchievementCard(icon: Text("🏆"), title: "Top Scorer"),
             AchievementCard(
-              icon: Text("🚀"),
+              icon: Icon(Icons.local_fire_department),
+              title: "14-Day Streak",
+            ),
+            AchievementCard(
+              icon: Icon(Icons.track_changes),
+              title: "Mock Master",
+            ),
+            AchievementCard(icon: Icon(Icons.bar_chart), title: "Top Scorer"),
+            AchievementCard(
+              icon: Icon(Icons.rocket),
               title: "First Job",
               isActive: false,
             ),
-            AchievementCard(icon: Text("🏆"), title: "Top 10", isActive: false),
             AchievementCard(
-              icon: Text("📈"),
+              icon: Icon(Icons.emoji_events),
+              title: "Top 10",
+              isActive: false,
+            ),
+            AchievementCard(
+              icon: Icon(Icons.auto_graph),
               title: "100-Day",
               isActive: false,
             ),

@@ -7,7 +7,7 @@ import 'package:gyaanplant/views/auth/screens/sign_up_screen.dart';
 import 'package:gyaanplant/views/jobs/screens/job_screen.dart';
 import 'package:gyaanplant/views/profile/screens/profile_screen.dart';
 import 'package:gyaanplant/views/role_/screens/role_screen.dart';
-import 'package:gyaanplant/views/student/screens/learn_screen.dart';
+import 'package:gyaanplant/views/learn/screens/learn_screen.dart';
 import 'package:gyaanplant/views/student/screens/student_dashboard.dart';
 import 'package:provider/provider.dart';
 

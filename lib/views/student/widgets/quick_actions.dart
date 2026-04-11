@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gyaanplant/views/student/widgets/ai_advisor_sheet.dart';
 
 class QuickActions extends StatelessWidget {
   const QuickActions({super.key});
+  void _showAiAdvisorSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return const AiAdvisorSheet();
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,13 +33,21 @@ class QuickActions extends StatelessWidget {
             ActionItem(
               "🎯",
               "Mock Test",
+              borderColor: Colors.green,
               onTap: () {
                 context.push('/test');
               },
             ),
-            const ActionItem("🤖", "AI Advisor"),
-            const ActionItem("💼", "Jobs"),
-            const ActionItem("🏆", "Leaderboard"),
+            ActionItem(
+              "🤖",
+              "AI Advisor",
+              borderColor: Colors.purple,
+              onTap: () {
+                _showAiAdvisorSheet(context);
+              },
+            ),
+            const ActionItem("💼", "Jobs", borderColor: Colors.blue),
+            const ActionItem("🏆", "Leaderboard", borderColor: Colors.orange),
           ],
         ),
       ],
@@ -40,8 +59,15 @@ class ActionItem extends StatelessWidget {
   final String icon;
   final String label;
   final VoidCallback? onTap;
+  final Color borderColor;
 
-  const ActionItem(this.icon, this.label, {this.onTap, super.key});
+  const ActionItem(
+    this.icon,
+    this.label, {
+    required this.borderColor,
+    this.onTap,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +80,7 @@ class ActionItem extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0xFF0F2A22),
               borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: borderColor, width: 0.8),
             ),
             child: Text(icon),
           ),

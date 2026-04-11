@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/views/student/screens/learn_screen.dart';
+import 'package:gyaanplant/views/learn/screens/learn_screen.dart';
 
 class ActiveCoursesSection extends StatelessWidget {
   const ActiveCoursesSection({super.key});
