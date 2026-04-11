@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/viewmodels/test_viewmodel.dart';
 import 'package:gyaanplant/views/Test-/screens/test_screen.dart';
@@ -9,6 +8,7 @@ import 'package:gyaanplant/views/profile/screens/profile_screen.dart';
 import 'package:gyaanplant/views/role_/screens/role_screen.dart';
 import 'package:gyaanplant/views/learn/screens/learn_screen.dart';
 import 'package:gyaanplant/views/student/screens/student_dashboard.dart';
+import 'package:gyaanplant/views/student/widgets/leaderboard_view.dart';
 import 'package:provider/provider.dart';
 
 class AppRouter {
@@ -55,11 +55,8 @@ class AppRouter {
         builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
-        path: '/test',
-        builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => TestViewModel(),
-          child: const TestScreen(),
-        ),
+        path: '/leaderboard',
+        builder: (context, state) => const LeaderboardView(),
       ),
       GoRoute(path: '/jobs', builder: (context, state) => const JobScreen()),
     ],

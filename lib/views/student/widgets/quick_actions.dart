@@ -46,8 +46,22 @@ class QuickActions extends StatelessWidget {
                 _showAiAdvisorSheet(context);
               },
             ),
-            const ActionItem("💼", "Jobs", borderColor: Colors.blue),
-            const ActionItem("🏆", "Leaderboard", borderColor: Colors.orange),
+            ActionItem(
+              "💼",
+              "Jobs",
+              borderColor: Colors.blue,
+              onTap: () {
+                context.push('/jobs');
+              },
+            ),
+            ActionItem(
+              "🏆",
+              "Leaderboard",
+              borderColor: Colors.orange,
+              onTap: () {
+                context.push('/leaderboard');
+              },
+            ),
           ],
         ),
       ],
