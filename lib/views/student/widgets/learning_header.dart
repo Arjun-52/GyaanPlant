@@ -18,23 +18,14 @@ class LearningHeader extends StatelessWidget {
                   "Learn",
                   style: TextStyle(
                     fontSize: 24,
-                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.bold,
                     color: Colors.white,
                     letterSpacing: -0.5,
                   ),
                 ),
                 const SizedBox(width: 6),
-                SizedBox(
-                  width: 20,
-                  height: 12,
-                  child: Stack(
-                    children: [
-                      _book(const Color(0xFF00C853), 0),
-                      _book(const Color(0xFF42A5F5), 6),
-                      _book(const Color(0xFFE91E63), 12),
-                    ],
-                  ),
-                ),
+                const Text("📚", style: TextStyle(fontSize: 20)),
               ],
             ),
             const SizedBox(height: 2),
@@ -47,20 +38,6 @@ class LearningHeader extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _book(Color color, double left) {
-    return Positioned(
-      left: left,
-      child: Container(
-        width: 6,
-        height: 6,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(1),
         ),
       ),
     );

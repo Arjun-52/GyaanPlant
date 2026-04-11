@@ -43,8 +43,6 @@ class _LearnScreenState extends State<LearnScreen> {
 
             const SprintBannerCard(),
 
-            const SizedBox(height: 16),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: GridView.count(
@@ -67,6 +65,7 @@ class _LearnScreenState extends State<LearnScreen> {
                   progress: 0.68,
                   progressColor: Colors.green,
                   tag: "Resume of progress",
+                  tagColor: Colors.green,
                 ),
                 CourseProgressCard(
                   title: "Quantitative Aptitude",
@@ -75,6 +74,8 @@ class _LearnScreenState extends State<LearnScreen> {
                   progressCount: "8/18",
                   progress: 0.45,
                   progressColor: Colors.orange,
+                  tag: "In Progress",
+                  tagColor: Colors.orange,
                 ),
                 CourseProgressCard(
                   title: "Core Java Programming",
@@ -84,6 +85,7 @@ class _LearnScreenState extends State<LearnScreen> {
                   progress: 0.32,
                   progressColor: Colors.blue,
                   tag: "New",
+                  tagColor: Colors.blue,
                 ),
                 const CourseProgressCard(
                   title: "Verbal Communication & GD",
@@ -92,6 +94,8 @@ class _LearnScreenState extends State<LearnScreen> {
                   progressCount: "14/20",
                   progress: 0.70,
                   progressColor: Colors.green,
+                  tag: "In Progress",
+                  tagColor: Colors.orange,
                 ),
 
                 const CourseProgressCard(
@@ -102,6 +106,7 @@ class _LearnScreenState extends State<LearnScreen> {
                   progress: 0.88,
                   progressColor: Colors.green,
                   tag: "Nearly done",
+                  tagColor: Colors.purple,
                 ),
               ],
             ),

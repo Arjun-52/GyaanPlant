@@ -8,10 +8,12 @@ class CourseProgressCard extends StatelessWidget {
   final double progress;
   final Color progressColor;
   final String? tag;
+  final Color? tagColor;
 
   const CourseProgressCard({
     super.key,
     required this.title,
+    required this.tagColor,
     required this.subtitle,
     required this.percentText,
     required this.progressCount,
@@ -34,11 +36,10 @@ class CourseProgressCard extends StatelessWidget {
         ),
         border: Border.all(color: Color(0xFF1F5A4A)),
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// 🔝 Top Row
+          /// Top Row
           Row(
             children: [
               /// Icon Box
@@ -53,7 +54,6 @@ class CourseProgressCard extends StatelessWidget {
                   child: Icon(Icons.bar_chart, color: Colors.white),
                 ),
               ),
-
               const SizedBox(width: 12),
 
               /// Title + Subtitle
@@ -89,36 +89,47 @@ class CourseProgressCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white10,
+                    color: Colors.transparent, // 👈 no fill
                     borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: (tagColor ?? Colors.white).withOpacity(
+                        0.6,
+                      ), // 👈 colored border
+                      width: 1,
+                    ),
                   ),
                   child: Text(
                     tag!,
-                    style: const TextStyle(fontSize: 10, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: tagColor ?? Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
             ],
           ),
-
           const SizedBox(height: 12),
 
-          /// 📊 Progress Bar
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 6,
-              backgroundColor: Colors.white12,
-              valueColor: AlwaysStoppedAnimation(progressColor),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          /// 🔽 Bottom Row
+          /// Progress Bar
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              /// Progress bar (takes available space)
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 6,
+                    backgroundColor: Colors.white12,
+                    valueColor: AlwaysStoppedAnimation(progressColor),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+
+              /// Percentage + count
               Row(
                 children: [
                   Text(
@@ -129,13 +140,14 @@ class CourseProgressCard extends StatelessWidget {
                       fontSize: 12,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Text(
                     progressCount,
                     style: const TextStyle(color: Colors.white54, fontSize: 11),
                   ),
                 ],
               ),
+              const SizedBox(width: 10),
 
               /// Resume Button
               Container(

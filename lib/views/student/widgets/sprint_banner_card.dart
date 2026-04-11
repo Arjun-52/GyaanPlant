@@ -20,12 +20,13 @@ class SprintBannerCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// 🔥 Tag
+          ///  Tag
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.15),
+              color: Colors.green.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
             ),
             child: const Text(
               "⚡ 7-Day Sprint",
@@ -64,23 +65,29 @@ class SprintBannerCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               /// Price
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end, // 👈 IMPORTANT
+                children: [
+                  const Text(
                     "₹799",
                     style: TextStyle(
                       color: Color(0xFF00E676),
-                      fontSize: 20,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Text(
-                    "₹1,999",
-                    style: TextStyle(
-                      color: Colors.white38,
-                      fontSize: 12,
-                      decoration: TextDecoration.lineThrough,
+
+                  const SizedBox(width: 8),
+
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Text(
+                      "₹1,999",
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.4),
+                        fontSize: 13,
+                        decoration: TextDecoration.lineThrough,
+                      ),
                     ),
                   ),
                 ],
