@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gyaanplant/viewmodels/test_viewmodel.dart';
+import 'package:gyaanplant/views/Test-/screens/test_screen.dart';
 import 'package:gyaanplant/views/auth/screens/sign_in_screen.dart';
 import 'package:gyaanplant/views/auth/screens/sign_up_screen.dart';
 import 'package:gyaanplant/views/role_/screens/role_screen.dart';
 import 'package:gyaanplant/views/student/screens/student_dashboard.dart';
+import 'package:provider/provider.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -21,6 +24,13 @@ class AppRouter {
         name: 'home',
         builder: (context, state) =>
             const Scaffold(body: Center(child: Text("Home Screen"))),
+      ),
+      GoRoute(
+        path: '/test',
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => TestViewModel(),
+          child: const TestScreen(),
+        ),
       ),
       GoRoute(
         path: '/signup',

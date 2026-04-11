@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class QuickActions extends StatelessWidget {
   const QuickActions({super.key});
@@ -17,11 +18,17 @@ class QuickActions extends StatelessWidget {
 
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            ActionItem("🎯", "Mock Test"),
-            ActionItem("🤖", "AI Advisor"),
-            ActionItem("💼", "Jobs"),
-            ActionItem("🏆", "Leaderboard"),
+          children: [
+            ActionItem(
+              "🎯",
+              "Mock Test",
+              onTap: () {
+                context.push('/test');
+              },
+            ),
+            const ActionItem("🤖", "AI Advisor"),
+            const ActionItem("💼", "Jobs"),
+            const ActionItem("🏆", "Leaderboard"),
           ],
         ),
       ],
@@ -32,24 +39,28 @@ class QuickActions extends StatelessWidget {
 class ActionItem extends StatelessWidget {
   final String icon;
   final String label;
+  final VoidCallback? onTap;
 
-  const ActionItem(this.icon, this.label, {super.key});
+  const ActionItem(this.icon, this.label, {this.onTap, super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0F2A22),
-            borderRadius: BorderRadius.circular(14),
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F2A22),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Text(icon),
           ),
-          child: Text(icon),
-        ),
-        const SizedBox(height: 6),
-        Text(label, style: const TextStyle(color: Colors.white54)),
-      ],
+          const SizedBox(height: 6),
+          Text(label, style: const TextStyle(color: Colors.white54)),
+        ],
+      ),
     );
   }
 }
