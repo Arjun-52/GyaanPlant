@@ -5,6 +5,7 @@ import 'package:gyaanplant/views/Test-/screens/test_screen.dart';
 import 'package:gyaanplant/views/auth/screens/sign_in_screen.dart';
 import 'package:gyaanplant/views/auth/screens/sign_up_screen.dart';
 import 'package:gyaanplant/views/jobs/screens/job_screen.dart';
+import 'package:gyaanplant/views/profile/screens/profile_screen.dart';
 import 'package:gyaanplant/views/role_/screens/role_screen.dart';
 import 'package:gyaanplant/views/student/screens/learn_screen.dart';
 import 'package:gyaanplant/views/student/screens/student_dashboard.dart';
@@ -51,8 +52,7 @@ class AppRouter {
 
       GoRoute(
         path: '/profile',
-        builder: (context, state) =>
-            const Scaffold(body: Center(child: Text("Profile Screen"))),
+        builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
         path: '/test',
