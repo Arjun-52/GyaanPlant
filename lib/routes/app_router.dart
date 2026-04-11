@@ -1,14 +1,16 @@
 import 'package:go_router/go_router.dart';
-import 'package:gyaanplant/viewmodels/test_viewmodel.dart';
-import 'package:gyaanplant/views/Test-/screens/test_screen.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/test_viewmodel.dart';
+
 import 'package:gyaanplant/views/auth/screens/sign_in_screen.dart';
 import 'package:gyaanplant/views/auth/screens/sign_up_screen.dart';
-import 'package:gyaanplant/views/jobs/screens/job_screen.dart';
-import 'package:gyaanplant/views/profile/screens/profile_screen.dart';
-import 'package:gyaanplant/views/role_/screens/role_screen.dart';
-import 'package:gyaanplant/views/learn/screens/learn_screen.dart';
-import 'package:gyaanplant/views/student/screens/student_dashboard.dart';
-import 'package:gyaanplant/views/student/widgets/leaderboard_view.dart';
+
+import 'package:gyaanplant/views/student_role/Test_/screens/test_screen.dart';
+import 'package:gyaanplant/views/student_role/jobs/screens/job_screen.dart';
+import 'package:gyaanplant/views/student_role/profile/screens/profile_screen.dart';
+import 'package:gyaanplant/views/student_role/role_/screens/role_screen.dart';
+import 'package:gyaanplant/views/student_role/student/screens/student_dashboard.dart';
+import 'package:gyaanplant/views/student_role/learn/screens/learn_screen.dart';
+import 'package:gyaanplant/views/student_role/student/widgets/leaderboard_view.dart';
 import 'package:provider/provider.dart';
 
 class AppRouter {
@@ -22,10 +24,6 @@ class AppRouter {
         builder: (context, state) => const SignInScreen(),
       ),
 
-      GoRoute(
-        path: '/home',
-        builder: (context, state) => const StudentDashboard(),
-      ),
       GoRoute(
         path: '/test',
         builder: (context, state) => ChangeNotifierProvider(
@@ -45,20 +43,22 @@ class AppRouter {
       ),
       GoRoute(
         path: '/student-dashboard',
-        name: 'studentDashboard',
+        builder: (context, state) => const StudentDashboard(),
+      ),
+      GoRoute(
+        path: '/home',
         builder: (context, state) => const StudentDashboard(),
       ),
       GoRoute(path: '/learn', builder: (context, state) => const LearnScreen()),
-
-      GoRoute(
-        path: '/profile',
-        builder: (context, state) => const ProfileScreen(),
-      ),
       GoRoute(
         path: '/leaderboard',
         builder: (context, state) => const LeaderboardView(),
       ),
       GoRoute(path: '/jobs', builder: (context, state) => const JobScreen()),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
+      ),
     ],
   );
 }

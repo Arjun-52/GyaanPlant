@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/core/common_widgets/common_bottom_nav.dart';
-import 'package:gyaanplant/viewmodels/job_viewmodel.dart';
-import 'package:gyaanplant/views/jobs/widgets/job_card.dart';
-import 'package:gyaanplant/views/jobs/widgets/job_filter_row.dart';
-import 'package:gyaanplant/views/jobs/widgets/job_header.dart';
-import 'package:gyaanplant/views/jobs/widgets/search_bar.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/job_viewmodel.dart';
+import 'package:gyaanplant/views/student_role/jobs/widgets/job_card.dart';
+import 'package:gyaanplant/views/student_role/jobs/widgets/job_filter_row.dart';
+import 'package:gyaanplant/views/student_role/jobs/widgets/job_header.dart';
+import 'package:gyaanplant/views/student_role/jobs/widgets/search_bar.dart';
 import 'package:provider/provider.dart';
 
 class JobScreen extends StatelessWidget {

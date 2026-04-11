@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/core/common_widgets/common_bottom_nav.dart';
-import 'package:gyaanplant/viewmodels/profile_viewmodel.dart';
-import 'package:gyaanplant/views/profile/widgets/achievements_section.dart';
-import 'package:gyaanplant/views/profile/widgets/badge_card.dart';
-import 'package:gyaanplant/views/profile/widgets/certificate_card.dart';
-import 'package:gyaanplant/views/profile/widgets/mentor_section.dart';
-import 'package:gyaanplant/views/profile/widgets/profile_header.dart';
-import 'package:gyaanplant/views/profile/widgets/stats_grid.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/profile_viewmodel.dart';
+import 'package:gyaanplant/views/student_role/profile/widgets/achievements_section.dart';
+import 'package:gyaanplant/views/student_role/profile/widgets/badge_card.dart';
+import 'package:gyaanplant/views/student_role/profile/widgets/certificate_card.dart';
+import 'package:gyaanplant/views/student_role/profile/widgets/mentor_section.dart';
+import 'package:gyaanplant/views/student_role/profile/widgets/profile_header.dart';
+import 'package:gyaanplant/views/student_role/profile/widgets/stats_grid.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatelessWidget {

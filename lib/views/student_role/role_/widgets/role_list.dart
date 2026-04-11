@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/viewmodels/role_viewmodel.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/role_viewmodel.dart';
 
 import 'role_card.dart';
 

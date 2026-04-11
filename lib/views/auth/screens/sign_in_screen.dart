@@ -6,7 +6,7 @@ import 'package:gyaanplant/views/auth/widgets/primary_button.dart';
 import 'package:gyaanplant/views/auth/widgets/quick_login_section.dart';
 import 'package:provider/provider.dart';
 
-import '../../../viewmodels/auth_viewmodel.dart';
+import '../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
 
 class SignInScreen extends StatelessWidget {
   const SignInScreen({super.key});

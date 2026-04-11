@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../viewmodels/job_viewmodel.dart';
+import '../../../../viewmodels/student_viewmodel/job_viewmodel.dart';
 
 class JobFilterRow extends StatelessWidget {
   const JobFilterRow({super.key});

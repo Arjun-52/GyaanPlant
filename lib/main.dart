@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'routes/app_router.dart';
-import 'viewmodels/auth_viewmodel.dart';
+import 'viewmodels/student_viewmodel/auth_viewmodel.dart';
 
 void main() {
   runApp(const MyApp());

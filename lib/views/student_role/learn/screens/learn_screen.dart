@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/views/learn/widgets/course_progress_card.dart';
-import 'package:gyaanplant/views/learn/widgets/filter_chips.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/course_progress_card.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/filter_chips.dart';
 import 'package:gyaanplant/core/common_widgets/common_bottom_nav.dart';
 
-import 'package:gyaanplant/views/learn/widgets/learning_header.dart';
-import 'package:gyaanplant/views/learn/widgets/search_input_field.dart';
-import 'package:gyaanplant/views/learn/widgets/sprint_banner_card.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/learning_header.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/search_input_field.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/sprint_banner_card.dart';
 
 class LearnScreen extends StatefulWidget {
   const LearnScreen({super.key});

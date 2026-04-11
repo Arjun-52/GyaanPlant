@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gyaanplant/views/student/widgets/ai_advisor_sheet.dart';
+import 'package:gyaanplant/views/student_role/student/widgets/ai_advisor_sheet.dart';
 
 class QuickActions extends StatelessWidget {
   const QuickActions({super.key});

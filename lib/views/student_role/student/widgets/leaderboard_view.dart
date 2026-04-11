@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/views/student/widgets/podium_user.dart';
-import 'package:gyaanplant/views/student/widgets/rank_card.dart';
-import 'package:gyaanplant/views/student/widgets/tab_item.dart';
+import 'package:gyaanplant/views/student_role/student/widgets/podium_user.dart';
+import 'package:gyaanplant/views/student_role/student/widgets/rank_card.dart';
+import 'package:gyaanplant/views/student_role/student/widgets/tab_item.dart';
 
 class LeaderboardView extends StatefulWidget {
   const LeaderboardView({super.key});

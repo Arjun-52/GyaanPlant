@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/viewmodels/auth_viewmodel.dart';
 import 'package:gyaanplant/views/auth/widgets/auth_redirect_text.dart';
 import 'package:gyaanplant/views/auth/widgets/custom_dropdown.dart';
 import 'package:gyaanplant/views/auth/widgets/custom_text_field.dart';
@@ -9,7 +8,7 @@ import 'package:gyaanplant/views/auth/widgets/step_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../viewmodels/auth_viewmodel.dart';
+import '../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
 
 class SignUpScreen extends StatelessWidget {
   const SignUpScreen({super.key});

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/core/common_widgets/common_bottom_nav.dart';
 import 'package:provider/provider.dart';
-import 'package:gyaanplant/viewmodels/test_viewmodel.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/test_viewmodel.dart';
 
-import 'package:gyaanplant/views/Test-/widgets/test_header.dart';
-import 'package:gyaanplant/views/Test-/widgets/stats_row.dart';
-import 'package:gyaanplant/views/Test-/widgets/timer_section.dart';
-import 'package:gyaanplant/views/Test-/widgets/question_card.dart';
-import 'package:gyaanplant/views/Test-/widgets/option_tile.dart';
-import 'package:gyaanplant/views/Test-/widgets/upcoming_tests.dart';
-import 'package:gyaanplant/views/Test-/widgets/filter_chip_test.dart';
+import 'package:gyaanplant/views/student_role/Test_/widgets/test_header.dart';
+import 'package:gyaanplant/views/student_role/Test_/widgets/stats_row.dart';
+import 'package:gyaanplant/views/student_role/Test_/widgets/timer_section.dart';
+import 'package:gyaanplant/views/student_role/Test_/widgets/question_card.dart';
+import 'package:gyaanplant/views/student_role/Test_/widgets/option_tile.dart';
+import 'package:gyaanplant/views/student_role/Test_/widgets/upcoming_tests.dart';
+import 'package:gyaanplant/views/student_role/Test_/widgets/filter_chip_test.dart';
 
 class TestScreen extends StatefulWidget {
   const TestScreen({super.key});
