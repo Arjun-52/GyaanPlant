@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CommonBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -6,30 +7,50 @@ class CommonBottomNav extends StatelessWidget {
   const CommonBottomNav({super.key, required this.currentIndex});
 
   void _onTap(BuildContext context, int index) {
-    // Add navigation logic
+    switch (index) {
+      case 0:
+        context.go('/home');
+        break;
+      case 1:
+        context.go('/learn');
+        break;
+      case 2:
+        context.go('/test');
+        break;
+      case 3:
+        context.go('/jobs');
+        break;
+      case 4:
+        context.go('/profile');
+        break;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: const BoxDecoration(
-        color: Color(0xFF020B08),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF020B08),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 10),
+          ],
         ),
-      ),
-
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _navItem(context, 0, "🏠", "Home"),
-          _navItem(context, 1, "📚", "Learn"),
-          _navItem(context, 2, "🎯", "Test"),
-          _navItem(context, 3, "💼", "Jobs"),
-          _navItem(context, 4, "👤", "Profile"),
-        ],
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _navItem(context, 0, "🏠", "Home"),
+            _navItem(context, 1, "📚", "Learn"),
+            _navItem(context, 2, "🎯", "Test"),
+            _navItem(context, 3, "💼", "Jobs"),
+            _navItem(context, 4, "👤", "Profile"),
+          ],
+        ),
       ),
     );
   }
@@ -39,7 +60,6 @@ class CommonBottomNav extends StatelessWidget {
 
     return GestureDetector(
       onTap: () => _onTap(context, index),
-
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -50,9 +70,7 @@ class CommonBottomNav extends StatelessWidget {
               color: isActive ? Colors.white : Colors.white38,
             ),
           ),
-
           const SizedBox(height: 4),
-
           Text(
             label,
             style: TextStyle(
@@ -61,9 +79,7 @@ class CommonBottomNav extends StatelessWidget {
               fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
-
           const SizedBox(height: 4),
-
           if (isActive)
             Container(
               width: 5,
