@@ -90,8 +90,12 @@ class SignInScreen extends StatelessWidget {
                     const SizedBox(height: 20),
 
                     PrimaryButton(
-                      text: "Login to Dashboard",
-                      onPressed: () => vm.login(context),
+                      text: vm.isLoading ? "Loading..." : "Login to Dashboard",
+                      onPressed: vm.isLoading
+                          ? null
+                          : () {
+                              vm.login(context);
+                            },
                     ),
 
                     const SizedBox(height: 18),

@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import '../core/constants/app_strings.dart';
+import '../../core/constants/app_strings.dart';
 
 /// HomeViewModel manages the state and business logic for the HomeScreen.
 /// This follows the MVVM pattern where the ViewModel handles all logic
@@ -38,11 +38,11 @@ class HomeViewModel extends ChangeNotifier {
     try {
       // Simulate a network call or data fetching
       await Future.delayed(const Duration(seconds: 1));
-      
+
       // Update state with loaded data
       _title = AppStrings.homeTitle;
       _subtitle = '${AppStrings.homeSubtitle} - Data loaded successfully!';
-      
+
       notifyListeners();
     } catch (e) {
       setError('Failed to load data: $e');
@@ -125,10 +125,9 @@ class HomeViewModel extends ChangeNotifier {
     try {
       // Simulate an async operation (e.g., API call)
       await Future.delayed(const Duration(seconds: 2));
-      
+
       // Update some state based on the operation result
       updateSubtitle('Async operation completed at ${DateTime.now()}');
-      
     } catch (e) {
       setError('Async operation failed: $e');
     } finally {
