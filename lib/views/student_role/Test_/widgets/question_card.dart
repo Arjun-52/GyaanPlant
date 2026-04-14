@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class QuestionCard extends StatelessWidget {
-  const QuestionCard({super.key});
+  final String question;
+
+  const QuestionCard({super.key, required this.question});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +15,7 @@ class QuestionCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           //  TOP LABEL
           Text(
             "VERBAL REASONING · TCS PATTERN",
@@ -29,8 +31,8 @@ class QuestionCard extends StatelessWidget {
 
           //  QUESTION
           Text(
-            "If ROAD is coded as URDG, what is the code for SWAN?",
-            style: TextStyle(
+            question,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
               height: 1.4,

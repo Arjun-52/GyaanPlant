@@ -4,10 +4,10 @@ import 'base_api_service.dart';
 
 class LearningService {
   Future<List<CourseModel>> getCourses() async {
-    print('🚀 Learning API Call: /api/v1/courses');
+    print('🚀 Learning API Call: /api/v1/learning');
 
     try {
-      final response = await BaseApiService.get('/api/v1/courses');
+      final response = await BaseApiService.get('/api/v1/learning');
 
       print('✅ Learning Response Status: ${response.statusCode}');
       print('📄 Learning Response Body: ${response.body}');

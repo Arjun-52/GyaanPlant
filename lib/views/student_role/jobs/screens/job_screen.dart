@@ -13,92 +13,81 @@ class JobScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => JobViewModel(),
+      create: (_) => JobViewModel()..fetchJobs(),
+
       child: Scaffold(
         backgroundColor: const Color(0xFF020B08),
         bottomNavigationBar: const CommonBottomNav(currentIndex: 3),
 
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: ListView(
-            children: const [
-              SizedBox(height: 20),
+        body: Consumer<JobViewModel>(
+          builder: (context, vm, child) {
+            /// 🔄 LOADING
+            if (vm.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-              JobHeader(),
-              SizedBox(height: 16),
+            return Padding(
+              padding: const EdgeInsets.all(16),
 
-              JobSearchBar(),
-              SizedBox(height: 16),
-
-              JobFilterRow(),
-              SizedBox(height: 20),
-
-              Column(
+              child: ListView(
                 children: [
-                  JobCard(
-                    title: "Software Engineer",
-                    company: "TCS",
-                    location: "Hyderabad",
-                    salary: "₹3.5–7",
-                    match: "87%",
-                    tags: ["Java", "SQL", "B.E/B.Tech", "2025 Batch"],
+                  const SizedBox(height: 20),
 
-                    showBadge: true,
-                    badgeText: "NEW",
-                    badgeColor: Color(0xFF00C853),
+                  const JobHeader(),
+                  const SizedBox(height: 16),
 
-                    logoColor: Colors.blue,
-                  ),
-                  JobCard(
-                    title: "Data Analyst Intern",
-                    company: "Swiggy",
-                    location: "Remote",
-                    salary: "₹20K",
-                    match: "91%",
-                    tags: ["SQL", "Excel", "Python"],
+                  const JobSearchBar(),
+                  const SizedBox(height: 16),
 
-                    showBadge: true,
-                    badgeText: "HOT 🔥",
-                    badgeColor: Colors.orange,
+                  const JobFilterRow(),
+                  const SizedBox(height: 20),
 
-                    logoColor: Colors.purple,
-                  ),
-                  JobCard(
-                    title: "Systems Engineer",
-                    company: "Infosys",
-                    location: "Bengaluru",
-                    salary: "₹3.6–6.5",
-                    match: "74%",
-                    tags: ["Python", "DBMS", "Any Branch"],
-                    logoColor: Colors.orange,
-                  ),
+                  /// ❌ EMPTY STATE
+                  if (vm.jobs.isEmpty)
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.work, size: 50, color: Colors.white38),
+                          SizedBox(height: 12),
 
-                  JobCard(
-                    title: "Project Engineer",
-                    company: "Wipro",
-                    location: "Hyderabad",
-                    salary: "₹3.5–5",
-                    match: "79%",
-                    tags: ["C++", "Java", "2025 Batch"],
-                    showBadge: true,
-                    badgeText: "NEW",
-                    badgeColor: Colors.green,
-                    logoColor: Colors.red,
-                  ),
+                          Text(
+                            "No jobs available",
+                            style: TextStyle(color: Colors.white),
+                          ),
 
-                  JobCard(
-                    title: "Associate Software Eng",
-                    company: "Accenture",
-                    location: "Multiple",
-                    salary: "₹4.5–8",
-                    match: "82%",
-                    tags: ["Coding", "Aptitude", "Any Branch"],
-                    logoColor: Colors.deepPurple,
-                  ),
+                          SizedBox(height: 6),
+
+                          Text(
+                            "Check back later for opportunities",
+                            style: TextStyle(color: Colors.white54),
+                          ),
+                        ],
+                      ),
+                    )
+                  /// ✅ JOB LIST
+                  else
+                    Column(
+                      children: vm.jobs.map((job) {
+                        return JobCard(
+                          title: job.role,
+                          company: job.companyName,
+
+                          // 🔥 fallback values (backend may not provide)
+                          location: "Not specified",
+                          salary: "—",
+                          match: "—",
+                          tags: const ["Job"],
+
+                          showBadge: false,
+                          logoColor: Colors.green,
+                        );
+                      }).toList(),
+                    ),
                 ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

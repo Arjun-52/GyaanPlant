@@ -8,7 +8,6 @@ import 'package:gyaanplant/views/student_role/Test_/widgets/stats_row.dart';
 import 'package:gyaanplant/views/student_role/Test_/widgets/timer_section.dart';
 import 'package:gyaanplant/views/student_role/Test_/widgets/question_card.dart';
 import 'package:gyaanplant/views/student_role/Test_/widgets/option_tile.dart';
-import 'package:gyaanplant/views/student_role/Test_/widgets/upcoming_tests.dart';
 import 'package:gyaanplant/views/student_role/Test_/widgets/filter_chip_test.dart';
 
 class TestScreen extends StatefulWidget {
@@ -22,188 +21,260 @@ class _TestScreenState extends State<TestScreen> {
   int selectedIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    // Move API call out of build method to prevent setState error
+    Future.microtask(() {
+      final vm = Provider.of<TestViewModel>(context, listen: false);
+      if (vm.tests.isEmpty && !vm.isLoading) {
+        vm.fetchTests();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final vm = Provider.of<TestViewModel>(context);
 
     return Scaffold(
       backgroundColor: const Color(0xFF020B08),
+
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            const SizedBox(height: 20),
 
-            // HEADER
-            const TestHeader(),
-
-            const SizedBox(height: 16),
-
-            //  FILTER CHIPS
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
+        child: vm.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : ListView(
                 children: [
-                  FilterChipTest(
-                    label: "TCS",
-                    isSelected: selectedIndex == 0,
-                    onTap: () => setState(() => selectedIndex = 0),
-                  ),
-                  const SizedBox(width: 10),
+                  const SizedBox(height: 20),
 
-                  FilterChipTest(
-                    label: "Infosys",
-                    isSelected: selectedIndex == 1,
-                    onTap: () => setState(() => selectedIndex = 1),
-                  ),
-                  const SizedBox(width: 10),
-
-                  FilterChipTest(
-                    label: "Wipro",
-                    isSelected: selectedIndex == 2,
-                    onTap: () => setState(() => selectedIndex = 2),
-                  ),
-                  const SizedBox(width: 10),
-
-                  FilterChipTest(
-                    label: "Amazon",
-                    isSelected: selectedIndex == 3,
-                    onTap: () => setState(() => selectedIndex = 3),
-                  ),
-                  FilterChipTest(
-                    label: "Accenture",
-                    isSelected: selectedIndex == 4,
-                    onTap: () => setState(() => selectedIndex = 4),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // STATS
-            const StatsRow(),
-
-            const SizedBox(height: 20),
-
-            // TIMER
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF031E17),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF00C853), width: 1),
-
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF00C853).withValues(alpha: 0.25),
-                    blurRadius: 20,
-                    spreadRadius: 2,
-                    offset: const Offset(0, 0),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  //  TIMER
-                  const TimerSection(),
+                  /// HEADER
+                  const TestHeader(),
 
                   const SizedBox(height: 16),
 
-                  // QUESTION
-                  const QuestionCard(),
+                  /// FILTER CHIPS
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        FilterChipTest(
+                          label: "TCS",
+                          isSelected: selectedIndex == 0,
+                          onTap: () => setState(() => selectedIndex = 0),
+                        ),
+                        const SizedBox(width: 10),
+                        FilterChipTest(
+                          label: "Infosys",
+                          isSelected: selectedIndex == 1,
+                          onTap: () => setState(() => selectedIndex = 1),
+                        ),
+                        const SizedBox(width: 10),
+                        FilterChipTest(
+                          label: "Wipro",
+                          isSelected: selectedIndex == 2,
+                          onTap: () => setState(() => selectedIndex = 2),
+                        ),
+                        const SizedBox(width: 10),
+                        FilterChipTest(
+                          label: "Amazon",
+                          isSelected: selectedIndex == 3,
+                          onTap: () => setState(() => selectedIndex = 3),
+                        ),
+                        FilterChipTest(
+                          label: "Accenture",
+                          isSelected: selectedIndex == 4,
+                          onTap: () => setState(() => selectedIndex = 4),
+                        ),
+                      ],
+                    ),
+                  ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
-                  // OPTIONS
-                  OptionTile(
-                    label: "A  VZDQ",
-                    isSelected: vm.selectedOption == 0,
-                    onTap: () => vm.selectOption(0),
+                  /// STATS (still static for now)
+                  const StatsRow(),
+
+                  const SizedBox(height: 20),
+
+                  /// TEST CARD
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF031E17),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFF00C853),
+                        width: 1,
+                      ),
+                    ),
+
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const TimerSection(),
+                        const SizedBox(height: 16),
+
+                        /// QUESTION
+                        vm.tests.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.quiz,
+                                      size: 50,
+                                      color: Colors.white38,
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    const Text(
+                                      "No tests available",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+
+                                    const SizedBox(height: 6),
+
+                                    const Text(
+                                      "New mock tests will appear here",
+                                      style: TextStyle(color: Colors.white54),
+                                      textAlign: TextAlign.center,
+                                    ),
+
+                                    const SizedBox(height: 14),
+
+                                    ElevatedButton(
+                                      onPressed: () {},
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(
+                                          0xFF00C853,
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        "Explore Tests",
+                                        style: TextStyle(color: Colors.black),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : QuestionCard(question: vm.tests[0].title),
+
+                        const SizedBox(height: 16),
+
+                        /// OPTIONS (TEMPORARY)
+                        if (vm.tests.isNotEmpty)
+                          ...List.generate(4, (index) {
+                            return OptionTile(
+                              label: "Option ${index + 1}",
+                              isSelected: vm.selectedOption == index,
+                              onTap: () => vm.selectOption(index),
+                            );
+                          }),
+                      ],
+                    ),
                   ),
-                  OptionTile(
-                    label: "B  VZDP",
-                    isSelected: vm.selectedOption == 1,
-                    onTap: () => vm.selectOption(1),
+
+                  const SizedBox(height: 20),
+
+                  /// NAV BUTTONS
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 55,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F2A22),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              "← Previous",
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 14),
+
+                      Expanded(
+                        child: Container(
+                          height: 55,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF00C853),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              "Next →",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  OptionTile(
-                    label: "C  VZEQ",
-                    isSelected: vm.selectedOption == 2,
-                    onTap: () => vm.selectOption(2),
+
+                  const SizedBox(height: 20),
+
+                  ///  UPCOMING TESTS (DYNAMIC)
+                  const Text(
+                    "Upcoming Test Packs",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  OptionTile(
-                    label: "D  VBDP",
-                    isSelected: vm.selectedOption == 3,
-                    onTap: () => vm.selectOption(3),
-                  ),
+
+                  const SizedBox(height: 12),
+
+                  if (vm.tests.isEmpty)
+                    const Text(
+                      "No tests available",
+                      style: TextStyle(color: Colors.white54),
+                    )
+                  else
+                    Column(
+                      children: vm.tests.map((test) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F2A22),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                test.title,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              Text(
+                                test.skill,
+                                style: const TextStyle(color: Colors.white54),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
+                  const SizedBox(height: 20),
                 ],
               ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // NAV BUTTONS
-            Row(
-              children: [
-                //  PREVIOUS BUTTON
-                Expanded(
-                  child: Container(
-                    height: 55,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0F2A22),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () {},
-                      child: const Center(
-                        child: Text(
-                          "← Previous",
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 14),
-
-                //  NEXT BUTTON
-                Expanded(
-                  child: Container(
-                    height: 55,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF00C853),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () {},
-                      child: const Center(
-                        child: Text(
-                          "Next →",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            //  UPCOMING TESTS
-            const UpcomingTests(),
-          ],
-        ),
       ),
+
       bottomNavigationBar: const CommonBottomNav(currentIndex: 2),
     );
   }
