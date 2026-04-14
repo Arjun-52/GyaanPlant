@@ -21,6 +21,8 @@ class AuthViewModel extends ChangeNotifier {
   bool isLoading = false;
   String? token;
 
+  Map<String, dynamic>? user; // 🔥 ADDED
+
   //  SETTERS
 
   void setName(String value) => name = value;
@@ -52,7 +54,6 @@ class AuthViewModel extends ChangeNotifier {
   //  STEP NAVIGATION (SIGNUP)
 
   Future<void> nextStep(BuildContext context) async {
-    // Step 1 validation
     if (currentStep == 1) {
       if (name.isEmpty || email.isEmpty || password.isEmpty) {
         _showError(context, "Please fill all fields");
@@ -70,7 +71,6 @@ class AuthViewModel extends ChangeNotifier {
       }
     }
 
-    // Step 3 validation
     if (currentStep == 3) {
       if (branch == "Select Branch" || careerPath == "Select Career Path") {
         _showError(context, "Please complete all fields");
@@ -110,14 +110,18 @@ class AuthViewModel extends ChangeNotifier {
       _showError(context, "Password must be at least 6 characters");
       return;
     }
+
     print("EMAIL SENT: $email");
     print("PASSWORD SENT: $password");
+
     try {
       isLoading = true;
       notifyListeners();
 
       final response = await StudentApiService.login(email, password);
 
+      user = response['user'];
+      await LocalStorageService.saveUser(user!);
       token = response['accessToken'];
 
       if (token == null) {
@@ -127,6 +131,7 @@ class AuthViewModel extends ChangeNotifier {
       await LocalStorageService.saveToken(token!);
 
       print("LOGIN SUCCESS → TOKEN: $token");
+      print("USER DATA: $user"); // 🔥 DEBUG
 
       context.goNamed('role');
     } catch (e) {
@@ -138,6 +143,10 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> loadUser() async {
+    user = await LocalStorageService.getUser();
+    notifyListeners();
+  }
   //  REGISTER
 
   Future<void> _register(BuildContext context) async {
@@ -149,13 +158,11 @@ class AuthViewModel extends ChangeNotifier {
 
       print("REGISTER RESPONSE: $response");
 
-      //  DO NOT EXPECT TOKEN HERE
       _showError(context, "Account created successfully! Please login.");
 
-      // Go to login screen
       context.go('/');
     } catch (e) {
-      print("Login Error: $e");
+      print("Register Error: $e");
       _showError(context, e.toString());
     } finally {
       isLoading = false;

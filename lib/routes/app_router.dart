@@ -41,7 +41,7 @@ class AppRouter {
     },
 
     routes: [
-      // 🔐 AUTH ROUTES
+      //  AUTH ROUTES
       GoRoute(
         path: '/',
         name: 'signIn',
@@ -54,14 +54,14 @@ class AppRouter {
         builder: (context, state) => const SignUpScreen(),
       ),
 
-      // 🎯 ROLE SELECTION
+      //  ROLE SELECTION
       GoRoute(
         path: '/role',
         name: 'role',
         builder: (context, state) => const RoleScreen(),
       ),
 
-      // 🏠 DASHBOARD
+      //  DASHBOARD
       GoRoute(
         path: '/student-dashboard',
         builder: (context, state) => const StudentDashboard(),
@@ -71,26 +71,25 @@ class AppRouter {
         path: '/home',
         builder: (context, state) => const StudentDashboard(),
       ),
-
-      // 📚 LEARN
+      //  LEARN
       GoRoute(path: '/learn', builder: (context, state) => const LearnScreen()),
 
-      // 🏆 LEADERBOARD
+      //  LEADERBOARD
       GoRoute(
         path: '/leaderboard',
         builder: (context, state) => const LeaderboardView(),
       ),
 
-      // 💼 JOBS
+      //  JOBS
       GoRoute(path: '/jobs', builder: (context, state) => const JobScreen()),
 
-      // 👤 PROFILE
+      //  PROFILE
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
       ),
 
-      // 🧪 TEST (with Provider)
+      // TEST
       GoRoute(
         path: '/test',
         builder: (context, state) => ChangeNotifierProvider(

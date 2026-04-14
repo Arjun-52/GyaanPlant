@@ -1,18 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
 
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final vm = Provider.of<AuthViewModel>(context);
+
+    final name = vm.user?['name'] ?? 'No Name';
+    final email = vm.user?['email'] ?? '';
+
+    // 🔥 Get initials dynamically
+    String initials = "NA";
+    if (name.isNotEmpty) {
+      final parts = name.split(" ");
+      initials = parts.length > 1
+          ? "${parts[0][0]}${parts[1][0]}"
+          : parts[0][0];
+    }
+
     return Column(
       children: [
         // Avatar
         Container(
           padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            color: const Color(0xFF0A241D),
+            color: Color(0xFF0A241D),
           ),
           child: Container(
             padding: const EdgeInsets.all(3),
@@ -28,9 +44,9 @@ class ProfileHeader extends StatelessWidget {
                 color: Color(0xFF00C853),
               ),
               alignment: Alignment.center,
-              child: const Text(
-                "AK",
-                style: TextStyle(
+              child: Text(
+                initials, // 🔥 dynamic initials
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
@@ -42,9 +58,10 @@ class ProfileHeader extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        const Text(
-          "Arjun Kumar",
-          style: TextStyle(
+        // 🔥 NAME (DYNAMIC)
+        Text(
+          name,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -53,14 +70,15 @@ class ProfileHeader extends StatelessWidget {
 
         const SizedBox(height: 4),
 
-        const Text(
-          "GRIET Hyderabad · B.Tech CSE · 2025",
-          style: TextStyle(color: Colors.white54, fontSize: 12),
+        // 🔥 EMAIL (DYNAMIC)
+        Text(
+          email,
+          style: const TextStyle(color: Colors.white54, fontSize: 12),
         ),
 
         const SizedBox(height: 12),
 
-        // Chips row
+        // Chips row (static for now)
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
