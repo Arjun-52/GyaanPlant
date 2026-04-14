@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/models/assessment_model.dart';
+
+import 'package:gyaanplant/models/studen_role_models/assessment_model.dart';
 import 'package:gyaanplant/services/test_service.dart';
 
 class TestViewModel extends ChangeNotifier {

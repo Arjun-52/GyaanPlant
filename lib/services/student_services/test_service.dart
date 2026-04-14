@@ -1,5 +1,6 @@
 import 'dart:convert';
-import '../models/assessment_model.dart';
+import 'package:gyaanplant/models/studen_role_models/assessment_model.dart';
+
 import 'base_api_service.dart';
 
 class TestService {
