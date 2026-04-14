@@ -1,11 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/views/student_role/learn/screens/learn_screen.dart';
+import 'package:gyaanplant/models/dashboard_model.dart';
 
 class ActiveCoursesSection extends StatelessWidget {
-  const ActiveCoursesSection({super.key});
+  final List<Enrollment> enrollments;
+
+  const ActiveCoursesSection({super.key, required this.enrollments});
 
   @override
   Widget build(BuildContext context) {
+    // Empty state
+    if (enrollments.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0A1F1A),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFF1FA463).withOpacity(0.3),
+              ),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.menu_book, size: 40, color: Colors.white38),
+                SizedBox(height: 10),
+                Text("No active courses yet"),
+                SizedBox(height: 6),
+                Text("Start learning to see your courses"),
+
+                SizedBox(height: 12),
+
+                ElevatedButton(
+                  onPressed: () {
+                    context.go('/learn');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    side: const BorderSide(
+                      color: Color(0xFF00C853),
+                      width: 1.5,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                  ),
+                  child: const Text(
+                    "Explore Courses",
+                    style: TextStyle(
+                      color: Color(0xFF00C853),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -41,58 +104,81 @@ class ActiveCoursesSection extends StatelessWidget {
         ),
 
         const SizedBox(height: 16),
-        // Course List
-        const CourseItem(
-          iconBg: Color(0xFF0F2A22),
-          icon: "📊",
-          title: "Data Structures & Algorithms",
-          subtitle: "TCS Pattern • 24/35 modules",
-          progress: 0.68,
-          progressColor: Color(0xFF00C853),
-        ),
-
-        CourseItem(
-          iconBg: Color(0xFF1A2332),
-          icon: "🧮",
-          title: "Quantitative Aptitude",
-          subtitle: "All Companies • 8/18 modules",
-          progress: 0.45,
-          progressColor: Color(0xFFFFA726),
-        ),
-
-        CourseItem(
-          iconBg: Color(0xFF1E1E2F),
-          icon: "💬",
-          title: "Verbal Communication",
-          subtitle: "HR Rounds • 14/20 modules",
-          progress: 0.70,
-          progressColor: Color(0xFF00C853),
-        ),
+        // Course List from API data
+        ...enrollments
+            .map((enrollment) => CourseItem(enrollment: enrollment))
+            .toList(),
       ],
     );
   }
 }
 
 class CourseItem extends StatelessWidget {
-  final Color iconBg;
-  final String icon;
-  final String title;
-  final String subtitle;
-  final double progress;
-  final Color progressColor;
+  final Enrollment enrollment;
 
-  const CourseItem({
-    super.key,
-    required this.iconBg,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.progress,
-    required this.progressColor,
-  });
+  const CourseItem({super.key, required this.enrollment});
+
+  /// Get icon based on course category or title
+  String getCourseIcon() {
+    final title = enrollment.course.title.toLowerCase();
+    final category = enrollment.course.category?.toLowerCase() ?? '';
+
+    if (category.contains('data') ||
+        title.contains('data') ||
+        title.contains('algorithm')) {
+      return '📊';
+    } else if (category.contains('quant') ||
+        title.contains('quant') ||
+        title.contains('aptitude')) {
+      return '🧮';
+    } else if (category.contains('verbal') ||
+        title.contains('verbal') ||
+        title.contains('communication')) {
+      return '💬';
+    } else if (category.contains('coding') ||
+        title.contains('programming') ||
+        title.contains('code')) {
+      return '💻';
+    } else if (category.contains('hr') || title.contains('interview')) {
+      return '👔';
+    } else {
+      return '📚';
+    }
+  }
+
+  /// Get icon background color based on progress
+  Color getIconBgColor() {
+    final progress = enrollment.progressPercentage;
+    if (progress >= 0.7) {
+      return const Color(0xFF0F2A22); // Green tint for high progress
+    } else if (progress >= 0.4) {
+      return const Color(0xFF1A2332); // Blue tint for medium progress
+    } else {
+      return const Color(0xFF1E1E2F); // Purple tint for low progress
+    }
+  }
+
+  /// Get progress color based on percentage
+  Color getProgressColor() {
+    final progress = enrollment.progressPercentage;
+    if (progress >= 0.7) {
+      return const Color(0xFF00C853); // Green
+    } else if (progress >= 0.4) {
+      return const Color(0xFFFFA726); // Orange
+    } else {
+      return const Color(0xFFEF5350); // Red
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final iconBg = getIconBgColor();
+    final icon = getCourseIcon();
+    final title = enrollment.course.title;
+    final subtitle = enrollment.subtitleText;
+    final progress = enrollment.progressPercentage;
+    final progressColor = getProgressColor();
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
       child: Row(

@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key});
+  final String name;
+
+  const HomeHeader({super.key, required this.name});
 
   @override
   Widget build(BuildContext context) {
+    // Split first name & last name
+    final parts = name.split(" ");
+    final firstName = parts.isNotEmpty ? parts[0] : "";
+    final lastName = parts.length > 1 ? parts[1] : "";
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
-
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // 🔹 Left Content
+          /// 🔹 Left
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -22,21 +28,21 @@ class HomeHeader extends StatelessWidget {
 
               const SizedBox(height: 4),
 
-              // 🔥 Name with 2 colors
+              /// 🔥 Dynamic Name
               RichText(
-                text: const TextSpan(
+                text: TextSpan(
                   children: [
                     TextSpan(
-                      text: "Arjun ",
-                      style: TextStyle(
+                      text: "$firstName ",
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
                     TextSpan(
-                      text: "Kumar",
-                      style: TextStyle(
+                      text: lastName,
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF00C853),
@@ -48,28 +54,14 @@ class HomeHeader extends StatelessWidget {
 
               const SizedBox(height: 4),
 
-              RichText(
-                text: const TextSpan(
-                  children: [
-                    TextSpan(
-                      text: "TCS drive in ",
-                      style: TextStyle(color: Colors.white54, fontSize: 12),
-                    ),
-                    TextSpan(
-                      text: "12 days",
-                      style: TextStyle(
-                        color: Color(0xFFFFA726),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
+              const Text(
+                "Keep pushing forward 🚀",
+                style: TextStyle(color: Colors.white54, fontSize: 12),
               ),
             ],
           ),
 
-          // 🔹 Right Side
+          /// 🔹 Right
           Row(
             children: [
               Container(
@@ -78,29 +70,23 @@ class HomeHeader extends StatelessWidget {
                   color: Color(0xFF0F2A22),
                   shape: BoxShape.circle,
                 ),
-                child: Stack(
-                  children: const [
-                    Icon(Icons.notifications, color: Colors.white, size: 18),
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: CircleAvatar(
-                        radius: 4,
-                        backgroundColor: Colors.red,
-                      ),
-                    ),
-                  ],
+                child: const Icon(
+                  Icons.notifications,
+                  color: Colors.white,
+                  size: 18,
                 ),
               ),
 
               const SizedBox(width: 10),
 
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 18,
-                backgroundColor: Color(0xFF00C853),
+                backgroundColor: const Color(0xFF00C853),
                 child: Text(
-                  "AK",
-                  style: TextStyle(
+                  firstName.isNotEmpty
+                      ? firstName[0] + (lastName.isNotEmpty ? lastName[0] : "")
+                      : "U",
+                  style: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
                   ),

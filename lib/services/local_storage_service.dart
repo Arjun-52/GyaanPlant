@@ -20,7 +20,9 @@ class LocalStorageService {
   /// Clear token (logout)
   static Future<void> clearToken() async {
     final prefs = await SharedPreferences.getInstance();
+
     await prefs.remove(_tokenKey);
+    await prefs.remove(_userKey);
   }
 
   static const String _userKey = "user";

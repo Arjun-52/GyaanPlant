@@ -82,7 +82,7 @@ class LocalStorageService {
     final prefs = await _getPrefs();
     final jsonString = prefs.getString(key);
     if (jsonString == null) return null;
-    
+
     try {
       return json.decode(jsonString) as Map<String, dynamic>;
     } catch (e) {
@@ -112,6 +112,16 @@ class LocalStorageService {
   static Future<Set<String>> getKeys() async {
     final prefs = await _getPrefs();
     return prefs.getKeys();
+  }
+
+  /// Gets the authentication token
+  static Future<String?> getToken() async {
+    return await getString(authTokenKey);
+  }
+
+  /// Sets the authentication token
+  static Future<void> setToken(String token) async {
+    await setString(authTokenKey, token);
   }
 
   // Common storage keys used throughout the app

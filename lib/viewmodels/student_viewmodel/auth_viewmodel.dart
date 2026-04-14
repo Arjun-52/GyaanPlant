@@ -4,6 +4,9 @@ import '../../services/student_api_service.dart';
 import '../../services/local_storage_service.dart';
 
 class AuthViewModel extends ChangeNotifier {
+  AuthViewModel() {
+    loadUser();
+  }
   //  FORM FIELDS
 
   String name = "";
@@ -21,7 +24,7 @@ class AuthViewModel extends ChangeNotifier {
   bool isLoading = false;
   String? token;
 
-  Map<String, dynamic>? user; // 🔥 ADDED
+  Map<String, dynamic>? user;
 
   //  SETTERS
 
@@ -131,7 +134,7 @@ class AuthViewModel extends ChangeNotifier {
       await LocalStorageService.saveToken(token!);
 
       print("LOGIN SUCCESS → TOKEN: $token");
-      print("USER DATA: $user"); // 🔥 DEBUG
+      print("USER DATA: $user");
 
       context.goNamed('role');
     } catch (e) {
