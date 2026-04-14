@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/leaderboard_viewmodel.dart';
+import 'package:provider/provider.dart';
+
 import 'package:gyaanplant/views/student_role/student/widgets/podium_user.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/rank_card.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/tab_item.dart';
@@ -15,98 +18,142 @@ class _LeaderboardViewState extends State<LeaderboardView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF020B08),
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
+    return ChangeNotifierProvider(
+      create: (_) => LeaderboardViewModel()..fetchLeaderboard(),
 
-            /// TITLE
-            const Text(
-              "Leaderboard 🏆",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFF020B08),
 
-            const SizedBox(height: 16),
+        body: SafeArea(
+          child: Consumer<LeaderboardViewModel>(
+            builder: (context, vm, child) {
+              ///  LOADING
+              if (vm.isLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-            /// TABS
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F2A22),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
+              /// ❌ EMPTY STATE
+              if (vm.users.isEmpty) {
+                return const Center(
+                  child: Text(
+                    "No leaderboard data",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                );
+              }
+
+              ///  DATA UI
+              final users = vm.users;
+
+              return Column(
                 children: [
-                  TabItem(
-                    "All Colleges",
-                    selectedTab == 0,
-                    onTap: () {
-                      setState(() => selectedTab = 0);
-                    },
+                  const SizedBox(height: 10),
+
+                  /// TITLE
+                  const Text(
+                    "Leaderboard 🏆",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  TabItem(
-                    "My College",
-                    selectedTab == 1,
-                    onTap: () {
-                      setState(() => selectedTab = 1);
-                    },
+
+                  const SizedBox(height: 16),
+
+                  /// TABS (UI only for now)
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F2A22),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: [
+                        TabItem(
+                          "All Colleges",
+                          selectedTab == 0,
+                          onTap: () => setState(() => selectedTab = 0),
+                        ),
+                        TabItem(
+                          "My College",
+                          selectedTab == 1,
+                          onTap: () => setState(() => selectedTab = 1),
+                        ),
+                        TabItem(
+                          "My Batch",
+                          selectedTab == 2,
+                          onTap: () => setState(() => selectedTab = 2),
+                        ),
+                      ],
+                    ),
                   ),
-                  TabItem(
-                    "My Batch",
-                    selectedTab == 2,
-                    onTap: () {
-                      setState(() => selectedTab = 2);
-                    },
+
+                  const SizedBox(height: 20),
+
+                  ///  PODIUM (TOP 3)
+                  if (users.length >= 3)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        PodiumUser(
+                          _getInitials(users[1].name),
+                          users[1].name,
+                          users[1].xp.toString(),
+                          2,
+                        ),
+                        PodiumUser(
+                          _getInitials(users[0].name),
+                          users[0].name,
+                          users[0].xp.toString(),
+                          1,
+                        ),
+                        PodiumUser(
+                          _getInitials(users[2].name),
+                          users[2].name,
+                          users[2].xp.toString(),
+                          3,
+                        ),
+                      ],
+                    ),
+
+                  const SizedBox(height: 20),
+
+                  ///  LIST
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: users.length,
+                      itemBuilder: (context, index) {
+                        final user = users[index];
+
+                        return RankCard(
+                          user.rank,
+                          _getInitials(user.name),
+                          user.name,
+                          "—", // college not available
+                          user.xp.toString(),
+                          highlight: false,
+                        );
+                      },
+                    ),
                   ),
                 ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            /// Podium
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: const [
-                PodiumUser("PR", "Priya R.", "2,840", 2),
-                PodiumUser("AK", "Arjun K.", "3,120", 1),
-                PodiumUser("RV", "Rahul V.", "2,710", 3),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            /// LIST
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: const [
-                  RankCard(4, "SM", "Sneha M.", "MVSR Engg", "2,590"),
-                  RankCard(5, "KP", "Karthik P.", "CBIT Hyd", "2,480"),
-                  RankCard(
-                    47,
-                    "You",
-                    "You · Arjun Kumar",
-                    "GRIET Hyderabad",
-                    "1,840",
-                    highlight: true,
-                  ),
-                  RankCard(48, "DS", "Divya S.", "Vasavi College", "1,820"),
-                  RankCard(49, "MT", "Manohar T.", "Osmania Univ", "1,790"),
-                ],
-              ),
-            ),
-          ],
+              );
+            },
+          ),
         ),
       ),
     );
+  }
+
+  String _getInitials(String name) {
+    final parts = name.split(" ");
+    if (parts.length > 1) {
+      return "${parts[0][0]}${parts[1][0]}";
+    }
+    return name.isNotEmpty ? name[0] : "U";
   }
 }

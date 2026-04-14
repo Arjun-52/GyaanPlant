@@ -13,9 +13,10 @@ class BaseApiService {
 
   ///  BUILD URL
   static Uri _buildUrl(String endpoint) {
-    return Uri.parse(
-      '$_baseUrl${endpoint.startsWith('/') ? endpoint : '/$endpoint'}',
-    );
+    final url =
+        '$_baseUrl${endpoint.startsWith('/') ? endpoint : '/$endpoint'}';
+    print("🚀 API Call: $url");
+    return Uri.parse(url);
   }
 
   ///  GET
