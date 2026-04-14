@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
 import 'package:gyaanplant/main.dart';
-import 'package:gyaanplant/viewmodels/home_viewmodel.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/home_viewmodel.dart';
 
 void main() {
   testWidgets('App loads and displays HomeScreen', (WidgetTester tester) async {

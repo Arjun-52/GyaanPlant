@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:gyaanplant/services/local_storage_service.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/test_viewmodel.dart';
 
 import 'package:gyaanplant/views/auth/screens/sign_in_screen.dart';
@@ -16,8 +17,31 @@ import 'package:provider/provider.dart';
 class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: '/',
+
+    redirect: (context, state) async {
+      final token = await LocalStorageService.getToken();
+      final isLoggedIn = token != null;
+
+      final location = state.uri.toString();
+
+      //  PUBLIC ROUTES (allowed without login)
+      final isPublicRoute = location == '/' || location == '/signup';
+
+      //  If NOT logged in → block private routes
+      if (!isLoggedIn && !isPublicRoute) {
+        return '/';
+      }
+
+      //  If logged in → prevent going back to login/signup
+      if (isLoggedIn && (location == '/' || location == '/signup')) {
+        return '/role';
+      }
+
+      return null;
+    },
+
     routes: [
-      //  Sign In Screen
+      // 🔐 AUTH ROUTES
       GoRoute(
         path: '/',
         name: 'signIn',
@@ -25,39 +49,54 @@ class AppRouter {
       ),
 
       GoRoute(
-        path: '/test',
-        builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => TestViewModel(),
-          child: const TestScreen(),
-        ),
-      ),
-      GoRoute(
         path: '/signup',
         name: 'signup',
         builder: (context, state) => const SignUpScreen(),
       ),
+
+      // 🎯 ROLE SELECTION
       GoRoute(
         path: '/role',
         name: 'role',
         builder: (context, state) => const RoleScreen(),
       ),
+
+      // 🏠 DASHBOARD
       GoRoute(
         path: '/student-dashboard',
         builder: (context, state) => const StudentDashboard(),
       ),
+
       GoRoute(
         path: '/home',
         builder: (context, state) => const StudentDashboard(),
       ),
+
+      // 📚 LEARN
       GoRoute(path: '/learn', builder: (context, state) => const LearnScreen()),
+
+      // 🏆 LEADERBOARD
       GoRoute(
         path: '/leaderboard',
         builder: (context, state) => const LeaderboardView(),
       ),
+
+      // 💼 JOBS
       GoRoute(path: '/jobs', builder: (context, state) => const JobScreen()),
+
+      // 👤 PROFILE
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
+      ),
+
+      // 🧪 TEST (with Provider)
+      GoRoute(
+        path: '/test',
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => TestViewModel(),
+          child: const TestScreen(),
+        ),
       ),
     ],
   );

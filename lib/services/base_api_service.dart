@@ -4,22 +4,21 @@ import 'local_storage_service.dart';
 
 /// Base API service for handling common HTTP operations
 class BaseApiService {
-  // ✅ FIXED BASE URL (no /v1 here)
-  static const String _baseUrl = 'https://api.gyaanplant.com';
+  static const String _baseUrl = 'http://10.0.2.2:5000';
 
   static const Map<String, String> _headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
 
-  /// ✅ BUILD URL SAFELY
+  ///  BUILD URL
   static Uri _buildUrl(String endpoint) {
     return Uri.parse(
       '$_baseUrl${endpoint.startsWith('/') ? endpoint : '/$endpoint'}',
     );
   }
 
-  /// 🔥 GET
+  ///  GET
   static Future<http.Response> get(String endpoint) async {
     final token = await LocalStorageService.getToken();
 
@@ -30,10 +29,7 @@ class BaseApiService {
     }
 
     try {
-      final response = await http.get(
-        _buildUrl(endpoint),
-        headers: headers,
-      );
+      final response = await http.get(_buildUrl(endpoint), headers: headers);
       return _handleResponse(response);
     } catch (e) {
       throw Exception('Network error: ${e.toString()}');
@@ -95,17 +91,14 @@ class BaseApiService {
     }
 
     try {
-      final response = await http.delete(
-        _buildUrl(endpoint),
-        headers: headers,
-      );
+      final response = await http.delete(_buildUrl(endpoint), headers: headers);
       return _handleResponse(response);
     } catch (e) {
       throw Exception('Network error: ${e.toString()}');
     }
   }
 
-  /// 🔥 RESPONSE HANDLER
+  ///  RESPONSE HANDLER
   static http.Response _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return response;

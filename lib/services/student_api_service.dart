@@ -78,19 +78,17 @@ class StudentApiService {
     }
   }
 
-  ///  LOGIN (MOST IMPORTANT)
+  ///  LOGIN
   static Future<Map<String, dynamic>> login(
     String email,
     String password,
   ) async {
-    await Future.delayed(const Duration(seconds: 1)); // simulate API delay
-
-    // ✅ MOCK VALID USER
-    if (email == "test@gmail.com" && password == "12345678") {
-      return {"token": "mock_token_123456"};
-    } else {
-      throw Exception("Invalid credentials");
-    }
+    final response = await BaseApiService.post('/api/v1/auth/login', {
+      "email": email,
+      "password": password,
+    });
+    print("RAW RESPONSE: ${response.body}");
+    return jsonDecode(response.body);
   }
 
   static Future<Map<String, dynamic>> register(
@@ -122,10 +120,7 @@ class StudentApiService {
   }
 
   /// Get student stats
-  static Future<Map<String, dynamic>> getStudentStats(
-    String studentId, {
-    String? authToken,
-  }) async {
+  static Future<Map<String, dynamic>> getStudentStats(String studentId) async {
     final response = await BaseApiService.get(
       '/api/v1/students/$studentId/stats',
     );

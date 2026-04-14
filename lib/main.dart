@@ -3,7 +3,13 @@ import 'package:provider/provider.dart';
 import 'routes/app_router.dart';
 import 'viewmodels/student_viewmodel/auth_viewmodel.dart';
 
-void main() {
+import 'services/local_storage_service.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await LocalStorageService.clearToken();
+
   runApp(const MyApp());
 }
 

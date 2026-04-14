@@ -1,4 +1,5 @@
 import 'package:flutter/gestures.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/views/auth/widgets/custom_text_field.dart';
@@ -8,9 +9,14 @@ import 'package:provider/provider.dart';
 
 import '../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
 
-class SignInScreen extends StatelessWidget {
+class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
 
+  @override
+  State<SignInScreen> createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<AuthViewModel>(context);
@@ -152,23 +158,23 @@ class SignInScreen extends StatelessWidget {
                     const SizedBox(height: 20),
 
                     Center(
-                      child: Text.rich(
-                        TextSpan(
-                          text: "New here? ",
-                          children: [
-                            TextSpan(
-                              text: "Create account",
-                              style: const TextStyle(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text("New here? "),
+                          InkWell(
+                            onTap: () {
+                              context.go('/signup');
+                            },
+                            child: const Text(
+                              "Create account",
+                              style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 color: Colors.black,
                               ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  context.go('/signup');
-                                },
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

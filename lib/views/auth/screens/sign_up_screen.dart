@@ -89,7 +89,7 @@ class SignUpScreen extends StatelessWidget {
                             text: vm.currentStep == 3
                                 ? "Register Now"
                                 : "Continue",
-                            onPressed: () => vm.nextStep(context),
+                            onPressed: () async => await vm.nextStep(context),
                           ),
                         ),
                       ],

@@ -51,7 +51,7 @@ class AuthViewModel extends ChangeNotifier {
 
   //  STEP NAVIGATION (SIGNUP)
 
-  void nextStep(BuildContext context) {
+  Future<void> nextStep(BuildContext context) async {
     // Step 1 validation
     if (currentStep == 1) {
       if (name.isEmpty || email.isEmpty || password.isEmpty) {
@@ -82,8 +82,7 @@ class AuthViewModel extends ChangeNotifier {
       currentStep++;
       notifyListeners();
     } else {
-      _showError(context, "Signup Complete ✅");
-      context.go('/');
+      await _register(context);
     }
   }
 
@@ -111,14 +110,15 @@ class AuthViewModel extends ChangeNotifier {
       _showError(context, "Password must be at least 6 characters");
       return;
     }
-
+    print("EMAIL SENT: $email");
+    print("PASSWORD SENT: $password");
     try {
       isLoading = true;
       notifyListeners();
 
       final response = await StudentApiService.login(email, password);
 
-      token = response['token'];
+      token = response['accessToken'];
 
       if (token == null) {
         throw Exception("Token not found");
@@ -131,7 +131,32 @@ class AuthViewModel extends ChangeNotifier {
       context.goNamed('role');
     } catch (e) {
       print("Login Error: $e");
-      _showError(context, "Invalid credentials");
+      _showError(context, e.toString());
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  //  REGISTER
+
+  Future<void> _register(BuildContext context) async {
+    try {
+      isLoading = true;
+      notifyListeners();
+
+      final response = await StudentApiService.register(name, email, password);
+
+      print("REGISTER RESPONSE: $response");
+
+      //  DO NOT EXPECT TOKEN HERE
+      _showError(context, "Account created successfully! Please login.");
+
+      // Go to login screen
+      context.go('/');
+    } catch (e) {
+      print("Login Error: $e");
+      _showError(context, e.toString());
     } finally {
       isLoading = false;
       notifyListeners();
