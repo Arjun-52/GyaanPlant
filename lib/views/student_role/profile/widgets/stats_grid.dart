@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 
 class StatsGrid extends StatelessWidget {
-  const StatsGrid({super.key});
+  final int readinessScore;
+  final int testsCompleted;
+  final int hoursLearned;
+  final int streak;
+
+  const StatsGrid({
+    super.key,
+    required this.readinessScore,
+    required this.testsCompleted,
+    required this.hoursLearned,
+    required this.streak,
+  });
 
   Widget box(String value, String label, Color color) {
     return Container(
@@ -44,17 +55,23 @@ class StatsGrid extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: box("71", "Readiness Score", Colors.green)),
+            Expanded(
+              child: box("$readinessScore", "Readiness Score", Colors.green),
+            ),
             const SizedBox(width: 10),
-            Expanded(child: box("24", "Tests Completed", Colors.green)),
+            Expanded(
+              child: box("$testsCompleted", "Tests Completed", Colors.green),
+            ),
           ],
         ),
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(child: box("142", "Hours Learned", Colors.green)),
+            Expanded(
+              child: box("$hoursLearned", "Hours Learned", Colors.green),
+            ),
             const SizedBox(width: 10),
-            Expanded(child: box("14", "Day Streak", Colors.orange)),
+            Expanded(child: box("$streak", "Day Streak", Colors.orange)),
           ],
         ),
       ],

@@ -3,17 +3,19 @@ import 'package:provider/provider.dart';
 import '../../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
 
 class ProfileHeader extends StatelessWidget {
-  const ProfileHeader({super.key});
+  final int rank;
+  final int streak;
+
+  const ProfileHeader({super.key, required this.rank, required this.streak});
 
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<AuthViewModel>(context);
 
-    final name = vm.user?['name'] ?? 'No Name';
+    final name = vm.user?['name'] ?? 'User';
     final email = vm.user?['email'] ?? '';
 
-    // 🔥 Get initials dynamically
-    String initials = "NA";
+    String initials = "U";
     if (name.isNotEmpty) {
       final parts = name.split(" ");
       initials = parts.length > 1
@@ -23,7 +25,7 @@ class ProfileHeader extends StatelessWidget {
 
     return Column(
       children: [
-        // Avatar
+        /// 🔹 Avatar
         Container(
           padding: const EdgeInsets.all(4),
           decoration: const BoxDecoration(
@@ -45,7 +47,7 @@ class ProfileHeader extends StatelessWidget {
               ),
               alignment: Alignment.center,
               child: Text(
-                initials, // 🔥 dynamic initials
+                initials,
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -58,7 +60,7 @@ class ProfileHeader extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        // 🔥 NAME (DYNAMIC)
+        /// 🔹 NAME
         Text(
           name,
           style: const TextStyle(
@@ -70,7 +72,7 @@ class ProfileHeader extends StatelessWidget {
 
         const SizedBox(height: 4),
 
-        // 🔥 EMAIL (DYNAMIC)
+        /// 🔹 EMAIL
         Text(
           email,
           style: const TextStyle(color: Colors.white54, fontSize: 12),
@@ -78,15 +80,15 @@ class ProfileHeader extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        // Chips row (static for now)
+        /// 🔹 CHIPS (NOW DYNAMIC)
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _chip("🏆 Rank #47", Colors.green),
+            _chip("🏆 Rank #$rank", Colors.green),
             const SizedBox(width: 8),
-            _chip("🔥 14-day streak", Colors.orange),
+            _chip("🔥 $streak-day streak", Colors.orange),
             const SizedBox(width: 8),
-            _chip("📘 3 certs", Colors.blue),
+            _chip("📘 3 certs", Colors.blue), // still static
           ],
         ),
       ],
