@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/core/common_widgets/tpo_bottom_nav.dart';
+import 'package:gyaanplant/views/tpo_role/home/widgets/dashboard_action_card.dart';
+import 'package:gyaanplant/views/tpo_role/home/widgets/dashboard_stat_card.dart';
 
 class TPODashboard extends StatelessWidget {
   const TPODashboard({super.key});
@@ -37,22 +40,22 @@ class TPODashboard extends StatelessWidget {
                 mainAxisSpacing: 12,
                 childAspectRatio: 1.2,
                 children: const [
-                  StatCard(
+                  DashboardStatCard(
                     title: "Total Students",
                     value: "2,847",
                     subtitle: "+312 this month",
                   ),
-                  StatCard(
+                  DashboardStatCard(
                     title: "Active on LMS",
                     value: "73%",
                     subtitle: "+8% vs last month",
                   ),
-                  StatCard(
+                  DashboardStatCard(
                     title: "Drive-Ready",
                     value: "847",
                     subtitle: "Score ≥70",
                   ),
-                  StatCard(
+                  DashboardStatCard(
                     title: "Active Drives",
                     value: "12",
                     subtitle: "3 closing this week",
@@ -71,28 +74,32 @@ class TPODashboard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              const ActionCard(
+              DashboardActionCard(
                 title: "TCS Drive — Shortlist Due Friday",
                 description:
                     "342 eligible. 12 haven't completed aptitude module.",
                 buttonText: "Send WhatsApp to 12 students →",
                 color: Colors.orange,
+                icon: "🔔",
               ),
               const SizedBox(height: 12),
-
-              const ActionCard(
+              DashboardActionCard(
                 title: "NAAC Q3 Report Ready",
-                description: "Q3 placement data auto-compiled.",
+                description:
+                    "Q3 placement data auto-compiled. Review and download.",
                 buttonText: "Download Report →",
                 color: Colors.blue,
+                icon: "📄",
               ),
-              const SizedBox(height: 12),
 
-              const ActionCard(
+              const SizedBox(height: 12),
+              DashboardActionCard(
                 title: "23 Students Below Score 50",
-                description: "Need intervention before next drive.",
+                description:
+                    "These students need intervention before next drive cycle.",
                 buttonText: "View & Assign Remedial →",
                 color: Colors.red,
+                icon: "⚡",
               ),
 
               const SizedBox(height: 20),
@@ -116,154 +123,7 @@ class TPODashboard extends StatelessWidget {
       ),
 
       /// BOTTOM NAV
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: const Color(0xFF0A241D),
-        selectedItemColor: Colors.greenAccent,
-        unselectedItemColor: Colors.white54,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.group), label: "Students"),
-          BottomNavigationBarItem(icon: Icon(Icons.work), label: "Drives"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: "Reports",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: "Settings",
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// STAT CARD
-class StatCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final String subtitle;
-
-  const StatCard({
-    super.key,
-    required this.title,
-    required this.value,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF0F3B2E), Color(0xFF071E17)],
-        ),
-
-        border: Border.all(
-          color: Colors.greenAccent.withOpacity(0.15),
-          width: 1,
-        ),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.greenAccent.withOpacity(0.08),
-            blurRadius: 20,
-            spreadRadius: 1,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 29,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF00FFA3),
-              letterSpacing: 0.5,
-            ),
-          ),
-
-          const SizedBox(height: 6),
-
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.65),
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-
-          const SizedBox(height: 6),
-
-          Text(
-            subtitle,
-            style: const TextStyle(
-              color: Color(0xFF00FFA3),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// ACTION CARD
-class ActionCard extends StatelessWidget {
-  final String title;
-  final String description;
-  final String buttonText;
-  final Color color;
-
-  const ActionCard({
-    super.key,
-    required this.title,
-    required this.description,
-    required this.buttonText,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: color.withOpacity(0.1),
-        border: Border.all(color: color.withOpacity(0.4)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(description, style: const TextStyle(color: Colors.white70)),
-          const SizedBox(height: 10),
-          Text(
-            buttonText,
-            style: TextStyle(color: color, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
+      bottomNavigationBar: const TpoBottomNav(currentIndex: 0),
     );
   }
 }
