@@ -1,6 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:gyaanplant/services/local_storage_service.dart';
-import 'package:gyaanplant/viewmodels/student_viewmodel/test_viewmodel.dart';
+import 'package:gyaanplant/services/student_services/local_storage_service.dart';
 
 import 'package:gyaanplant/views/auth/screens/sign_in_screen.dart';
 import 'package:gyaanplant/views/auth/screens/sign_up_screen.dart';
@@ -12,7 +11,7 @@ import 'package:gyaanplant/views/student_role/role_/screens/role_screen.dart';
 import 'package:gyaanplant/views/student_role/student/screens/student_dashboard.dart';
 import 'package:gyaanplant/views/student_role/learn/screens/learn_screen.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/leaderboard_view.dart';
-import 'package:provider/provider.dart';
+import 'package:gyaanplant/views/tpo_role/home/screens/tpo_home_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -67,10 +66,6 @@ class AppRouter {
         builder: (context, state) => const StudentDashboard(),
       ),
 
-      GoRoute(
-        path: '/home',
-        builder: (context, state) => const StudentDashboard(),
-      ),
       //  LEARN
       GoRoute(path: '/learn', builder: (context, state) => const LearnScreen()),
 
@@ -89,14 +84,14 @@ class AppRouter {
         builder: (context, state) => const ProfileScreen(),
       ),
 
-      // TEST
+      //  TPO DASHBOARD
       GoRoute(
-        path: '/test',
-        builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => TestViewModel(),
-          child: const TestScreen(),
-        ),
+        path: '/tpo-dashboard',
+        builder: (context, state) => const TPODashboard(),
       ),
+
+      // TEST
+      GoRoute(path: '/test', builder: (context, state) => const TestScreen()),
     ],
   );
 }

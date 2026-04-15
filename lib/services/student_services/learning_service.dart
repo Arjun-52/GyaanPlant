@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:gyaanplant/models/course_model.dart';
+import 'package:gyaanplant/models/student_role_models/course_model.dart';
 import 'base_api_service.dart';
 
 class LearningService {

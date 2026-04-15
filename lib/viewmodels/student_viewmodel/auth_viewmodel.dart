@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../services/student_api_service.dart';
-import '../../services/local_storage_service.dart';
+import '../../services/student_services/student_api_service.dart';
+import '../../services/student_services/local_storage_service.dart';
 
 class AuthViewModel extends ChangeNotifier {
   AuthViewModel() {
@@ -98,6 +98,8 @@ class AuthViewModel extends ChangeNotifier {
 
   //  LOGIN
 
+  String? userName; // 🔥 add this at top of ViewModel
+
   Future<void> login(BuildContext context) async {
     if (email.isEmpty || password.isEmpty) {
       _showError(context, "Please fill all fields");
@@ -114,32 +116,42 @@ class AuthViewModel extends ChangeNotifier {
       return;
     }
 
-    print("EMAIL SENT: $email");
-    print("PASSWORD SENT: $password");
-
     try {
       isLoading = true;
       notifyListeners();
 
       final response = await StudentApiService.login(email, password);
 
-      user = response['user'];
-      await LocalStorageService.saveUser(user!);
-      token = response['accessToken'];
+      print("FULL RESPONSE: $response");
 
-      if (token == null) {
-        throw Exception("Token not found");
+      final accessToken = response['accessToken'];
+      final userData = response['user'];
+
+      if (accessToken == null) {
+        throw Exception("Token missing from response");
       }
 
+      // ✅ Save token & user
+      token = accessToken;
+      user = userData;
+
+      // 🔥 EXTRACT USER NAME (IMPORTANT)
+      userName =
+          userData['name'] ?? userData['fullName'] ?? userData['username'];
+
       await LocalStorageService.saveToken(token!);
+      await LocalStorageService.saveUser(user!);
 
-      print("LOGIN SUCCESS → TOKEN: $token");
-      print("USER DATA: $user");
+      print("LOGIN SUCCESS");
+      print("TOKEN: $token");
+      print("USER: $user");
+      print("USER NAME: $userName"); // 🔥 debug
 
-      context.goNamed('role');
+      // ✅ Navigate after success
+      context.go('/student-dashboard');
     } catch (e) {
       print("Login Error: $e");
-      _showError(context, e.toString());
+      _showError(context, "Login failed. Check credentials.");
     } finally {
       isLoading = false;
       notifyListeners();

@@ -4,27 +4,29 @@ class DashboardModel {
   final int xpProgress;
   final List<Enrollment> enrollments;
   final Map<String, dynamic>? student;
+  final List<dynamic> drives; // 🔥 IMPORTANT
 
   DashboardModel({
     required this.xp,
     required this.rank,
     required this.xpProgress,
     required this.enrollments,
+    required this.drives,
     this.student,
   });
 
   factory DashboardModel.fromJson(Map<String, dynamic> json) {
     final enrollmentsData = json['enrollments'] as List? ?? [];
-    final enrollments = enrollmentsData
-        .map((e) => Enrollment.fromJson(e as Map<String, dynamic>))
-        .toList();
 
     return DashboardModel(
       xp: json['xp'] ?? 0,
       rank: json['rank'] ?? 0,
       xpProgress: json['xpProgress'] ?? 0,
-      enrollments: enrollments,
-      student: json['student'] as Map<String, dynamic>?,
+
+      enrollments: enrollmentsData.map((e) => Enrollment.fromJson(e)).toList(),
+
+      student: json['student'],
+      drives: json['drives'] ?? [], // 🔥 FIX
     );
   }
 }
@@ -47,7 +49,7 @@ class Enrollment {
   factory Enrollment.fromJson(Map<String, dynamic> json) {
     return Enrollment(
       id: json['id'],
-      course: Course.fromJson(json['course'] as Map<String, dynamic>),
+      course: Course.fromJson(json['course']),
       completedModules: json['completedModules'],
       progress: json['progress'],
       lastAccessed: json['lastAccessed'] != null
@@ -56,7 +58,6 @@ class Enrollment {
     );
   }
 
-  /// Calculate progress percentage (0.0 to 1.0)
   double get progressPercentage {
     if (progress != null) {
       return (progress! / 100.0).clamp(0.0, 1.0);
@@ -67,7 +68,6 @@ class Enrollment {
     return 0.0;
   }
 
-  /// Get subtitle text for display
   String get subtitleText {
     if (completedModules != null) {
       return '${completedModules}/${course.totalModules} modules';

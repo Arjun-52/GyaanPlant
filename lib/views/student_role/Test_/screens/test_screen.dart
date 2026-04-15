@@ -123,17 +123,18 @@ class _TestScreenState extends State<TestScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     const Icon(
-                                      Icons.quiz,
+                                      Icons.quiz_outlined,
                                       size: 50,
                                       color: Colors.white38,
                                     ),
                                     const SizedBox(height: 12),
 
                                     const Text(
-                                      "No tests available",
+                                      "No assessments available",
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 16,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
@@ -141,23 +142,24 @@ class _TestScreenState extends State<TestScreen> {
                                     const SizedBox(height: 6),
 
                                     const Text(
-                                      "New mock tests will appear here",
+                                      "Assessments will appear here once available",
                                       style: TextStyle(color: Colors.white54),
                                       textAlign: TextAlign.center,
                                     ),
 
-                                    const SizedBox(height: 14),
+                                    const SizedBox(height: 16),
 
-                                    ElevatedButton(
-                                      onPressed: () {},
+                                    ElevatedButton.icon(
+                                      onPressed: () {
+                                        // TODO: Navigate to assessment library
+                                      },
+                                      icon: const Icon(Icons.refresh),
+                                      label: const Text("Refresh"),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: const Color(
                                           0xFF00C853,
                                         ),
-                                      ),
-                                      child: const Text(
-                                        "Explore Tests",
-                                        style: TextStyle(color: Colors.black),
+                                        foregroundColor: Colors.black,
                                       ),
                                     ),
                                   ],

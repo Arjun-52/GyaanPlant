@@ -9,7 +9,7 @@ class CommonBottomNav extends StatelessWidget {
   void _onTap(BuildContext context, int index) {
     switch (index) {
       case 0:
-        context.go('/home');
+        context.go('/student-dashboard');
         break;
       case 1:
         context.go('/learn');

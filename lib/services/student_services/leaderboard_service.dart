@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import '../models/leaderboard_model.dart';
+import '../../models/student_role_models/leaderboard_model.dart';
 import 'base_api_service.dart';
 
 class LeaderboardService {

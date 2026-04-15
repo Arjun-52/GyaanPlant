@@ -17,9 +17,20 @@ class _LeaderboardViewState extends State<LeaderboardView> {
   int selectedTab = 0;
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      Provider.of<LeaderboardViewModel>(
+        context,
+        listen: false,
+      ).fetchLeaderboard();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => LeaderboardViewModel()..fetchLeaderboard(),
+      create: (_) => LeaderboardViewModel(),
 
       child: Scaffold(
         backgroundColor: const Color(0xFF020B08),

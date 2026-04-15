@@ -13,6 +13,8 @@ class RoleCard extends StatelessWidget {
       onTap: () {
         if (role.title.toLowerCase().contains('student')) {
           context.push('/student-dashboard');
+        } else if (role.title.toLowerCase().contains('tpo')) {
+          context.push('/tpo-dashboard');
         }
         // Add other role navigation here as needed
       },

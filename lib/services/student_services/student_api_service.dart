@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:core';
-import '../models/student_model.dart';
+import '../../models/student_role_models/student_model.dart';
 import 'base_api_service.dart';
 
 /// Specific API service for student-related endpoints

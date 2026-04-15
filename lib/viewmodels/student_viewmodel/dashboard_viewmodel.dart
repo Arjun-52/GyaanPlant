@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/models/dashboard_model.dart';
-import 'package:gyaanplant/services/dashboard_service.dart';
+import 'package:gyaanplant/models/student_role_models/dashboard_model.dart';
+import 'package:gyaanplant/services/student_services/dashboard_service.dart';
 
 class DashboardViewModel extends ChangeNotifier {
   final DashboardService _service = DashboardService();
@@ -10,31 +10,25 @@ class DashboardViewModel extends ChangeNotifier {
   String? errorMessage;
 
   Future<void> fetchDashboard() async {
-    print('🔄 DashboardViewModel: Starting fetchDashboard');
     isLoading = true;
     errorMessage = null;
     notifyListeners();
 
     try {
+      print("🚀 FETCH DASHBOARD CALLED");
+
       dashboard = await _service.getDashboard();
-      print('✅ DashboardViewModel: Successfully fetched dashboard data');
-      print(
-        '📊 Dashboard Data - XP: ${dashboard?.xp}, Rank: ${dashboard?.rank}, Progress: ${dashboard?.xpProgress}',
-      );
-      print("Enrollments: ${dashboard?.enrollments}");
+
+      print("✅ DASHBOARD OBJECT: $dashboard");
+      print("XP: ${dashboard?.xp}");
+      print("RANK: ${dashboard?.rank}");
+      print("ENROLLMENTS: ${dashboard?.enrollments?.length}");
     } catch (e) {
-      print('❌ DashboardViewModel: Failed to fetch dashboard - $e');
-      errorMessage = 'Failed to load dashboard: $e';
-      dashboard = null;
+      errorMessage = e.toString();
+      print("❌ ERROR: $e");
     }
 
     isLoading = false;
-    notifyListeners();
-    print('🏁 DashboardViewModel: fetchDashboard completed');
-  }
-
-  void clearError() {
-    errorMessage = null;
     notifyListeners();
   }
 }

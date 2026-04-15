@@ -10,13 +10,26 @@ import 'package:gyaanplant/views/student_role/profile/widgets/profile_header.dar
 import 'package:gyaanplant/views/student_role/profile/widgets/stats_grid.dart';
 import 'package:provider/provider.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      Provider.of<DashboardViewModel>(context, listen: false).fetchDashboard();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => DashboardViewModel()..fetchDashboard(),
+      create: (_) => DashboardViewModel(),
 
       child: Scaffold(
         backgroundColor: const Color(0xFF020B08),

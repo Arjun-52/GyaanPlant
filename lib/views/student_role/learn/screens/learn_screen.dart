@@ -10,13 +10,26 @@ import 'package:gyaanplant/views/student_role/learn/widgets/learning_header.dart
 import 'package:gyaanplant/views/student_role/learn/widgets/search_input_field.dart';
 import 'package:gyaanplant/views/student_role/learn/widgets/sprint_banner_card.dart';
 
-class LearnScreen extends StatelessWidget {
+class LearnScreen extends StatefulWidget {
   const LearnScreen({super.key});
+
+  @override
+  State<LearnScreen> createState() => _LearnScreenState();
+}
+
+class _LearnScreenState extends State<LearnScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      Provider.of<LearningViewModel>(context, listen: false).fetchCourses();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => LearningViewModel()..fetchCourses(),
+      create: (_) => LearningViewModel(),
 
       child: Scaffold(
         backgroundColor: const Color(0xFF020B08),

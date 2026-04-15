@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/views/student_role/learn/screens/learn_screen.dart';
-import 'package:gyaanplant/models/dashboard_model.dart';
+import 'package:gyaanplant/models/student_role_models/dashboard_model.dart';
 
 class ActiveCoursesSection extends StatelessWidget {
   final List<Enrollment> enrollments;

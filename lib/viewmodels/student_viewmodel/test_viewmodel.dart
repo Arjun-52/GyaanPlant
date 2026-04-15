@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:gyaanplant/models/studen_role_models/assessment_model.dart';
-import 'package:gyaanplant/services/test_service.dart';
+import 'package:gyaanplant/models/student_role_models/assessment_model.dart';
+import 'package:gyaanplant/services/student_services/test_service.dart';
 
 class TestViewModel extends ChangeNotifier {
   final TestService _service = TestService();
@@ -17,7 +17,7 @@ class TestViewModel extends ChangeNotifier {
     try {
       tests = await _service.getTests();
     } catch (e) {
-      print(e);
+      print('Error fetching tests: $e');
     }
 
     isLoading = false;

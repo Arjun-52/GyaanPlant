@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../services/student_api_service.dart';
+import '../../services/student_services/student_api_service.dart';
 
 class LoginViewModel extends ChangeNotifier {
   bool isLoading = false;
