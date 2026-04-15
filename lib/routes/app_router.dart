@@ -13,6 +13,7 @@ import 'package:gyaanplant/views/student_role/learn/screens/learn_screen.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/leaderboard_view.dart';
 import 'package:gyaanplant/views/tpo_role/home/screens/tpo_home_screen.dart';
 import 'package:gyaanplant/views/tpo_role/student/screens/student_screen.dart';
+import 'package:gyaanplant/views/tpo_role/Drives/screens/drive_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -92,6 +93,12 @@ class AppRouter {
       GoRoute(
         path: '/tpo-dashboard',
         builder: (context, state) => const TPODashboard(),
+      ),
+
+      //  DRIVES
+      GoRoute(
+        path: '/drives',
+        builder: (context, state) => const DrivesScreen(),
       ),
 
       // TEST
