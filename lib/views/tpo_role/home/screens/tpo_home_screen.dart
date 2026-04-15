@@ -155,13 +155,31 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+
         gradient: const LinearGradient(
-          colors: [Color(0xFF0D2F24), Color(0xFF0A241D)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF0F3B2E), Color(0xFF071E17)],
         ),
+
+        border: Border.all(
+          color: Colors.greenAccent.withOpacity(0.15),
+          width: 1,
+        ),
+
+        boxShadow: [
+          BoxShadow(
+            color: Colors.greenAccent.withOpacity(0.08),
+            blurRadius: 20,
+            spreadRadius: 1,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -169,17 +187,33 @@ class StatCard extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(
-              fontSize: 22,
+              fontSize: 29,
               fontWeight: FontWeight.bold,
-              color: Colors.greenAccent,
+              color: Color(0xFF00FFA3),
+              letterSpacing: 0.5,
             ),
           ),
+
           const SizedBox(height: 6),
-          Text(title, style: const TextStyle(color: Colors.white70)),
-          const SizedBox(height: 4),
+
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.65),
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
           Text(
             subtitle,
-            style: const TextStyle(color: Colors.greenAccent, fontSize: 12),
+            style: const TextStyle(
+              color: Color(0xFF00FFA3),
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
