@@ -6,7 +6,7 @@ class DrivesViewModel extends ChangeNotifier {
     Drive(
       company: "TCS",
       role: "Software Engineer",
-      date: "Mar 22, 2026",
+      date: "Mar 22,\n2026",
       eligible: 342,
       registered: 298,
       pending: 44,
@@ -15,7 +15,7 @@ class DrivesViewModel extends ChangeNotifier {
     Drive(
       company: "Infosys",
       role: "Systems Engineer",
-      date: "Mar 28, 2026",
+      date: "Mar 28,\n2026",
       eligible: 285,
       registered: 241,
       pending: 44,
@@ -24,7 +24,7 @@ class DrivesViewModel extends ChangeNotifier {
     Drive(
       company: "Wipro",
       role: "Project Engineer",
-      date: "Apr 5, 2026",
+      date: "Apr 5,\n2026",
       eligible: 310,
       registered: 187,
       pending: 123,

@@ -5,7 +5,7 @@ class Drive {
   final int eligible;
   final int registered;
   final int pending;
-  final String status; // Upcoming / Open
+  final String status;
 
   Drive({
     required this.company,

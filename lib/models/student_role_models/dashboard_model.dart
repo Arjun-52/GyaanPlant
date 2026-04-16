@@ -19,15 +19,38 @@ class DashboardModel {
     final enrollmentsData = json['enrollments'] as List? ?? [];
 
     return DashboardModel(
-      xp: json['xp'] ?? 0,
-      rank: json['rank'] ?? 0,
-      xpProgress: json['xpProgress'] ?? 0,
+      xp: _parseToInt(json['xp']),
+      rank: _parseToInt(json['rank']),
+      xpProgress: _parseToInt(json['xpProgress']),
 
-      enrollments: enrollmentsData.map((e) => Enrollment.fromJson(e)).toList(),
+      enrollments: enrollmentsData
+          .where((e) => e != null)
+          .map((e) => Enrollment.fromJson(e))
+          .toList(),
 
       student: json['student'],
-      drives: json['drives'] ?? [], // 🔥 FIX
+      drives: json['drives'] ?? [], //  FIX
     );
+  }
+
+  /// Helper function to parse API response that might send arrays instead of integers
+  static int _parseToInt(dynamic value) {
+    if (value is int) return value;
+    if (value is List) {
+      // Take the first item if array is not empty
+      if (value.isNotEmpty) {
+        final firstItem = value.first;
+        if (firstItem is int) return firstItem;
+        if (firstItem is String) {
+          return int.tryParse(firstItem) ?? 0;
+        }
+      }
+      return 0;
+    }
+    if (value is String) {
+      return int.tryParse(value) ?? 0;
+    }
+    return 0;
   }
 }
 
@@ -48,10 +71,12 @@ class Enrollment {
 
   factory Enrollment.fromJson(Map<String, dynamic> json) {
     return Enrollment(
-      id: json['id'],
-      course: Course.fromJson(json['course']),
-      completedModules: json['completedModules'],
-      progress: json['progress'],
+      id: json['_id'] ?? '',
+      course: json['course'] != null
+          ? Course.fromJson(json['course'])
+          : Course(id: '', title: 'Unknown', totalModules: 0),
+      completedModules: DashboardModel._parseToInt(json['completedModules']),
+      progress: DashboardModel._parseToInt(json['progress']),
       lastAccessed: json['lastAccessed'] != null
           ? DateTime.parse(json['lastAccessed'])
           : null,
@@ -99,7 +124,7 @@ class Course {
       title: json['title'] ?? '',
       thumbnail: json['thumbnail'],
       description: json['description'],
-      totalModules: json['totalModules'] ?? 0,
+      totalModules: DashboardModel._parseToInt(json['totalModules']),
       category: json['category'],
     );
   }

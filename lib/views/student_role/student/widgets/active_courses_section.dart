@@ -184,7 +184,7 @@ class CourseItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 🔹 Icon Box
+          //  Icon Box
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -196,7 +196,7 @@ class CourseItem extends StatelessWidget {
 
           const SizedBox(width: 14),
 
-          // 🔹 Text + Progress
+          //  Text + Progress
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,7 +219,7 @@ class CourseItem extends StatelessWidget {
 
                 const SizedBox(height: 10),
 
-                // 🔹 Progress Bar + %
+                //  Progress Bar + %
                 Row(
                   children: [
                     Expanded(

@@ -45,7 +45,11 @@ class DrivesScreen extends StatelessWidget {
                       alignment: Alignment.center,
                       child: const Text(
                         "+ Create New Drive",
-                        style: TextStyle(color: Colors.black),
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
 

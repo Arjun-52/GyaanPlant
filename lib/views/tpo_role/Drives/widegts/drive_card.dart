@@ -41,7 +41,11 @@ class DriveCard extends StatelessWidget {
                   children: [
                     Text(
                       drive.company,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
                     Text(
                       "${drive.role} • ${drive.date}",
@@ -76,10 +80,13 @@ class DriveCard extends StatelessWidget {
 
           /// STATS
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _stat("Eligible", drive.eligible),
+              const SizedBox(width: 12),
+
               _stat("Registered", drive.registered),
+              const SizedBox(width: 12),
+
               _stat("Pending", drive.pending),
             ],
           ),
@@ -116,7 +123,11 @@ class DriveCard extends StatelessWidget {
                   alignment: Alignment.center,
                   child: const Text(
                     "📣 Notify Students",
-                    style: TextStyle(color: Colors.black),
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),
@@ -131,7 +142,11 @@ class DriveCard extends StatelessWidget {
                   alignment: Alignment.center,
                   child: const Text(
                     "📄 Shortlist",
-                    style: TextStyle(color: Colors.white70),
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),
@@ -143,14 +158,23 @@ class DriveCard extends StatelessWidget {
   }
 
   Widget _stat(String label, int value) {
-    return Column(
-      children: [
-        Text("$value", style: const TextStyle(color: Colors.white)),
-        Text(
-          label,
-          style: const TextStyle(color: Colors.white54, fontSize: 10),
-        ),
-      ],
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: "$label: ",
+            style: const TextStyle(color: Colors.white54, fontSize: 11),
+          ),
+          TextSpan(
+            text: "$value",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

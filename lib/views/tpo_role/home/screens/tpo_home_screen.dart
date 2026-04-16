@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/core/common_widgets/tpo_bottom_nav.dart';
+import 'package:gyaanplant/services/student_services/local_storage_service.dart';
 import 'package:gyaanplant/views/tpo_role/home/widgets/dashboard_action_card.dart';
 import 'package:gyaanplant/views/tpo_role/home/widgets/dashboard_stat_card.dart';
 
@@ -16,18 +18,51 @@ class TPODashboard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Good morning, TPO 👋",
-                style: TextStyle(color: Colors.white54),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                "GRIET Hyderabad",
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Good morning, TPO 👋",
+                        style: TextStyle(color: Colors.white54),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        "GRIET Hyderabad",
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GestureDetector(
+                    onTap: () async {
+                      await LocalStorageService.clearToken();
+                      if (context.mounted) {
+                        context.go('/');
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.red.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.logout,
+                        color: Colors.red,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
 

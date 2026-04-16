@@ -127,14 +127,6 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   const BotCard(),
 
                   const SizedBox(height: 20),
-                  const Text(
-                    "Active Courses",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
 
                   ///  COURSES (connected to API)
                   Center(
