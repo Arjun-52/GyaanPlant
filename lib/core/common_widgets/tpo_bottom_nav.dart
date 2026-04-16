@@ -21,7 +21,7 @@ class TpoBottomNav extends StatelessWidget {
         context.go('/reports');
         break;
       case 4:
-        context.go('/tpo-settings');
+        context.go('/settings');
         break;
     }
   }

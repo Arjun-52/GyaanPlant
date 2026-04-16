@@ -4,6 +4,9 @@ import 'package:gyaanplant/core/common_widgets/tpo_bottom_nav.dart';
 import 'package:gyaanplant/services/student_services/local_storage_service.dart';
 import 'package:gyaanplant/views/tpo_role/home/widgets/dashboard_action_card.dart';
 import 'package:gyaanplant/views/tpo_role/home/widgets/dashboard_stat_card.dart';
+import 'package:gyaanplant/views/tpo_role/home/widgets/naac_report_card.dart';
+import 'package:gyaanplant/views/tpo_role/home/widgets/parent_report_section.dart';
+import 'package:gyaanplant/views/tpo_role/home/widgets/top_students_card.dart';
 
 class TPODashboard extends StatelessWidget {
   const TPODashboard({super.key});
@@ -138,6 +141,8 @@ class TPODashboard extends StatelessWidget {
               ),
 
               const SizedBox(height: 20),
+
+              ///  TITLE ROW
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
@@ -152,6 +157,43 @@ class TPODashboard extends StatelessWidget {
                   Text("See all", style: TextStyle(color: Colors.green)),
                 ],
               ),
+
+              const SizedBox(height: 12),
+
+              ///  TOP STUDENTS CARD
+              Center(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: TopStudentsCard(
+                    students: [
+                      {"name": "Arjun Kumar", "score": 92},
+                      {"name": "Sneha Murthy", "score": 88},
+                      {"name": "Ravi Teja", "score": 81},
+                      {"name": "Divya Sharma", "score": 76},
+                      {"name": "Karthik Nair", "score": 69},
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              ///  NAAC CARD
+              Center(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: NaacReportCard(
+                    onTap: () {
+                      // TODO: handle click
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              ParentReportSection(),
+
+              const SizedBox(height: 20),
             ],
           ),
         ),
