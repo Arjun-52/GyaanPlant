@@ -17,7 +17,6 @@ class DepartmentsScreen extends StatelessWidget {
 
         body: Consumer<DepartmentsViewModel>(
           builder: (context, vm, _) {
-            debugPrint('Total departments: ${vm.departments.length}');
             return SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -41,7 +40,6 @@ class DepartmentsScreen extends StatelessWidget {
                         separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (_, i) {
                           final dept = vm.departments[i];
-                          debugPrint('Department ${i + 1}: ${dept.name}');
 
                           return DepartmentCard(dept: dept);
                         },

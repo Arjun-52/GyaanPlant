@@ -12,10 +12,12 @@ import 'package:gyaanplant/views/student_role/student/screens/student_dashboard.
 import 'package:gyaanplant/views/student_role/learn/screens/learn_screen.dart';
 import 'package:gyaanplant/views/HOD_role/overview/screens/overview_screen.dart';
 import 'package:gyaanplant/views/HOD_role/depts/screens/departments_screen.dart';
+import 'package:gyaanplant/views/HOD_role/analytics/screens/analytics_screen.dart';
+import 'package:gyaanplant/views/HOD_role/naac/screens/naac_screen.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/leaderboard_view.dart';
 import 'package:gyaanplant/views/tpo_role/home/screens/tpo_home_screen.dart';
 import 'package:gyaanplant/views/tpo_role/reports/screens/reports_screen.dart';
-import 'package:gyaanplant/views/tpo_role/settings/screens/settings_screen.dart';
+import 'package:gyaanplant/views/HOD_role/settings/screens/settings_screen.dart';
 import 'package:gyaanplant/views/tpo_role/student/screens/student_screen.dart';
 import 'package:gyaanplant/views/tpo_role/Drives/screens/drive_screen.dart';
 
@@ -82,6 +84,20 @@ class AppRouter {
         path: '/depts',
         name: 'depts',
         builder: (context, state) => const DepartmentsScreen(),
+      ),
+
+      //  HOD ANALYTICS
+      GoRoute(
+        path: '/analytics',
+        name: 'analytics',
+        builder: (context, state) => AnalyticsScreen(),
+      ),
+
+      //  HOD NAAC
+      GoRoute(
+        path: '/naac',
+        name: 'naac',
+        builder: (context, state) => const NaacScreen(),
       ),
 
       //  DASHBOARD
