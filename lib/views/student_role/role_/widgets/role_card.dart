@@ -15,6 +15,9 @@ class RoleCard extends StatelessWidget {
           context.push('/student-dashboard');
         } else if (role.title.toLowerCase().contains('tpo')) {
           context.push('/tpo-dashboard');
+        } else if (role.title.toLowerCase().contains('hod') ||
+            role.title.toLowerCase().contains('principal')) {
+          context.push('/overview');
         }
         // Add other role navigation here as needed
       },

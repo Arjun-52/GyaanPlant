@@ -10,6 +10,7 @@ import 'package:gyaanplant/views/student_role/profile/screens/profile_screen.dar
 import 'package:gyaanplant/views/student_role/role_/screens/role_screen.dart';
 import 'package:gyaanplant/views/student_role/student/screens/student_dashboard.dart';
 import 'package:gyaanplant/views/student_role/learn/screens/learn_screen.dart';
+import 'package:gyaanplant/views/HOD_role/overview/screens/overview_screen.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/leaderboard_view.dart';
 import 'package:gyaanplant/views/tpo_role/home/screens/tpo_home_screen.dart';
 import 'package:gyaanplant/views/tpo_role/reports/screens/reports_screen.dart';
@@ -66,6 +67,13 @@ class AppRouter {
         path: '/role',
         name: 'role',
         builder: (context, state) => const RoleScreen(),
+      ),
+
+      //  HOD OVERVIEW
+      GoRoute(
+        path: '/overview',
+        name: 'overview',
+        builder: (context, state) => const OverViewScreen(),
       ),
 
       //  DASHBOARD
