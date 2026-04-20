@@ -39,7 +39,7 @@ class TimerSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF0A2A22),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.blueAccent.withOpacity(0.6)),
+            border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.6)),
           ),
           child: const Text(
             "Round 2 of 3",

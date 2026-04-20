@@ -65,7 +65,7 @@ class _JobCardState extends State<JobCard> {
                       gradient: RadialGradient(
                         colors: [
                           widget.logoColor,
-                          widget.logoColor.withOpacity(0.6),
+                          widget.logoColor.withValues(alpha: 0.6),
                         ],
                       ),
                     ),

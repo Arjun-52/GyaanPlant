@@ -23,7 +23,7 @@ class DashboardStatCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [Color(0xFF0F3B2E), Color(0xFF071E17)],
         ),
-        border: Border.all(color: Colors.greenAccent.withOpacity(0.15)),
+        border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.15)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -41,7 +41,7 @@ class DashboardStatCard extends StatelessWidget {
           Text(
             title,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.65),
+              color: Colors.white.withValues(alpha: 0.65),
               fontSize: 12,
             ),
           ),

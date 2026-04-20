@@ -1,128 +1,86 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/user_model.dart';
+import 'local_storage_service.dart';
 
-/// ApiService handles all API communications with the backend.
-/// This is a basic implementation that can be extended with actual endpoints.
+/// ApiService handles generic HTTP operations.
+/// For student-specific endpoints use BaseApiService in services/student_services/.
 class ApiService {
-  ApiService._(); // Private constructor to prevent instantiation
+  ApiService._();
 
-  static const String baseUrl = 'https://api.example.com'; // Replace with actual base URL
-  static const Duration timeout = Duration(seconds: 30);
+  static const String baseUrl = 'https://your-api-url.com';
+  static const Duration _timeout = Duration(seconds: 30);
 
-  /// Generic GET request method
-  static Future<Map<String, dynamic>> _get(String endpoint) async {
-    try {
-      final response = await http
-          .get(Uri.parse('$baseUrl$endpoint'))
-          .timeout(timeout);
+  static const Map<String, String> _defaultHeaders = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
 
-      if (response.statusCode == 200) {
-        return json.decode(response.body) as Map<String, dynamic>;
-      } else {
-        throw Exception('Failed to load data: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Network error: $e');
+  /// Builds headers, optionally injecting auth token
+  static Future<Map<String, String>> _buildHeaders() async {
+    final headers = Map<String, String>.from(_defaultHeaders);
+    final token = await LocalStorageService.getToken();
+    if (token != null) {
+      headers['Authorization'] = 'Bearer $token';
     }
+    return headers;
   }
 
-  /// Generic POST request method
-  static Future<Map<String, dynamic>> _post(
+  /// GET request
+  static Future<Map<String, dynamic>> get(String endpoint) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final response = await http
+        .get(uri, headers: await _buildHeaders())
+        .timeout(_timeout);
+    return _handleResponse(response);
+  }
+
+  /// POST request
+  static Future<Map<String, dynamic>> post(
     String endpoint,
-    Map<String, dynamic> data,
+    Map<String, dynamic> body,
   ) async {
-    try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl$endpoint'),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: json.encode(data),
-          )
-          .timeout(timeout);
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return json.decode(response.body) as Map<String, dynamic>;
-      } else {
-        throw Exception('Failed to post data: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Network error: $e');
-    }
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final response = await http
+        .post(uri, headers: await _buildHeaders(), body: jsonEncode(body))
+        .timeout(_timeout);
+    return _handleResponse(response);
   }
 
-  /// Generic PUT request method
-  static Future<Map<String, dynamic>> _put(
+  /// PUT request
+  static Future<Map<String, dynamic>> put(
     String endpoint,
-    Map<String, dynamic> data,
+    Map<String, dynamic> body,
   ) async {
-    try {
-      final response = await http
-          .put(
-            Uri.parse('$baseUrl$endpoint'),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: json.encode(data),
-          )
-          .timeout(timeout);
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final response = await http
+        .put(uri, headers: await _buildHeaders(), body: jsonEncode(body))
+        .timeout(_timeout);
+    return _handleResponse(response);
+  }
 
-      if (response.statusCode == 200) {
-        return json.decode(response.body) as Map<String, dynamic>;
-      } else {
-        throw Exception('Failed to update data: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Network error: $e');
+  /// DELETE request
+  static Future<Map<String, dynamic>> delete(String endpoint) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final response = await http
+        .delete(uri, headers: await _buildHeaders())
+        .timeout(_timeout);
+    return _handleResponse(response);
+  }
+
+  /// Handles response and throws on non-2xx
+  static Map<String, dynamic> _handleResponse(http.Response response) {
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.body.isEmpty) return {};
+      return jsonDecode(response.body) as Map<String, dynamic>;
     }
-  }
 
-  /// Generic DELETE request method
-  static Future<void> _delete(String endpoint) async {
+    String errorMessage =
+        'Request failed with status: ${response.statusCode}';
     try {
-      final response = await http
-          .delete(Uri.parse('$baseUrl$endpoint'))
-          .timeout(timeout);
+      final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+      errorMessage = errorData['message']?.toString() ?? errorMessage;
+    } catch (_) {}
 
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw Exception('Failed to delete data: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Network error: $e');
-    }
-  }
-
-  // Example API methods (these would be implemented with actual endpoints)
-
-  /// Fetches a user by ID
-  static Future<UserModel> getUser(String userId) async {
-    final data = await _get('/users/$userId');
-    return UserModel.fromJson(data);
-  }
-
-  /// Creates a new user
-  static Future<UserModel> createUser(Map<String, dynamic> userData) async {
-    final data = await _post('/users', userData);
-    return UserModel.fromJson(data);
-  }
-
-  /// Updates an existing user
-  static Future<UserModel> updateUser(String userId, Map<String, dynamic> userData) async {
-    final data = await _put('/users/$userId', userData);
-    return UserModel.fromJson(data);
-  }
-
-  /// Deletes a user
-  static Future<void> deleteUser(String userId) async {
-    await _delete('/users/$userId');
-  }
-
-  /// Fetches a list of users
-  static Future<List<UserModel>> getUsers() async {
-    final data = await _get('/users');
-    final List<dynamic> usersList = data['users'] as List<dynamic>;
-    return usersList.map((user) => UserModel.fromJson(user as Map<String, dynamic>)).toList();
+    throw Exception(errorMessage);
   }
 }

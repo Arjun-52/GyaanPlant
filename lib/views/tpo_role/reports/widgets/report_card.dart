@@ -25,15 +25,15 @@ class ReportCard extends StatelessWidget {
 
         border: Border.all(
           color: report.isPrimary
-              ? Colors.greenAccent.withOpacity(0.3)
-              : Colors.green.withOpacity(0.1),
+              ? Colors.greenAccent.withValues(alpha: 0.3)
+              : Colors.green.withValues(alpha: 0.1),
           width: report.isPrimary ? 1.2 : 0.8,
         ),
 
         boxShadow: report.isPrimary
             ? [
                 BoxShadow(
-                  color: Colors.green.withOpacity(0.15),
+                  color: Colors.green.withValues(alpha: 0.15),
                   blurRadius: 20,
                   spreadRadius: 1,
                   offset: const Offset(0, 6),

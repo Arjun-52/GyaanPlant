@@ -2,6 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/HOD_models/department_model.dart';
 
 class DepartmentsViewModel extends ChangeNotifier {
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
+  }
+
   final List<Department> _departments = [
     Department(
       name: "Computer Science Engineering",

@@ -48,7 +48,7 @@ class AiAdvisorSheet extends StatelessWidget {
                   colors: [Color(0xFF0F2A22), Color(0xFF0A1F19)],
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.green.withOpacity(0.6)),
+                border: Border.all(color: Colors.green.withValues(alpha: 0.6)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,7 +109,7 @@ class AiAdvisorSheet extends StatelessWidget {
                   colors: [Color(0xFF0F2A22), Color(0xFF0A1F19)],
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.green.withOpacity(0.4)),
+                border: Border.all(color: Colors.green.withValues(alpha: 0.4)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,10 +166,10 @@ class AiAdvisorSheet extends StatelessWidget {
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF00C853).withOpacity(0.15),
+                          color: const Color(0xFF00C853).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: const Color(0xFF00C853).withOpacity(0.4),
+                            color: const Color(0xFF00C853).withValues(alpha: 0.4),
                           ),
                         ),
                         child: const Column(

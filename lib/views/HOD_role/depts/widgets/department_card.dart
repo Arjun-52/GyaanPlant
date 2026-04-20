@@ -78,7 +78,7 @@ class DepartmentCard extends StatelessWidget {
               value: dept.readiness / 100,
               minHeight: 6,
               color: color,
-              backgroundColor: Colors.white.withOpacity(0.08),
+              backgroundColor: Colors.white.withValues(alpha: 0.08),
             ),
           ),
         ],

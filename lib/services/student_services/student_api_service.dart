@@ -1,7 +1,9 @@
 import 'dart:convert';
-import 'dart:core';
+import '../../core/utils/app_logger.dart';
 import '../../models/student_role_models/student_model.dart';
 import 'base_api_service.dart';
+
+const _tag = 'StudentApiService';
 
 /// Specific API service for student-related endpoints
 class StudentApiService {
@@ -78,17 +80,17 @@ class StudentApiService {
     }
   }
 
-  ///  LOGIN
   static Future<Map<String, dynamic>> login(
     String email,
     String password,
   ) async {
+    AppLogger.info(_tag, 'Login attempt for $email');
     final response = await BaseApiService.post('/api/v1/auth/login', {
       "email": email,
       "password": password,
     });
-    print("RAW RESPONSE: ${response.body}");
-    return jsonDecode(response.body);
+    AppLogger.info(_tag, 'Login successful');
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   static Future<Map<String, dynamic>> register(
@@ -96,14 +98,15 @@ class StudentApiService {
     String email,
     String password,
   ) async {
+    AppLogger.info(_tag, 'Register attempt for $email');
     final response = await BaseApiService.post('/api/v1/auth/register', {
       "name": name,
       "email": email,
       "password": password,
       "role": "student",
     });
-
-    return jsonDecode(response.body);
+    AppLogger.info(_tag, 'Registration successful');
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   /// Get student courses

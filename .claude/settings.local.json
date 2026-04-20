@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze *)",
+      "Bash(sed -n '95,102p' lib/models/student_role_models/dashboard_model.dart)",
+      "Bash(sed -n '107,115p' lib/views/student_role/student/widgets/active_courses_section.dart)",
+      "Bash(sed -i '' '1d' lib/views/auth/screens/sign_in_screen.dart)",
+      "Bash(sed -i '' 's/${completedModules}/$completedModules/g; s/${course\\\\.totalModules}/$course.totalModules/g' lib/models/student_role_models/dashboard_model.dart)",
+      "Bash(sed -i '' 's/\\\\.map\\(\\(enrollment\\) => CourseItem\\(enrollment: enrollment\\)\\)\\\\n.*\\\\.toList\\(\\)/.map\\(\\(enrollment\\) => CourseItem\\(enrollment: enrollment\\)\\)/g' lib/views/student_role/student/widgets/active_courses_section.dart)"
+    ]
+  }
+}

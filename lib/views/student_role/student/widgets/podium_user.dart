@@ -61,7 +61,7 @@ class PodiumUser extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [color.withOpacity(0.6), color.withOpacity(0.2)],
+              colors: [color.withValues(alpha: 0.6), color.withValues(alpha: 0.2)],
             ),
             borderRadius: BorderRadius.circular(10),
           ),

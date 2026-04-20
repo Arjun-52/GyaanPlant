@@ -1,118 +1,106 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../core/config/app_config.dart';
+import '../../core/utils/app_logger.dart';
+import '../../data/services/local_storage_service.dart';
 import 'local_storage_service.dart';
 
-/// Base API service for handling common HTTP operations
 class BaseApiService {
-  static const String _baseUrl = 'http://10.0.2.2:5000';
+  static const Duration _timeout = AppConfig.httpTimeout;
+  static const String _tag = 'BaseApiService';
 
   static const Map<String, String> _headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
 
-  ///  BUILD URL
   static Uri _buildUrl(String endpoint) {
-    final url =
-        '$_baseUrl${endpoint.startsWith('/') ? endpoint : '/$endpoint'}';
-    print("🚀 API Call: $url");
-    return Uri.parse(url);
+    final path = endpoint.startsWith('/') ? endpoint : '/$endpoint';
+    return Uri.parse('${AppConfig.baseUrl}$path');
   }
 
-  ///  GET
+  static Future<Map<String, String>> _authHeaders() async {
+    final token = await LocalStorageService.getToken();
+    final headers = Map<String, String>.from(_headers);
+    if (token != null) headers['Authorization'] = 'Bearer $token';
+    return headers;
+  }
+
   static Future<http.Response> get(String endpoint) async {
-    final token = await LocalStorageService.getToken();
-
-    final headers = Map<String, String>.from(_headers);
-
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-
+    AppLogger.debug(_tag, 'GET $endpoint');
     try {
-      final response = await http.get(_buildUrl(endpoint), headers: headers);
-      return _handleResponse(response);
-    } catch (e) {
-      throw Exception('Network error: ${e.toString()}');
+      final response = await http
+          .get(_buildUrl(endpoint), headers: await _authHeaders())
+          .timeout(_timeout);
+      return _handleResponse(endpoint, response);
+    } on Exception catch (e) {
+      AppLogger.error(_tag, 'GET $endpoint failed', e);
+      throw Exception('Network error: $e');
     }
   }
 
-  /// 🔥 POST
   static Future<http.Response> post(String endpoint, dynamic data) async {
-    final token = await LocalStorageService.getToken();
-
-    final headers = Map<String, String>.from(_headers);
-
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-
+    AppLogger.debug(_tag, 'POST $endpoint');
     try {
-      final response = await http.post(
-        _buildUrl(endpoint),
-        headers: headers,
-        body: jsonEncode(data),
-      );
-      return _handleResponse(response);
-    } catch (e) {
-      throw Exception('Network error: ${e.toString()}');
+      final response = await http
+          .post(
+            _buildUrl(endpoint),
+            headers: await _authHeaders(),
+            body: jsonEncode(data),
+          )
+          .timeout(_timeout);
+      return _handleResponse(endpoint, response);
+    } on Exception catch (e) {
+      AppLogger.error(_tag, 'POST $endpoint failed', e);
+      throw Exception('Network error: $e');
     }
   }
 
-  /// 🔥 PUT
   static Future<http.Response> put(String endpoint, dynamic data) async {
-    final token = await LocalStorageService.getToken();
-
-    final headers = Map<String, String>.from(_headers);
-
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-
+    AppLogger.debug(_tag, 'PUT $endpoint');
     try {
-      final response = await http.put(
-        _buildUrl(endpoint),
-        headers: headers,
-        body: jsonEncode(data),
-      );
-      return _handleResponse(response);
-    } catch (e) {
-      throw Exception('Network error: ${e.toString()}');
+      final response = await http
+          .put(
+            _buildUrl(endpoint),
+            headers: await _authHeaders(),
+            body: jsonEncode(data),
+          )
+          .timeout(_timeout);
+      return _handleResponse(endpoint, response);
+    } on Exception catch (e) {
+      AppLogger.error(_tag, 'PUT $endpoint failed', e);
+      throw Exception('Network error: $e');
     }
   }
 
-  /// 🔥 DELETE
   static Future<http.Response> delete(String endpoint) async {
-    final token = await LocalStorageService.getToken();
-
-    final headers = Map<String, String>.from(_headers);
-
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-
+    AppLogger.debug(_tag, 'DELETE $endpoint');
     try {
-      final response = await http.delete(_buildUrl(endpoint), headers: headers);
-      return _handleResponse(response);
-    } catch (e) {
-      throw Exception('Network error: ${e.toString()}');
+      final response = await http
+          .delete(_buildUrl(endpoint), headers: await _authHeaders())
+          .timeout(_timeout);
+      return _handleResponse(endpoint, response);
+    } on Exception catch (e) {
+      AppLogger.error(_tag, 'DELETE $endpoint failed', e);
+      throw Exception('Network error: $e');
     }
   }
 
-  ///  RESPONSE HANDLER
-  static http.Response _handleResponse(http.Response response) {
+  static http.Response _handleResponse(String endpoint, http.Response response) {
+    AppLogger.debug(_tag, 'Response $endpoint → ${response.statusCode}');
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return response;
-    } else {
-      String errorMessage =
-          'Request failed with status: ${response.statusCode}';
-
-      try {
-        final errorData = jsonDecode(response.body);
-        errorMessage = errorData['message'] ?? errorMessage;
-      } catch (_) {}
-
-      throw Exception(errorMessage);
     }
+
+    String errorMessage = 'Request failed with status: ${response.statusCode}';
+    try {
+      final errorData = jsonDecode(response.body);
+      if (errorData is Map && errorData['message'] != null) {
+        errorMessage = errorData['message'].toString();
+      }
+    } catch (_) {}
+
+    AppLogger.warning(_tag, 'API error [$endpoint]: $errorMessage');
+    throw Exception(errorMessage);
   }
 }

@@ -95,7 +95,7 @@ class Enrollment {
 
   String get subtitleText {
     if (completedModules != null) {
-      return '${completedModules}/${course.totalModules} modules';
+      return '$completedModules/${course.totalModules} modules';
     }
     return '${course.totalModules} modules';
   }

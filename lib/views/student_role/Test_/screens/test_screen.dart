@@ -25,7 +25,8 @@ class _TestScreenState extends State<TestScreen> {
     super.initState();
     // Move API call out of build method to prevent setState error
     Future.microtask(() {
-      final vm = Provider.of<TestViewModel>(context, listen: false);
+      if (!mounted) return;
+      final vm = context.read<TestViewModel>();
       if (vm.tests.isEmpty && !vm.isLoading) {
         vm.fetchTests();
       }

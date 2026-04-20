@@ -70,7 +70,7 @@ class SyllabusCard extends StatelessWidget {
                     value: progress / 10,
                     minHeight: 6,
                     color: const Color(0xFF00C853),
-                    backgroundColor: Colors.white.withOpacity(0.08),
+                    backgroundColor: Colors.white.withValues(alpha: 0.08),
                   ),
                 ),
               ],

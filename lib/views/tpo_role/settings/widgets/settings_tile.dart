@@ -15,7 +15,7 @@ class SettingsTile extends StatelessWidget {
         gradient: const LinearGradient(
           colors: [Color(0xFF0C2A22), Color(0xFF071E17)],
         ),
-        border: Border.all(color: Colors.green.withOpacity(0.1)),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [

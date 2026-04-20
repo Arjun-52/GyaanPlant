@@ -3,12 +3,13 @@ import 'package:provider/provider.dart';
 import 'routes/app_router.dart';
 import 'viewmodels/student_viewmodel/auth_viewmodel.dart';
 import 'viewmodels/student_viewmodel/dashboard_viewmodel.dart';
-import 'viewmodels/student_viewmodel/test_viewmodel.dart';
 import 'viewmodels/student_viewmodel/job_viewmodel.dart';
+import 'viewmodels/student_viewmodel/leaderboard_viewmodel.dart';
+import 'viewmodels/student_viewmodel/learning_viewmodel.dart';
+import 'viewmodels/student_viewmodel/test_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   runApp(const MyApp());
 }
 
@@ -21,8 +22,10 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
         ChangeNotifierProvider(create: (_) => DashboardViewModel()),
-        ChangeNotifierProvider(create: (_) => TestViewModel()),
         ChangeNotifierProvider(create: (_) => JobViewModel()),
+        ChangeNotifierProvider(create: (_) => TestViewModel()),
+        ChangeNotifierProvider(create: (_) => LearningViewModel()),
+        ChangeNotifierProvider(create: (_) => LeaderboardViewModel()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

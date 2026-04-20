@@ -1,5 +1,4 @@
 import 'package:go_router/go_router.dart';
-import 'package:gyaanplant/services/student_services/local_storage_service.dart';
 
 import 'package:gyaanplant/views/auth/screens/sign_in_screen.dart';
 import 'package:gyaanplant/views/auth/screens/sign_up_screen.dart';
@@ -20,6 +19,8 @@ import 'package:gyaanplant/views/tpo_role/reports/screens/reports_screen.dart';
 import 'package:gyaanplant/views/HOD_role/settings/screens/settings_screen.dart';
 import 'package:gyaanplant/views/tpo_role/student/screens/student_screen.dart';
 import 'package:gyaanplant/views/tpo_role/Drives/screens/drive_screen.dart';
+
+import '../data/services/local_storage_service.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(

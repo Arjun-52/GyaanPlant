@@ -4,16 +4,34 @@ import 'package:gyaanplant/views/tpo_role/reports/widgets/report_card.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/core/common_widgets/tpo_bottom_nav.dart';
 
-class ReportsScreen extends StatelessWidget {
+class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
 
   @override
+  State<ReportsScreen> createState() => _ReportsScreenState();
+}
+
+class _ReportsScreenState extends State<ReportsScreen> {
+  late final ReportsViewModel _vm;
+
+  @override
+  void initState() {
+    super.initState();
+    _vm = ReportsViewModel();
+  }
+
+  @override
+  void dispose() {
+    _vm.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ReportsViewModel(),
+    return ChangeNotifierProvider.value(
+      value: _vm,
       child: Scaffold(
         backgroundColor: const Color(0xFF061A14),
-
         body: Consumer<ReportsViewModel>(
           builder: (context, vm, _) {
             return SafeArea(
@@ -22,25 +40,17 @@ class ReportsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    /// HEADER
-                    const Text(
-                      "Reports 📊",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
+                    const Text('Reports',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold)),
                     const SizedBox(height: 16),
-
-                    /// LIST
                     Expanded(
                       child: ListView.separated(
                         itemCount: vm.reports.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (_, i) =>
-                            ReportCard(report: vm.reports[i]),
+                        itemBuilder: (_, i) => ReportCard(report: vm.reports[i]),
                       ),
                     ),
                   ],
@@ -49,7 +59,6 @@ class ReportsScreen extends StatelessWidget {
             );
           },
         ),
-
         bottomNavigationBar: const TpoBottomNav(currentIndex: 3),
       ),
     );

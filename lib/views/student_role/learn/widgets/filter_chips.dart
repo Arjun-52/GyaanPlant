@@ -54,7 +54,7 @@ class _FilterChipsState extends State<FilterChips> {
                   color: isSelected
                       ? Colors
                             .black // selected text
-                      : Colors.white.withOpacity(0.7),
+                      : Colors.white.withValues(alpha: 0.7),
                 ),
               ),
             ),

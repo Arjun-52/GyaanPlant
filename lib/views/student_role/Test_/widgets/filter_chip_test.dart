@@ -28,7 +28,7 @@ class FilterChipTest extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF00C853).withOpacity(0.4),
+                    color: const Color(0xFF00C853).withValues(alpha: 0.4),
                     blurRadius: 8,
                     spreadRadius: 1,
                   ),

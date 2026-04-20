@@ -2,6 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/tpo_role_models/report_model.dart';
 
 class ReportsViewModel extends ChangeNotifier {
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
+  }
+
   final List<Report> reports = [
     Report(
       title: "Generate NAAC Report",

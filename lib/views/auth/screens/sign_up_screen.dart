@@ -6,7 +6,6 @@ import 'package:gyaanplant/views/auth/widgets/form_label.dart';
 import 'package:gyaanplant/views/auth/widgets/primary_button.dart';
 import 'package:gyaanplant/views/auth/widgets/step_indicator.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
 

@@ -2,6 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/tpo_role_models/student_model.dart';
 
 class StudentViewModel extends ChangeNotifier {
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
+  }
+
   final List<Student> _students = [
     Student(
       name: "Arjun Kumar",

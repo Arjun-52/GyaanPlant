@@ -32,7 +32,7 @@ class StudentFilterChip extends StatelessWidget {
           border: Border.all(
             color: isSelected
                 ? Colors.transparent
-                : Colors.white.withOpacity(0.1),
+                : Colors.white.withValues(alpha: 0.1),
           ),
         ),
         child: Text(

@@ -11,7 +11,7 @@ class AssessmentModel {
 
   factory AssessmentModel.fromJson(Map<String, dynamic> json) {
     return AssessmentModel(
-      id: json['_id'],
+      id: (json['_id'] ?? json['id'] ?? '').toString(),
       title: json['title'] ?? '',
       skill: json['skill'] ?? '',
     );

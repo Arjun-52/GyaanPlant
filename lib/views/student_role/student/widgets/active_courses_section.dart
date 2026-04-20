@@ -22,7 +22,7 @@ class ActiveCoursesSection extends StatelessWidget {
               color: const Color(0xFF0A1F1A),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFF1FA463).withOpacity(0.3),
+                color: const Color(0xFF1FA463).withValues(alpha: 0.3),
               ),
             ),
             child: Column(
@@ -106,8 +106,7 @@ class ActiveCoursesSection extends StatelessWidget {
         const SizedBox(height: 16),
         // Course List from API data
         ...enrollments
-            .map((enrollment) => CourseItem(enrollment: enrollment))
-            .toList(),
+            .map((enrollment) => CourseItem(enrollment: enrollment)),
       ],
     );
   }

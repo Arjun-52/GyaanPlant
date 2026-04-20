@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/utils/app_logger.dart';
 
 /// HomeViewModel manages the state and business logic for the HomeScreen.
 /// This follows the MVVM pattern where the ViewModel handles all logic
@@ -22,9 +23,7 @@ class HomeViewModel extends ChangeNotifier {
   /// Initializes the ViewModel
   /// This method can be called when the screen is first created
   void initialize() {
-    if (kDebugMode) {
-      print('HomeViewModel initialized');
-    }
+    AppLogger.debug('HomeViewModel', 'initialized');
     // You can load initial data here
     loadData();
   }
@@ -138,9 +137,7 @@ class HomeViewModel extends ChangeNotifier {
   /// Cleanup method to dispose resources
   @override
   void dispose() {
-    if (kDebugMode) {
-      print('HomeViewModel disposed');
-    }
+    AppLogger.debug('HomeViewModel', 'disposed');
     super.dispose();
   }
 }

@@ -84,7 +84,7 @@ class SprintBannerCard extends StatelessWidget {
                     child: Text(
                       "₹1,999",
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.4),
+                        color: Colors.white.withValues(alpha: 0.4),
                         fontSize: 13,
                         decoration: TextDecoration.lineThrough,
                       ),

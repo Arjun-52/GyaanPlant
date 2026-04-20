@@ -16,7 +16,7 @@ class NaacReportCard extends StatelessWidget {
           colors: [Color(0xFF0F3B2E), Color(0xFF0A241D)],
         ),
 
-        border: Border.all(color: Colors.greenAccent.withOpacity(0.3)),
+        border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.3)),
       ),
 
       child: Row(

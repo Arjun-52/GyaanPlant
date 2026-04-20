@@ -23,7 +23,7 @@ class StudentCard extends StatelessWidget {
         gradient: const LinearGradient(
           colors: [Color(0xFF0F3B2E), Color(0xFF071E17)],
         ),
-        border: Border.all(color: Colors.greenAccent.withOpacity(0.2)),
+        border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
