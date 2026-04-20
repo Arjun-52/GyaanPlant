@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import '../../core/utils/app_logger.dart';
 import '../../data/services/local_storage_service.dart';
 import '../../services/student_services/student_api_service.dart';
-import '../../services/student_services/local_storage_service.dart';
 
 class AuthViewModel extends ChangeNotifier {
   static const _tag = 'AuthViewModel';

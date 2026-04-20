@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import '../../core/config/app_config.dart';
 import '../../core/utils/app_logger.dart';
 import '../../data/services/local_storage_service.dart';
-import 'local_storage_service.dart';
 
 class BaseApiService {
   static const Duration _timeout = AppConfig.httpTimeout;
