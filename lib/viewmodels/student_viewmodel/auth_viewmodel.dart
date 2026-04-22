@@ -147,8 +147,8 @@ class AuthViewModel extends ChangeNotifier {
       print("USER: $user");
       print("USER NAME: $userName"); // 🔥 debug
 
-      // ✅ Navigate after success
-      context.go('/student-dashboard');
+      // Navigate to role selection screen after successful login
+      context.go('/role');
     } catch (e) {
       print("Login Error: $e");
       _showError(context, "Login failed. Check credentials.");
@@ -169,7 +169,12 @@ class AuthViewModel extends ChangeNotifier {
       isLoading = true;
       notifyListeners();
 
-      final response = await StudentApiService.register(name, email, password);
+      final response = await StudentApiService.register(
+        name,
+        email,
+        password,
+        role,
+      );
 
       print("REGISTER RESPONSE: $response");
 

@@ -2,205 +2,230 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/core/common_widgets/tpo_bottom_nav.dart';
 import 'package:gyaanplant/services/student_services/local_storage_service.dart';
-import 'package:gyaanplant/views/tpo_role/home/widgets/dashboard_action_card.dart';
+import 'package:gyaanplant/viewmodels/tpo_viewmodels/tpo_dashboard_viewmodel.dart';
 import 'package:gyaanplant/views/tpo_role/home/widgets/dashboard_stat_card.dart';
-import 'package:gyaanplant/views/tpo_role/home/widgets/naac_report_card.dart';
-import 'package:gyaanplant/views/tpo_role/home/widgets/parent_report_section.dart';
-import 'package:gyaanplant/views/tpo_role/home/widgets/top_students_card.dart';
+import 'package:provider/provider.dart';
 
-class TPODashboard extends StatelessWidget {
+class TPODashboard extends StatefulWidget {
   const TPODashboard({super.key});
+
+  @override
+  State<TPODashboard> createState() => _TPODashboardState();
+}
+
+class _TPODashboardState extends State<TPODashboard> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TpoDashboardViewModel>().initialize();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF061A14),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Good morning, TPO 👋",
-                        style: TextStyle(color: Colors.white54),
-                      ),
-                      SizedBox(height: 6),
-                      Text(
-                        "GRIET Hyderabad",
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+
+      body: Consumer<TpoDashboardViewModel>(
+        builder: (context, viewModel, _) {
+          print("📊 UI STATE:");
+          print("isLoading: ${viewModel.isLoading}");
+          print("hasData: ${viewModel.hasData}");
+          print("error: ${viewModel.errorMessage}");
+
+          return RefreshIndicator(
+            onRefresh: viewModel.refreshDashboardData,
+            color: Colors.green,
+
+            child: SafeArea(
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// HEADER
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Good morning, TPO 👋",
+                              style: TextStyle(color: Colors.white54),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              "GRIET Hyderabad",
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                  GestureDetector(
-                    onTap: () async {
-                      await LocalStorageService.clearToken();
-                      if (context.mounted) {
-                        context.go('/');
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.red.withValues(alpha: 0.3),
+
+                        GestureDetector(
+                          onTap: () async {
+                            await LocalStorageService.clearToken();
+                            if (context.mounted) context.go('/');
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.logout, color: Colors.red),
+                          ),
                         ),
-                      ),
-                      child: const Icon(
-                        Icons.logout,
-                        color: Colors.red,
-                        size: 20,
-                      ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
 
-              /// STATS GRID
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.2,
-                children: const [
-                  DashboardStatCard(
-                    title: "Total Students",
-                    value: "2,847",
-                    subtitle: "+312 this month",
-                  ),
-                  DashboardStatCard(
-                    title: "Active on LMS",
-                    value: "73%",
-                    subtitle: "+8% vs last month",
-                  ),
-                  DashboardStatCard(
-                    title: "Drive-Ready",
-                    value: "847",
-                    subtitle: "Score ≥70",
-                  ),
-                  DashboardStatCard(
-                    title: "Active Drives",
-                    value: "12",
-                    subtitle: "3 closing this week",
-                  ),
-                ],
-              ),
+                    const SizedBox(height: 20),
 
-              const SizedBox(height: 20),
-              const Text(
-                "⚠ Action Required",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                    /// STATES
+                    if (viewModel.isLoading)
+                      _loading()
+                    else if (viewModel.hasError)
+                      _error(viewModel)
+                    else if (viewModel.hasData)
+                      _success(viewModel)
+                    else
+                      _empty(),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-
-              DashboardActionCard(
-                title: "TCS Drive — Shortlist Due Friday",
-                description:
-                    "342 eligible. 12 haven't completed aptitude module.",
-                buttonText: "Send WhatsApp to 12 students →",
-                color: Colors.orange,
-                icon: "🔔",
-              ),
-              const SizedBox(height: 12),
-              DashboardActionCard(
-                title: "NAAC Q3 Report Ready",
-                description:
-                    "Q3 placement data auto-compiled. Review and download.",
-                buttonText: "Download Report →",
-                color: Colors.blue,
-                icon: "📄",
-              ),
-
-              const SizedBox(height: 12),
-              DashboardActionCard(
-                title: "23 Students Below Score 50",
-                description:
-                    "These students need intervention before next drive cycle.",
-                buttonText: "View & Assign Remedial →",
-                color: Colors.red,
-                icon: "⚡",
-              ),
-
-              const SizedBox(height: 20),
-
-              ///  TITLE ROW
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text(
-                    "Student Readiness — Top 5",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text("See all", style: TextStyle(color: Colors.green)),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              ///  TOP STUDENTS CARD
-              Center(
-                child: SizedBox(
-                  width: double.infinity,
-                  child: TopStudentsCard(
-                    students: [
-                      {"name": "Arjun Kumar", "score": 92},
-                      {"name": "Sneha Murthy", "score": 88},
-                      {"name": "Ravi Teja", "score": 81},
-                      {"name": "Divya Sharma", "score": 76},
-                      {"name": "Karthik Nair", "score": 69},
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              ///  NAAC CARD
-              Center(
-                child: SizedBox(
-                  width: double.infinity,
-                  child: NaacReportCard(
-                    onTap: () {
-                      // TODO: handle click
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              ParentReportSection(),
-
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
 
-      /// BOTTOM NAV
       bottomNavigationBar: const TpoBottomNav(currentIndex: 0),
+    );
+  }
+
+  /// 🔄 LOADING
+  Widget _loading() {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(40),
+        child: CircularProgressIndicator(color: Colors.green),
+      ),
+    );
+  }
+
+  /// ❌ ERROR
+  Widget _error(TpoDashboardViewModel vm) {
+    return Center(
+      child: Column(
+        children: [
+          Text(
+            vm.errorMessage ?? "Something went wrong",
+            style: const TextStyle(color: Colors.red),
+          ),
+          const SizedBox(height: 10),
+          ElevatedButton(onPressed: vm.retryFetch, child: const Text("Retry")),
+        ],
+      ),
+    );
+  }
+
+  /// 📊 SUCCESS (MAIN UI)
+  Widget _success(TpoDashboardViewModel vm) {
+    return Column(
+      children: [
+        /// TOP CARDS
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          children: [
+            DashboardStatCard(
+              title: "Total Students",
+              value: vm.summary.totalStudents.toString(),
+              subtitle: "From API",
+            ),
+
+            DashboardStatCard(
+              title: "Active Drives",
+              value: vm.summary.activeDrives.toString(),
+              subtitle: "${vm.summary.closingSoon} closing soon",
+            ),
+
+            DashboardStatCard(
+              title: "Placement Rate",
+              value: vm.placementRateText,
+              subtitle: "${vm.summary.studentsPlaced} placed",
+            ),
+
+            DashboardStatCard(
+              title: "Weekly Offers",
+              value: vm.summary.weeklyOffers.toString(),
+              subtitle: vm.weeklyOffersText,
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 20),
+
+        /// UPCOMING DRIVES (FROM API)
+        if (vm.hasUpcomingDrives) ...[
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "Upcoming Drives",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          ...vm.upcomingDrives.map((drive) {
+            return Card(
+              color: Colors.white10,
+              child: ListTile(
+                title: Text(
+                  drive.company ?? "Company",
+                  style: const TextStyle(color: Colors.white),
+                ),
+                subtitle: Text(
+                  "${drive.role ?? ""} • ${drive.date ?? ""}",
+                  style: const TextStyle(color: Colors.white54),
+                ),
+                trailing: Text(
+                  "${drive.registered ?? 0}/${drive.eligible ?? 0}",
+                  style: const TextStyle(color: Colors.green),
+                ),
+              ),
+            );
+          }).toList(),
+        ],
+
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  /// 📭 EMPTY
+  Widget _empty() {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(40),
+        child: Text(
+          "No dashboard data available",
+          style: TextStyle(color: Colors.white54),
+        ),
+      ),
     );
   }
 }

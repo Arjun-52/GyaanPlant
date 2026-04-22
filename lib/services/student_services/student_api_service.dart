@@ -95,12 +95,13 @@ class StudentApiService {
     String name,
     String email,
     String password,
+    String role,
   ) async {
     final response = await BaseApiService.post('/api/v1/auth/register', {
       "name": name,
       "email": email,
       "password": password,
-      "role": "student",
+      "role": role.toLowerCase(),
     });
 
     return jsonDecode(response.body);

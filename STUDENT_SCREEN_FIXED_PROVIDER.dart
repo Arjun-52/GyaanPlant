@@ -55,10 +55,7 @@ class _StudentScreenState extends State<StudentScreen> {
                       decoration: InputDecoration(
                         hintText: "Search students...",
                         hintStyle: const TextStyle(color: Colors.white54),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: Colors.white54,
-                        ),
+                        prefixIcon: const Icon(Icons.search, color: Colors.white54),
                         filled: true,
                         fillColor: Colors.white.withOpacity(0.1),
                         border: OutlineInputBorder(
@@ -89,7 +86,9 @@ class _StudentScreenState extends State<StudentScreen> {
                     const SizedBox(height: 20),
 
                     /// CONTENT
-                    Expanded(child: _buildContent(viewModel)),
+                    Expanded(
+                      child: _buildContent(viewModel),
+                    ),
                   ],
                 ),
               ),
@@ -103,7 +102,7 @@ class _StudentScreenState extends State<StudentScreen> {
 
   Widget _buildFilterChip(String label, StudentViewModel viewModel) {
     final isSelected = viewModel.selectedFilter == label;
-
+    
     return GestureDetector(
       onTap: () => viewModel.setFilter(label),
       child: Container(
@@ -151,7 +150,11 @@ class _StudentScreenState extends State<StudentScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            const Icon(
+              Icons.error_outline,
+              color: Colors.red,
+              size: 48,
+            ),
             const SizedBox(height: 16),
             Text(
               "Failed to load students",
@@ -187,11 +190,18 @@ class _StudentScreenState extends State<StudentScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.people_outline, color: Colors.white54, size: 48),
+            Icon(
+              Icons.people_outline,
+              color: Colors.white54,
+              size: 48,
+            ),
             SizedBox(height: 16),
             Text(
               "No students found",
-              style: TextStyle(color: Colors.white54, fontSize: 16),
+              style: TextStyle(
+                color: Colors.white54,
+                fontSize: 16,
+              ),
             ),
           ],
         ),
@@ -200,17 +210,24 @@ class _StudentScreenState extends State<StudentScreen> {
 
     // SUCCESS STATE WITH DATA
     final filteredStudents = viewModel.filteredStudents;
-
+    
     if (filteredStudents.isEmpty) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off, color: Colors.white54, size: 48),
+            Icon(
+              Icons.search_off,
+              color: Colors.white54,
+              size: 48,
+            ),
             SizedBox(height: 16),
             Text(
               "No students match your search",
-              style: TextStyle(color: Colors.white54, fontSize: 16),
+              style: TextStyle(
+                color: Colors.white54,
+                fontSize: 16,
+              ),
             ),
           ],
         ),

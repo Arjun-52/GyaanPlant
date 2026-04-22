@@ -29,7 +29,7 @@ class StudentViewModel extends ChangeNotifier {
   /// Initialize ViewModel - called once when screen is created
   Future<void> initialize() async {
     if (_hasInitialized) return; // Prevent multiple initializations
-
+    
     await fetchStudents();
     _hasInitialized = true;
   }
@@ -45,7 +45,7 @@ class StudentViewModel extends ChangeNotifier {
       print("Fetching students...");
       _students = await _service.fetchStudents();
       _errorMessage = null;
-
+      
       print("Successfully fetched ${_students.length} students");
     } catch (e) {
       print("Error fetching students: $e");
@@ -92,13 +92,16 @@ class StudentViewModel extends ChangeNotifier {
 
     return _students.where((student) {
       // Search filter
-      final matchesSearch =
-          student.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          student.email.toLowerCase().contains(_searchQuery.toLowerCase());
+      final matchesSearch = student.name.toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          ) ||
+          student.email.toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          );
 
       // Status/branch filter
       bool matchesFilter = true;
-
+      
       switch (_selectedFilter) {
         case "MNC Ready":
           matchesFilter = student.status == "MNC Ready";
@@ -124,18 +127,15 @@ class StudentViewModel extends ChangeNotifier {
   /// Get available filter options (based on actual data)
   List<String> get availableFilters {
     final filters = <String>{"All"};
-
+    
     // Add status-based filters
     final statuses = _students.map((s) => s.status).toSet();
     filters.addAll(statuses);
-
+    
     // Add branch filters
-    final branches = _students
-        .map((s) => s.branch)
-        .where((b) => b != "N/A")
-        .toSet();
+    final branches = _students.map((s) => s.branch).where((b) => b != "N/A").toSet();
     filters.addAll(branches);
-
+    
     return filters.toList();
   }
 

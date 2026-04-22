@@ -59,7 +59,7 @@ class HeaderSection extends StatelessWidget {
 
           const Text(
             "Full interactive prototype — all screens unlocked",
-            textAlign: TextAlign.center, // 🔥 Center text
+            textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: Colors.white54),
           ),
 

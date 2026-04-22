@@ -12,14 +12,15 @@ class StudentScreen extends StatefulWidget {
 }
 
 class _StudentScreenState extends State<StudentScreen> {
+  late StudentViewModel _viewModel;
+
   @override
   void initState() {
     super.initState();
     // Initialize ViewModel once when screen is created
-    Future.microtask(() {
-      if (mounted) {
-        context.read<StudentViewModel>().initialize();
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _viewModel = context.read<StudentViewModel>();
+      _viewModel.initialize();
     });
   }
 

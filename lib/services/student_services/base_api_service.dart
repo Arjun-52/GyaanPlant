@@ -4,7 +4,7 @@ import 'local_storage_service.dart';
 
 /// Base API service for handling common HTTP operations
 class BaseApiService {
-  static const String _baseUrl = 'http://10.0.2.2:5000';
+  static const String baseUrl = 'http://10.0.2.2:5000';
 
   static const Map<String, String> _headers = {
     'Content-Type': 'application/json',
@@ -13,8 +13,7 @@ class BaseApiService {
 
   ///  BUILD URL
   static Uri _buildUrl(String endpoint) {
-    final url =
-        '$_baseUrl${endpoint.startsWith('/') ? endpoint : '/$endpoint'}';
+    final url = '$baseUrl${endpoint.startsWith('/') ? endpoint : '/$endpoint'}';
     print("🚀 API Call: $url");
     return Uri.parse(url);
   }
@@ -48,13 +47,12 @@ class BaseApiService {
     }
 
     try {
-      final response = await http.post(
-        _buildUrl(endpoint),
-        headers: headers,
-        body: jsonEncode(data),
-      );
+      final response = await http
+          .post(_buildUrl(endpoint), headers: headers, body: jsonEncode(data))
+          .timeout(const Duration(seconds: 30));
       return _handleResponse(response);
     } catch (e) {
+      print('Network error in POST: ${e.toString()}');
       throw Exception('Network error: ${e.toString()}');
     }
   }
