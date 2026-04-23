@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/student_services/student_api_service.dart';
 import '../../services/student_services/local_storage_service.dart';
+import '../../services/auth_service.dart';
 
 class AuthViewModel extends ChangeNotifier {
   AuthViewModel() {
@@ -139,6 +140,9 @@ class AuthViewModel extends ChangeNotifier {
       //  Save to memory
       token = accessToken;
       user = userData;
+
+      //  Store token globally using AuthService
+      await AuthService.saveToken(accessToken);
 
       //  Extract username safely
       userName =

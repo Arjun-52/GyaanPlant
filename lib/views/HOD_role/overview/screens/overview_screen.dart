@@ -7,13 +7,12 @@ import 'package:gyaanplant/views/HOD_role/overview/widgets/syllabus_card.dart';
 import 'package:provider/provider.dart';
 
 class OverViewScreen extends StatelessWidget {
-  final String token;
-  const OverViewScreen({super.key, required this.token});
+  const OverViewScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => HodDashboardViewModel()..loadDashboard(token),
+      create: (_) => HodDashboardViewModel()..loadDashboard(),
       child: Scaffold(
         backgroundColor: const Color(0xFF061A14),
 

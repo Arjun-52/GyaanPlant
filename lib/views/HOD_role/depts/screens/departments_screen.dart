@@ -5,15 +5,12 @@ import 'package:gyaanplant/views/HOD_role/depts/widgets/department_card.dart';
 import 'package:gyaanplant/core/common_widgets/hod_bottom_nav.dart';
 
 class DepartmentsScreen extends StatelessWidget {
-  final String token;
-
-  const DepartmentsScreen({super.key, required this.token});
+  const DepartmentsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) =>
-          DepartmentsViewModel()..loadDepartments(token), // 🔥 CALL API
+      create: (_) => DepartmentsViewModel()..loadDepartments(), // 🔥 CALL API
       child: Scaffold(
         backgroundColor: const Color(0xFF061A14),
 

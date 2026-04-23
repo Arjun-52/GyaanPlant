@@ -1,24 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/HOD_models/analytics_model.dart';
+import 'package:gyaanplant/services/hod_services/analytics_service.dart';
+import 'package:gyaanplant/services/auth_service.dart';
 
 class AnalyticsViewModel extends ChangeNotifier {
-  AnalyticsModel? analytics;
-  bool isLoading = false;
+  final AnalyticsService _service = AnalyticsService();
 
-  Future<void> fetchAnalytics() async {
+  AnalyticsModel? data;
+  bool isLoading = false;
+  String? error;
+
+  Future<void> loadAnalytics() async {
+    final token = AuthService.token;
+    if (token == null) throw Exception("User not logged in");
+
+    print("TOKEN USED: $token");
+
     isLoading = true;
+    error = null;
     notifyListeners();
 
-    await Future.delayed(Duration(seconds: 1)); // simulate API
+    try {
+      data = await _service.fetchAnalytics(token);
+    } catch (e) {
+      error = e.toString();
+    }
 
-    // Mock data (replace with API later)
-    analytics = AnalyticsModel(
-      activeStudents: 2076,
-      growthPercent: 8,
-      avgHours: 12.4,
-      readinessScore: 67,
-      certificates: 1240,
-    );
+    isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> fetchAnalytics() async {
+    final token = AuthService.token;
+    if (token == null) throw Exception("User not logged in");
+
+    print("TOKEN USED: $token");
+
+    isLoading = true;
+    error = null;
+    notifyListeners();
+
+    try {
+      data = await _service.fetchAnalytics(token);
+    } catch (e) {
+      error = e.toString();
+    }
 
     isLoading = false;
     notifyListeners();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'routes/app_router.dart';
+import 'services/auth_service.dart';
 
 import 'viewmodels/student_viewmodel/auth_viewmodel.dart';
 import 'viewmodels/student_viewmodel/dashboard_viewmodel.dart';
@@ -10,6 +11,7 @@ import 'viewmodels/tpo_viewmodels/drives_viewmodel.dart'; // 🔥 ADD THIS
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AuthService.loadToken();
   runApp(const MyApp());
 }
 

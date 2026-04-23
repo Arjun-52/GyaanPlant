@@ -83,43 +83,21 @@ class AppRouter {
       GoRoute(
         path: '/overview',
         name: 'overview',
-        builder: (context, state) => FutureBuilder<String?>(
-          future: LocalStorageService.getToken(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasData && snapshot.data != null) {
-              return OverViewScreen(token: snapshot.data!);
-            }
-            return const Center(child: Text('Error: No token found'));
-          },
-        ),
+        builder: (context, state) => const OverViewScreen(),
       ),
 
       //  HOD DEPARTMENTS
       GoRoute(
         path: '/depts',
         name: 'depts',
-        builder: (context, state) => FutureBuilder<String?>(
-          future: LocalStorageService.getToken(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasData && snapshot.data != null) {
-              return DepartmentsScreen(token: snapshot.data!);
-            }
-            return const Center(child: Text('Error: No token found'));
-          },
-        ),
+        builder: (context, state) => const DepartmentsScreen(),
       ),
 
       //  HOD ANALYTICS
       GoRoute(
         path: '/analytics',
         name: 'analytics',
-        builder: (context, state) => AnalyticsScreen(),
+        builder: (context, state) => const AnalyticsScreen(),
       ),
 
       //  HOD NAAC

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/HOD_models/hod_dashboard_model.dart';
 import 'package:gyaanplant/services/hod_services/hod_dashboard_service.dart';
+import 'package:gyaanplant/services/auth_service.dart';
 
 class HodDashboardViewModel extends ChangeNotifier {
   final HodDashboardService _service = HodDashboardService();
@@ -9,7 +10,12 @@ class HodDashboardViewModel extends ChangeNotifier {
   bool isLoading = false;
   String? error;
 
-  Future<void> loadDashboard(String token) async {
+  Future<void> loadDashboard() async {
+    final token = AuthService.token;
+    if (token == null) throw Exception("User not logged in");
+
+    print("TOKEN USED: $token");
+
     isLoading = true;
     error = null;
     notifyListeners();
