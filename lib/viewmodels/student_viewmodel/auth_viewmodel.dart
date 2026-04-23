@@ -98,9 +98,10 @@ class AuthViewModel extends ChangeNotifier {
 
   //  LOGIN
 
-  String? userName; // 🔥 add this at top of ViewModel
+  String? userName;
 
   Future<void> login(BuildContext context) async {
+    //  Basic validation
     if (email.isEmpty || password.isEmpty) {
       _showError(context, "Please fill all fields");
       return;
@@ -120,38 +121,48 @@ class AuthViewModel extends ChangeNotifier {
       isLoading = true;
       notifyListeners();
 
+      //  API call
       final response = await StudentApiService.login(email, password);
 
-      print("FULL RESPONSE: $response");
+      print("🔵 FULL LOGIN RESPONSE: $response");
 
+      //  Extract data safely
       final accessToken = response['accessToken'];
       final userData = response['user'];
 
-      if (accessToken == null) {
+      if (accessToken == null || accessToken.toString().isEmpty) {
         throw Exception("Token missing from response");
       }
 
-      // ✅ Save token & user
+      print("🟢 TOKEN AFTER LOGIN: $accessToken");
+
+      //  Save to memory
       token = accessToken;
       user = userData;
 
-      // 🔥 EXTRACT USER NAME (IMPORTANT)
+      //  Extract username safely
       userName =
-          userData['name'] ?? userData['fullName'] ?? userData['username'];
+          userData?['name'] ??
+          userData?['fullName'] ??
+          userData?['username'] ??
+          "User";
 
+      //  Save locally
       await LocalStorageService.saveToken(token!);
       await LocalStorageService.saveUser(user!);
 
-      print("LOGIN SUCCESS");
-      print("TOKEN: $token");
-      print("USER: $user");
-      print("USER NAME: $userName"); // 🔥 debug
+      print("✅ LOGIN SUCCESS");
+      print("👤 USER: $user");
+      print("📛 USER NAME: $userName");
 
-      // Navigate to role selection screen after successful login
+      print("🎯 USER ROLE FROM RESPONSE: ${userData?['role']}");
+
+      //  Navigate
       context.go('/role');
     } catch (e) {
-      print("Login Error: $e");
-      _showError(context, "Login failed. Check credentials.");
+      print("❌ LOGIN ERROR: $e");
+
+      _showError(context, "Login failed. Please check your credentials.");
     } finally {
       isLoading = false;
       notifyListeners();

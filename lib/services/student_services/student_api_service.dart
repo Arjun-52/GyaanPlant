@@ -97,14 +97,33 @@ class StudentApiService {
     String password,
     String role,
   ) async {
-    final response = await BaseApiService.post('/api/v1/auth/register', {
+    print("=== REGISTRATION DEBUG ===");
+    print("Name: $name");
+    print("Email: $email");
+    print("Role: $role");
+    print("Endpoint: /api/v1/auth/register");
+
+    final requestData = {
       "name": name,
       "email": email,
       "password": password,
       "role": role.toLowerCase(),
-    });
+    };
 
-    return jsonDecode(response.body);
+    print("Request data: $requestData");
+
+    try {
+      final response = await BaseApiService.post(
+        '/api/v1/auth/register',
+        requestData,
+      );
+      print("Registration successful!");
+      print("Response: ${response.body}");
+      return jsonDecode(response.body);
+    } catch (e) {
+      print("Registration failed: $e");
+      rethrow;
+    }
   }
 
   /// Get student courses

@@ -4,7 +4,7 @@ import 'local_storage_service.dart';
 
 /// Base API service for handling common HTTP operations
 class BaseApiService {
-  static const String baseUrl = 'http://10.0.2.2:5000';
+  static const String baseUrl = 'https://backend.gyaanplant.in';
 
   static const Map<String, String> _headers = {
     'Content-Type': 'application/json',

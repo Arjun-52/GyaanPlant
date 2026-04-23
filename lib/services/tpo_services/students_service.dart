@@ -6,7 +6,7 @@ import 'package:gyaanplant/services/student_services/local_storage_service.dart'
 /// Service class for handling student-related API calls
 class StudentsService {
   // Base URL - update to match your API
-  static const String baseUrl = "http://10.0.2.2:5000";
+  static const String baseUrl = "https://backend.gyaanplant.in";
   static const Duration timeout = Duration(seconds: 30);
 
   /// Debug helper to validate token

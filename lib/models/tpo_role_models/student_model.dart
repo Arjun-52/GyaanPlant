@@ -21,7 +21,7 @@ class Student {
 
   /// Parse API response to Student model
   factory Student.fromJson(Map<String, dynamic> json) {
-    // 🔹 Extract nested user
+    //  Extract nested user
     final user = json['user'] as Map<String, dynamic>? ?? {};
 
     final name = (user['name'] ?? '').toString().trim().isEmpty
@@ -32,7 +32,7 @@ class Student {
         ? "No email"
         : user['email'];
 
-    // 🔹 Branch handling (avoid showing ID)
+    //  Branch handling (avoid showing ID)
     final branchRaw = json['branch'];
 
     final branchDisplay =
@@ -40,18 +40,18 @@ class Student {
         ? "N/A"
         : branchRaw.toString();
 
-    // 🔹 Year formatting
+    //  Year formatting
     final yearNum = json['year'] as int? ?? 1;
     final yearDisplay = "$yearNum Year";
 
-    // 🔹 Score calculation (BEST FIX)
+    //  Score calculation (BEST FIX)
     final score = _calculateScore(json);
 
-    // 🔹 Status mapping
+    //  Status mapping
     final readiness = json['readiness'] as String?;
     final status = _mapReadinessToStatus(readiness);
 
-    // 🔹 Initials
+    //  Initials
     final initials = _getInitials(name);
 
     return Student(
@@ -66,7 +66,7 @@ class Student {
     );
   }
 
-  /// 🔥 SMART SCORE CALCULATION
+  ///  SMART SCORE CALCULATION
   static int _calculateScore(Map<String, dynamic> json) {
     final profileStrength = json['profileStrength'] ?? 0;
     final xp = json['xp'] ?? 0;
@@ -89,7 +89,7 @@ class Student {
     return 0;
   }
 
-  /// 🔹 Readiness → UI status
+  ///  Readiness → UI status
   static String _mapReadinessToStatus(String? readiness) {
     switch (readiness?.toLowerCase()) {
       case "high":
@@ -103,7 +103,7 @@ class Student {
     }
   }
 
-  /// 🔹 Generate initials
+  /// Generate initials
   static String _getInitials(String name) {
     if (name.isEmpty) return "?";
 
@@ -114,7 +114,7 @@ class Student {
     return name[0].toUpperCase();
   }
 
-  /// 🔹 Debug helper
+  /// Debug helper
   @override
   String toString() {
     return 'Student(name: $name, branch: $branch, score: $score, status: $status)';

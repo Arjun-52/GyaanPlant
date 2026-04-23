@@ -19,7 +19,7 @@ import 'package:gyaanplant/views/HOD_role/naac/screens/naac_screen.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/leaderboard_view.dart';
 import 'package:gyaanplant/views/tpo_role/home/screens/tpo_home_screen.dart';
 import 'package:gyaanplant/views/tpo_role/reports/screens/reports_screen.dart';
-import 'package:gyaanplant/views/HOD_role/settings/screens/settings_screen.dart';
+import 'package:gyaanplant/views/tpo_role/settings/screens/settings_screen.dart';
 import 'package:gyaanplant/views/tpo_role/student/screens/student_screen.dart';
 import 'package:gyaanplant/views/tpo_role/Drives/screens/drive_screen.dart';
 import 'package:provider/provider.dart';

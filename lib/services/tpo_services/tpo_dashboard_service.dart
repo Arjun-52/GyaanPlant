@@ -7,7 +7,7 @@ import 'package:gyaanplant/services/student_services/local_storage_service.dart'
 /// Handles all dashboard-related API calls
 class TpoDashboardService {
   // Base URL - replace with your actual API base URL
-  static const String baseUrl = 'http://10.0.2.2:5000';
+  static const String baseUrl = 'https://backend.gyaanplant.in';
   static const Duration timeout = Duration(seconds: 30);
 
   /// Fetch TPO Dashboard data from API
