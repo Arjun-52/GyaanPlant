@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'routes/app_router.dart';
+
 import 'viewmodels/student_viewmodel/auth_viewmodel.dart';
 import 'viewmodels/student_viewmodel/dashboard_viewmodel.dart';
 import 'viewmodels/student_viewmodel/test_viewmodel.dart';
 import 'viewmodels/student_viewmodel/job_viewmodel.dart';
+import 'viewmodels/tpo_viewmodels/drives_viewmodel.dart'; // 🔥 ADD THIS
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   runApp(const MyApp());
 }
 
@@ -23,6 +24,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => DashboardViewModel()),
         ChangeNotifierProvider(create: (_) => TestViewModel()),
         ChangeNotifierProvider(create: (_) => JobViewModel()),
+        ChangeNotifierProvider(create: (_) => DrivesViewModel()), // 🔥 ADD THIS
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

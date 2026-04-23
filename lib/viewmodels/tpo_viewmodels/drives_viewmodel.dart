@@ -1,36 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/tpo_role_models/drive_model.dart';
+import 'package:gyaanplant/services/tpo_services/drives_service.dart';
 
 class DrivesViewModel extends ChangeNotifier {
-  final List<Drive> _drives = [
-    Drive(
-      company: "TCS",
-      role: "Software Engineer",
-      date: "Mar 22,\n2026",
-      eligible: 342,
-      registered: 298,
-      pending: 44,
-      status: "Upcoming",
-    ),
-    Drive(
-      company: "Infosys",
-      role: "Systems Engineer",
-      date: "Mar 28,\n2026",
-      eligible: 285,
-      registered: 241,
-      pending: 44,
-      status: "Upcoming",
-    ),
-    Drive(
-      company: "Wipro",
-      role: "Project Engineer",
-      date: "Apr 5,\n2026",
-      eligible: 310,
-      registered: 187,
-      pending: 123,
-      status: "Open",
-    ),
-  ];
+  final DrivesService _service = DrivesService();
+
+  List<Drive> _drives = [];
+  bool _isLoading = false;
+  String? _error;
 
   List<Drive> get drives => _drives;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+
+  ///  FETCH DRIVES FROM API
+  Future<void> fetchDrives() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _drives = await _service.fetchDrives();
+    } catch (e) {
+      _error = e.toString();
+      _drives = [];
+      print("DRIVE ERROR: $e");
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
 }
