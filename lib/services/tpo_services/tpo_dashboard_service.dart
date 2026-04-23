@@ -35,6 +35,9 @@ class TpoDashboardService {
       // Handle different response codes
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
+        if (responseData['success'] == false) {
+          throw Exception(responseData['message'] ?? 'Unknown error');
+        }
         return TpoDashboardModel.fromJson(responseData);
       } else if (response.statusCode == 401) {
         // Token expired - clear and redirect to login

@@ -1,23 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/core/common_widgets/HOD_bottom_nav.dart';
-import 'package:gyaanplant/viewmodels/HOD_viewmodel/hod_viewmodel.dart';
+import 'package:gyaanplant/viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
 import 'package:gyaanplant/views/HOD_role/overview/widgets/dept_progress_card.dart';
 import 'package:gyaanplant/views/HOD_role/overview/widgets/stat_card.dart';
 import 'package:gyaanplant/views/HOD_role/overview/widgets/syllabus_card.dart';
 import 'package:provider/provider.dart';
 
 class OverViewScreen extends StatelessWidget {
-  const OverViewScreen({super.key});
+  final String token;
+  const OverViewScreen({super.key, required this.token});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => HodViewModel(),
+      create: (_) => HodDashboardViewModel()..loadDashboard(token),
       child: Scaffold(
         backgroundColor: const Color(0xFF061A14),
 
-        body: Consumer<HodViewModel>(
+        body: Consumer<HodDashboardViewModel>(
           builder: (context, vm, _) {
+            if (vm.isLoading) {
+              return Center(child: CircularProgressIndicator());
+            }
+
+            if (vm.error != null) {
+              return Center(
+                child: Text(vm.error!, style: TextStyle(color: Colors.red)),
+              );
+            }
+
             return SafeArea(
               child: SingleChildScrollView(
                 child: Column(
@@ -38,7 +49,7 @@ class OverViewScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             "Principal Dashboard",
                             style: TextStyle(color: Colors.white54),
                           ),
@@ -63,24 +74,24 @@ class OverViewScreen extends StatelessWidget {
                             crossAxisSpacing: 12,
                             mainAxisSpacing: 12,
                             childAspectRatio: 2.2,
-                            children: const [
+                            children: [
                               HodStatCard(
-                                value: "2,847",
+                                value: vm.totalStudents.toString(),
                                 label: "Total Students",
                                 color: Colors.blue,
                               ),
                               HodStatCard(
-                                value: "6",
+                                value: vm.departments.toString(),
                                 label: "Departments",
                                 color: Colors.blue,
                               ),
                               HodStatCard(
-                                value: "73%",
+                                value: "${vm.lmsAdoption}%",
                                 label: "LMS Adoption",
                                 color: Colors.green,
                               ),
                               HodStatCard(
-                                value: "A+",
+                                value: vm.naacGrade,
                                 label: "NAAC Grade",
                                 color: Colors.orange,
                               ),
@@ -100,7 +111,7 @@ class OverViewScreen extends StatelessWidget {
                           /// DEPT READINESS
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
+                            children: [
                               Text(
                                 "Dept-wise Skill Readiness",
                                 style: TextStyle(
@@ -117,7 +128,16 @@ class OverViewScreen extends StatelessWidget {
 
                           const SizedBox(height: 10),
 
-                          DeptProgressCard(departments: vm.departments),
+                          DeptProgressCard(
+                            departments: vm.departmentsData
+                                .map(
+                                  (dept) => {
+                                    'name': dept.name,
+                                    'percent': dept.value,
+                                  },
+                                )
+                                .toList(),
+                          ),
 
                           const SizedBox(height: 20),
 

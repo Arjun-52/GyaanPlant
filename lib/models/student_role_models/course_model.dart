@@ -11,8 +11,8 @@ class CourseModel {
 
   factory CourseModel.fromJson(Map<String, dynamic> json) {
     return CourseModel(
-      title: json['title'] ?? '',
-      thumbnail: json['thumbnail'],
+      title: json['title']?.toString() ?? '',
+      thumbnail: json['thumbnail']?.toString(),
       totalModules: json['totalModules'] ?? 0,
     );
   }
