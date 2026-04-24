@@ -2,13 +2,12 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:gyaanplant/models/tpo_role_models/dashboard_model.dart';
 import 'package:gyaanplant/services/student_services/local_storage_service.dart';
+import 'package:gyaanplant/config/api_config.dart';
 
 /// TPO Dashboard API Service
 /// Handles all dashboard-related API calls
 class TpoDashboardService {
-  // Base URL - replace with your actual API base URL
-  static const String baseUrl = 'https://backend.gyaanplant.in';
-  static const Duration timeout = Duration(seconds: 30);
+  // Using centralized ApiConfig for consistent base URL
 
   /// Fetch TPO Dashboard data from API
   /// GET /api/v1/dashboard/tpo
@@ -16,19 +15,16 @@ class TpoDashboardService {
     try {
       // Get auth token from local storage
       final token = await LocalStorageService.getToken();
-      print("🔐 TOKEN:");
-      print(token);
+      print("🌍 BASE URL: ${ApiConfig.baseUrl}");
+      print("🔐 TOKEN: $token");
 
       // Make API request with authentication
       final response = await http
           .get(
-            Uri.parse('$baseUrl/api/v1/dashboard/tpo'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token', // Add JWT token
-            },
+            Uri.parse(ApiConfig.buildUrl('/api/v1/dashboard/tpo')),
+            headers: ApiConfig.buildAuthHeaders(token ?? ''),
           )
-          .timeout(timeout);
+          .timeout(ApiConfig.timeout);
       print("🌐 RAW RESPONSE:");
       print(response.body);
 

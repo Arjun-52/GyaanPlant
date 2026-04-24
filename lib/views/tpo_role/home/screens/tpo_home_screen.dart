@@ -22,6 +22,14 @@ class _TPODashboardState extends State<TPODashboard> {
     });
   }
 
+  /// Format date string to readable format
+  String _formatDate(String? date) {
+    if (date == null) return "";
+    final d = DateTime.tryParse(date);
+    if (d == null) return "";
+    return "${d.day}/${d.month}/${d.year}";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -238,20 +246,20 @@ class _TPODashboardState extends State<TPODashboard> {
         const SizedBox(height: 20),
 
         /// UPCOMING DRIVES (FROM API)
-        if (vm.hasUpcomingDrives) ...[
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              "Upcoming Drives",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+        const Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            "Upcoming Drives",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 10),
+        ),
+        const SizedBox(height: 10),
 
+        if (vm.hasUpcomingDrives) ...[
           ...vm.upcomingDrives.map((drive) {
             return Card(
               color: Colors.white10,
@@ -261,16 +269,27 @@ class _TPODashboardState extends State<TPODashboard> {
                   style: const TextStyle(color: Colors.white),
                 ),
                 subtitle: Text(
-                  "${drive.role ?? ""} • ${drive.date ?? ""}",
+                  "${drive.role ?? ""} • ${_formatDate(drive.driveDate)}",
                   style: const TextStyle(color: Colors.white54),
                 ),
                 trailing: Text(
-                  "${drive.registered ?? 0}/${drive.eligible ?? 0}",
+                  "${drive.eligibleCount ?? 0} eligible",
                   style: const TextStyle(color: Colors.green),
                 ),
               ),
             );
           }).toList(),
+        ] else ...[
+          const Card(
+            color: Colors.white10,
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                "No upcoming drives",
+                style: TextStyle(color: Colors.white54),
+              ),
+            ),
+          ),
         ],
 
         const SizedBox(height: 20),

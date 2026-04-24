@@ -4,10 +4,7 @@ class TpoDashboardModel {
   final bool success;
   final DashboardData data;
 
-  TpoDashboardModel({
-    required this.success,
-    required this.data,
-  });
+  TpoDashboardModel({required this.success, required this.data});
 
   /// Create model from JSON response
   factory TpoDashboardModel.fromJson(Map<String, dynamic> json) {
@@ -19,10 +16,7 @@ class TpoDashboardModel {
 
   /// Convert model to JSON (if needed for API requests)
   Map<String, dynamic> toJson() {
-    return {
-      'success': success,
-      'data': data.toJson(),
-    };
+    return {'success': success, 'data': data.toJson()};
   }
 }
 
@@ -41,12 +35,19 @@ class DashboardData {
   factory DashboardData.fromJson(Map<String, dynamic> json) {
     return DashboardData(
       summary: DashboardSummary.fromJson(json['summary'] ?? {}),
-      upcomingDrives: (json['upcomingDrives'] as List<dynamic>?)
-              ?.map((item) => UpcomingDrive.fromJson(item as Map<String, dynamic>))
+      upcomingDrives:
+          (json['upcomingDrives'] as List<dynamic>?)
+              ?.map(
+                (item) => UpcomingDrive.fromJson(item as Map<String, dynamic>),
+              )
               .toList() ??
           [],
-      departmentPlacement: (json['departmentPlacement'] as List<dynamic>?)
-              ?.map((item) => DepartmentPlacement.fromJson(item as Map<String, dynamic>))
+      departmentPlacement:
+          (json['departmentPlacement'] as List<dynamic>?)
+              ?.map(
+                (item) =>
+                    DepartmentPlacement.fromJson(item as Map<String, dynamic>),
+              )
               .toList() ??
           [],
     );
@@ -56,7 +57,9 @@ class DashboardData {
     return {
       'summary': summary.toJson(),
       'upcomingDrives': upcomingDrives.map((drive) => drive.toJson()).toList(),
-      'departmentPlacement': departmentPlacement.map((dept) => dept.toJson()).toList(),
+      'departmentPlacement': departmentPlacement
+          .map((dept) => dept.toJson())
+          .toList(),
     };
   }
 }
@@ -115,71 +118,53 @@ class UpcomingDrive {
   final String? id;
   final String? company;
   final String? role;
-  final String? date;
-  final int? eligible;
-  final int? registered;
+  final String? driveDate;
+  final int? eligibleCount;
 
   UpcomingDrive({
     this.id,
     this.company,
     this.role,
-    this.date,
-    this.eligible,
-    this.registered,
+    this.driveDate,
+    this.eligibleCount,
   });
 
   factory UpcomingDrive.fromJson(Map<String, dynamic> json) {
     return UpcomingDrive(
-      id: json['id']?.toString(),
+      id: json['_id']?.toString(), // FIXED
       company: json['company']?.toString(),
       role: json['role']?.toString(),
-      date: json['date']?.toString(),
-      eligible: json['eligible'] as int?,
-      registered: json['registered'] as int?,
+      driveDate: json['driveDate']?.toString(), // FIXED
+      eligibleCount: json['eligibleCount'] as int?, // FIXED
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      '_id': id,
       'company': company,
       'role': role,
-      'date': date,
-      'eligible': eligible,
-      'registered': registered,
+      'driveDate': driveDate,
+      'eligibleCount': eligibleCount,
     };
   }
 }
 
 /// Department placement data
 class DepartmentPlacement {
-  final String? department;
-  final int? placed;
-  final int? total;
-  final double? rate;
+  final String? branch;
+  final double? percentage;
 
-  DepartmentPlacement({
-    this.department,
-    this.placed,
-    this.total,
-    this.rate,
-  });
+  DepartmentPlacement({this.branch, this.percentage});
 
   factory DepartmentPlacement.fromJson(Map<String, dynamic> json) {
     return DepartmentPlacement(
-      department: json['department']?.toString(),
-      placed: json['placed'] as int?,
-      total: json['total'] as int?,
-      rate: (json['rate'] as num?)?.toDouble(),
+      branch: json['branch']?.toString(),
+      percentage: (json['percentage'] ?? 0).toDouble(),
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'department': department,
-      'placed': placed,
-      'total': total,
-      'rate': rate,
-    };
+    return {'branch': branch, 'percentage': percentage};
   }
 }

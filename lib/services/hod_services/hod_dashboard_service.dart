@@ -2,20 +2,19 @@ import 'dart:convert';
 import 'package:gyaanplant/models/HOD_models/hod_dashboard_model.dart';
 import 'package:gyaanplant/services/auth_service.dart';
 import 'package:http/http.dart' as http;
+import 'package:gyaanplant/config/api_config.dart';
 
 class HodDashboardService {
-  final String baseUrl = "http://10.0.2.2:5000/api/v1/dashboard/hod";
+  // Using centralized ApiConfig for consistent base URL
 
   Future<HodDashboardModel> fetchDashboard(String token) async {
-    print("TOKEN USED: $token");
+    print("🌍 BASE URL: ${ApiConfig.baseUrl}");
+    print("🔐 TOKEN: $token");
 
     try {
       final response = await http.get(
-        Uri.parse(baseUrl),
-        headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
-        },
+        Uri.parse(ApiConfig.buildUrl("/api/v1/dashboard/hod")),
+        headers: ApiConfig.buildAuthHeaders(token),
       );
 
       if (response.body.isEmpty) {

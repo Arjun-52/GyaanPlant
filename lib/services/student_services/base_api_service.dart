@@ -1,19 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'local_storage_service.dart';
+import '../../config/api_config.dart';
 
 /// Base API service for handling common HTTP operations
 class BaseApiService {
-  static const String baseUrl = 'https://backend.gyaanplant.in';
-
-  static const Map<String, String> _headers = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  };
+  // Using centralized ApiConfig for consistent base URL
 
   ///  BUILD URL
   static Uri _buildUrl(String endpoint) {
-    final url = '$baseUrl${endpoint.startsWith('/') ? endpoint : '/$endpoint'}';
+    final url = ApiConfig.buildUrl(endpoint);
     print("🚀 API Call: $url");
     return Uri.parse(url);
   }
@@ -22,11 +18,9 @@ class BaseApiService {
   static Future<http.Response> get(String endpoint) async {
     final token = await LocalStorageService.getToken();
 
-    final headers = Map<String, String>.from(_headers);
-
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
+    final headers = token != null
+        ? ApiConfig.buildAuthHeaders(token)
+        : ApiConfig.headers;
 
     try {
       final response = await http.get(_buildUrl(endpoint), headers: headers);
@@ -40,16 +34,14 @@ class BaseApiService {
   static Future<http.Response> post(String endpoint, dynamic data) async {
     final token = await LocalStorageService.getToken();
 
-    final headers = Map<String, String>.from(_headers);
-
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
+    final headers = token != null
+        ? ApiConfig.buildAuthHeaders(token)
+        : ApiConfig.headers;
 
     try {
       final response = await http
           .post(_buildUrl(endpoint), headers: headers, body: jsonEncode(data))
-          .timeout(const Duration(seconds: 30));
+          .timeout(ApiConfig.timeout);
       return _handleResponse(response);
     } catch (e) {
       print('Network error in POST: ${e.toString()}');
@@ -61,11 +53,9 @@ class BaseApiService {
   static Future<http.Response> put(String endpoint, dynamic data) async {
     final token = await LocalStorageService.getToken();
 
-    final headers = Map<String, String>.from(_headers);
-
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
+    final headers = token != null
+        ? ApiConfig.buildAuthHeaders(token)
+        : ApiConfig.headers;
 
     try {
       final response = await http.put(
@@ -83,11 +73,9 @@ class BaseApiService {
   static Future<http.Response> delete(String endpoint) async {
     final token = await LocalStorageService.getToken();
 
-    final headers = Map<String, String>.from(_headers);
-
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
+    final headers = token != null
+        ? ApiConfig.buildAuthHeaders(token)
+        : ApiConfig.headers;
 
     try {
       final response = await http.delete(_buildUrl(endpoint), headers: headers);

@@ -2,16 +2,18 @@ import 'dart:convert';
 import 'package:gyaanplant/models/HOD_models/department_model.dart';
 import 'package:gyaanplant/services/auth_service.dart';
 import 'package:http/http.dart' as http;
+import 'package:gyaanplant/config/api_config.dart';
 
 class DeptService {
-  final String baseUrl = "http://10.0.2.2:5000/api/v1/departments";
+  // Using centralized ApiConfig for consistent base URL
 
   Future<List<Department>> fetchDepts(String token) async {
-    print("TOKEN USED: $token");
+    print("🌍 BASE URL: ${ApiConfig.baseUrl}");
+    print("🔐 TOKEN: $token");
 
     final res = await http.get(
-      Uri.parse(baseUrl),
-      headers: {"Authorization": "Bearer $token"},
+      Uri.parse(ApiConfig.buildUrl("/api/v1/departments")),
+      headers: ApiConfig.buildAuthHeaders(token),
     );
 
     final data = jsonDecode(res.body);

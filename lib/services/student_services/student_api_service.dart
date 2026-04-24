@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:core';
 import '../../models/student_role_models/student_model.dart';
 import 'base_api_service.dart';
+import '../../config/api_config.dart';
 
 /// Specific API service for student-related endpoints
 class StudentApiService {
@@ -83,11 +84,14 @@ class StudentApiService {
     String email,
     String password,
   ) async {
+    print("🌍 BASE URL: ${ApiConfig.baseUrl}");
+    print("🔑 LOGIN ATTEMPT: $email");
+
     final response = await BaseApiService.post('/api/v1/auth/login', {
       "email": email,
       "password": password,
     });
-    print("RAW RESPONSE: ${response.body}");
+    print("🌐 LOGIN RESPONSE: ${response.body}");
     return jsonDecode(response.body);
   }
 
