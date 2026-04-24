@@ -29,6 +29,7 @@ import 'package:gyaanplant/views/HOD_role/settings/screens/settings_screen.dart'
     as hod_settings;
 import 'package:gyaanplant/views/mentor/dashboard/screens/mentor_dashboard_screen.dart';
 import 'package:gyaanplant/views/mentor/bookings/screens/booking_screen.dart';
+import 'package:gyaanplant/views/mentor/sessions/screens/sessions_screen.dart';
 import 'package:provider/provider.dart';
 
 class AppRouter {
@@ -193,6 +194,12 @@ class AppRouter {
       GoRoute(
         path: '/mentor-bookings',
         builder: (context, state) => const BookingsScreen(),
+      ),
+
+      // MENTOR SESSIONS
+      GoRoute(
+        path: '/mentor-sessions',
+        builder: (context, state) => const SessionsScreen(),
       ),
 
       // TEST
