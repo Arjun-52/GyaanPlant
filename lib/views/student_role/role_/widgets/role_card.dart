@@ -11,13 +11,25 @@ class RoleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        print("🔍 ROLE TAPPED: ${role.title}");
+        print("🔍 LOWERCASE: ${role.title.toLowerCase()}");
+
         if (role.title.toLowerCase().contains('student')) {
+          print("🚀 NAVIGATING TO: /student-dashboard");
           context.push('/student-dashboard');
         } else if (role.title.toLowerCase().contains('tpo')) {
+          print("🚀 NAVIGATING TO: /tpo-dashboard");
           context.push('/tpo-dashboard');
         } else if (role.title.toLowerCase().contains('hod') ||
             role.title.toLowerCase().contains('principal')) {
+          print("🚀 NAVIGATING TO: /overview");
           context.push('/overview');
+        } else if (role.title.toLowerCase().contains('mentor') ||
+            role.title.toLowerCase().contains('alumni')) {
+          print("🚀 NAVIGATING TO: /mentor-dashboard");
+          context.go('/mentor-dashboard');
+        } else {
+          print("❌ NO ROUTE FOUND FOR: ${role.title}");
         }
         // Add other role navigation here as needed
       },

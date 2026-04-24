@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/services/student_services/local_storage_service.dart';
 import 'package:gyaanplant/viewmodels/tpo_viewmodels/tpo_dashboard_viewmodel.dart';
 import 'package:gyaanplant/viewmodels/tpo_viewmodels/student_viewmodel.dart';
+import 'package:gyaanplant/viewmodels/mentor_viewmodel/mentor_dashboard_viewmodel.dart';
 
 import 'package:gyaanplant/views/auth/screens/sign_in_screen.dart';
 import 'package:gyaanplant/views/auth/screens/sign_up_screen.dart';
@@ -26,31 +27,39 @@ import 'package:gyaanplant/views/tpo_role/student/screens/student_screen.dart';
 import 'package:gyaanplant/views/tpo_role/Drives/screens/drive_screen.dart';
 import 'package:gyaanplant/views/HOD_role/settings/screens/settings_screen.dart'
     as hod_settings;
+import 'package:gyaanplant/views/mentor/dashboard/screens/mentor_dashboard_screen.dart';
 import 'package:provider/provider.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: '/',
+    debugLogDiagnostics: true,
 
     redirect: (context, state) async {
       final token = await LocalStorageService.getToken();
       final isLoggedIn = token != null;
 
       final location = state.uri.toString();
+      print("🔍 ROUTER REDIRECT CHECK: $location");
+      print("🔍 IS LOGGED IN: $isLoggedIn");
 
       //  PUBLIC ROUTES (allowed without login)
       final isPublicRoute = location == '/' || location == '/signup';
+      print("🔍 IS PUBLIC ROUTE: $isPublicRoute");
 
       //  If NOT logged in → block private routes
       if (!isLoggedIn && !isPublicRoute) {
+        print("🚫 BLOCKING PRIVATE ROUTE - redirecting to /");
         return '/';
       }
 
       //  If logged in → prevent going back to login/signup
       if (isLoggedIn && (location == '/' || location == '/signup')) {
+        print("🔄 USER LOGGED IN - redirecting to /role");
         return '/role';
       }
 
+      print("✅ ALLOWING NAVIGATION TO: $location");
       return null;
     },
 
@@ -168,6 +177,15 @@ class AppRouter {
         path: '/hod-settings',
         name: 'hod-settings',
         builder: (context, state) => const hod_settings.SettingsScreen(),
+      ),
+
+      //  MENTOR DASHBOARD
+      GoRoute(
+        path: '/mentor-dashboard',
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => MentorDashboardViewModel(),
+          child: const MentorDashboardScreen(),
+        ),
       ),
 
       // TEST
