@@ -14,12 +14,15 @@ class HodDashboardModel {
   });
 
   factory HodDashboardModel.fromJson(Map<String, dynamic> json) {
+    print("🔍 MODEL PARSING JSON: $json");
+
     return HodDashboardModel(
-      totalStudents: json["totalStudents"] ?? 0,
-      departments: json["departments"] ?? 0,
-      lmsAdoption: json["lmsAdoption"] ?? 0,
-      naacGrade: json["naacGrade"]?.toString() ?? "N/A", // 🔥 FIX
-      departmentsData: (json["deptStats"] as List? ?? [])
+      totalStudents: json["overview"]?["totalStudents"] ?? 0,
+      departments: json["overview"]?["totalDepartments"] ?? 0,
+      lmsAdoption: json["overview"]?["completionRate"] ?? 0,
+      naacGrade: "N/A",
+
+      departmentsData: (json["departmentStats"] as List? ?? [])
           .map((e) => DeptModel.fromJson(e))
           .toList(),
     );
@@ -28,14 +31,15 @@ class HodDashboardModel {
 
 class DeptModel {
   final String name;
-  final int value;
+  final double value;
 
   DeptModel({required this.name, required this.value});
 
   factory DeptModel.fromJson(Map<String, dynamic> json) {
+    print("🔍 DEPT MODEL PARSING: $json");
     return DeptModel(
-      name: json["name"]?.toString() ?? "Unknown",
-      value: json["value"] ?? 0,
+      name: json["departmentName"]?.toString().trim() ?? "Unknown",
+      value: ((json["avgPoints"] ?? 0) as num).toDouble() * 20,
     );
   }
 }

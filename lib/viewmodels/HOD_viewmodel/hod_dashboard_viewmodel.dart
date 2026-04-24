@@ -22,6 +22,7 @@ class HodDashboardViewModel extends ChangeNotifier {
 
     try {
       data = await _service.fetchDashboard(token);
+      print("🔍 PARSED DATA: ${data?.departmentsData}");
     } catch (e) {
       error = e.toString();
       // Initialize with empty data on error to prevent UI crashes

@@ -16,7 +16,7 @@ class DepartmentsScreen extends StatelessWidget {
 
         body: Consumer<DepartmentsViewModel>(
           builder: (context, vm, _) {
-            /// 🔥 LOADING
+            ///  LOADING
             if (vm.isLoading) {
               return const Center(child: CircularProgressIndicator());
             }

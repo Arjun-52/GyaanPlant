@@ -21,7 +21,7 @@ class HODBottomNav extends StatelessWidget {
         context.go('/naac');
         break;
       case 4:
-        context.go('/settings');
+        context.go('/hod-settings');
         break;
     }
   }

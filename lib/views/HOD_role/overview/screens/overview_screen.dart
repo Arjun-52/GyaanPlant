@@ -126,16 +126,21 @@ class OverViewScreen extends StatelessWidget {
                           ),
 
                           const SizedBox(height: 10),
-
-                          DeptProgressCard(
-                            departments: vm.departmentsData
-                                .map(
-                                  (dept) => {
-                                    'name': dept.name,
-                                    'percent': dept.value,
-                                  },
-                                )
-                                .toList(),
+                          Builder(
+                            builder: (context) {
+                              final deptList = vm.departmentsData
+                                  .map(
+                                    (dept) => {
+                                      'name': dept.name,
+                                      'percent': dept.value,
+                                    },
+                                  )
+                                  .toList();
+                              print(
+                                "🔍 UI MAPPING TO DEPTPROGRESSCARD: $deptList",
+                              );
+                              return DeptProgressCard(departments: deptList);
+                            },
                           ),
 
                           const SizedBox(height: 20),

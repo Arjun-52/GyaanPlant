@@ -20,9 +20,12 @@ import 'package:gyaanplant/views/HOD_role/naac/screens/naac_screen.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/leaderboard_view.dart';
 import 'package:gyaanplant/views/tpo_role/home/screens/tpo_home_screen.dart';
 import 'package:gyaanplant/views/tpo_role/reports/screens/reports_screen.dart';
-import 'package:gyaanplant/views/tpo_role/settings/screens/settings_screen.dart';
+import 'package:gyaanplant/views/tpo_role/settings/screens/settings_screen.dart'
+    as tpo_settings;
 import 'package:gyaanplant/views/tpo_role/student/screens/student_screen.dart';
 import 'package:gyaanplant/views/tpo_role/Drives/screens/drive_screen.dart';
+import 'package:gyaanplant/views/HOD_role/settings/screens/settings_screen.dart'
+    as hod_settings;
 import 'package:provider/provider.dart';
 
 class AppRouter {
@@ -153,11 +156,18 @@ class AppRouter {
         builder: (context, state) => const ReportsScreen(),
       ),
 
-      //  SETTINGS
+      //  TPO SETTINGS
       GoRoute(
         path: '/settings',
         name: 'settings',
-        builder: (context, state) => const SettingsScreen(),
+        builder: (context, state) => const tpo_settings.SettingsScreen(),
+      ),
+
+      //  HOD SETTINGS
+      GoRoute(
+        path: '/hod-settings',
+        name: 'hod-settings',
+        builder: (context, state) => const hod_settings.SettingsScreen(),
       ),
 
       // TEST

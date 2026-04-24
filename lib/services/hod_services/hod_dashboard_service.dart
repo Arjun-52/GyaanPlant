@@ -16,7 +16,8 @@ class HodDashboardService {
         Uri.parse(ApiConfig.buildUrl("/api/v1/dashboard/hod")),
         headers: ApiConfig.buildAuthHeaders(token),
       );
-
+      print("🌐 HOD RAW RESPONSE:");
+      print(response.body);
       if (response.body.isEmpty) {
         throw Exception("Empty response from server");
       }
