@@ -12,16 +12,16 @@ class TpoBottomNav extends StatelessWidget {
         context.go('/mentor-dashboard');
         break;
       case 1:
-        context.go('/students');
+        context.go('/mentor-bookings');
         break;
       case 2:
-        context.go('/drives');
+        context.go('/mentor-sessions');
         break;
       case 3:
-        context.go('/reports');
+        context.go('/mentor-earnings');
         break;
       case 4:
-        context.go('/settings');
+        context.go('/mentor-profile');
         break;
     }
   }
