@@ -27,7 +27,6 @@ class SessionHistoryCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
 
-        /// 🔥 gradient background
         gradient: const LinearGradient(
           colors: [Color(0xFF0F2A20), Color(0xFF0A1F18)],
           begin: Alignment.topLeft,
@@ -40,7 +39,7 @@ class SessionHistoryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// 🔷 TOP ROW
+          ///  TOP ROW
           Row(
             children: [
               CircleAvatar(
@@ -88,12 +87,12 @@ class SessionHistoryCard extends StatelessWidget {
 
           const SizedBox(height: 10),
 
-          /// 🔷 topic
+          ///  topic
           Text("Topic: $topic", style: const TextStyle(color: Colors.white54)),
 
           const SizedBox(height: 10),
 
-          /// 🔷 feedback box
+          ///  feedback box
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
