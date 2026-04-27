@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/models/mentor_models/mentor_dashboard_model.dart';
+import 'package:gyaanplant/views/mentor/dashboard/widgets/stat_card.dart';
 
 class HeaderWidget extends StatelessWidget {
-  const HeaderWidget({super.key});
+  final MentorDashboardModel data;
+
+  const HeaderWidget({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -13,9 +17,7 @@ class HeaderWidget extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(24), // 👈 only bottom rounded
-        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
       ),
 
       child: Column(
@@ -27,28 +29,34 @@ class HeaderWidget extends StatelessWidget {
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
+                children: [
+                  const Text(
                     "Mentor Dashboard",
                     style: TextStyle(color: Colors.white60, fontSize: 13),
                   ),
-                  SizedBox(height: 6),
-                  Text(
-                    "Rahul Singh",
+                  const SizedBox(height: 6),
+
+                  ///  NAME
+                  const Text(
+                    "Mentor",
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFFB388FF),
                     ),
                   ),
-                  SizedBox(height: 6),
+
+                  const SizedBox(height: 6),
+
+                  ///  ROLE
                   Text(
-                    "SDE-2 @ Amazon · GRIET 2022",
-                    style: TextStyle(color: Colors.white38, fontSize: 12),
+                    data.role.isNotEmpty ? data.role : "Mentor",
+                    style: const TextStyle(color: Colors.white38, fontSize: 12),
                   ),
                 ],
               ),
 
+              ///  AVATAR
               Container(
                 height: 48,
                 width: 48,
@@ -58,7 +66,7 @@ class HeaderWidget extends StatelessWidget {
                 ),
                 child: const Center(
                   child: Text(
-                    "RS",
+                    "M",
                     style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
@@ -73,60 +81,29 @@ class HeaderWidget extends StatelessWidget {
 
           ///  STATS ROW
           Row(
-            children: const [
+            children: [
               Expanded(
-                child: HeaderStatCard("24", "Sessions Done", Colors.purple),
+                child: StatCard(
+                  "${data.sessionsDone}",
+                  "Sessions Done",
+                  Colors.purple,
+                ),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
+
               Expanded(
-                child: HeaderStatCard("₹9,600", "Earned (Mar)", Colors.orange),
+                child: StatCard(
+                  "₹${data.earnings}",
+                  "Total Earnings",
+                  Colors.orange,
+                ),
               ),
-              SizedBox(width: 10),
-              Expanded(child: HeaderStatCard("4.9 ⭐", "Rating", Colors.green)),
+              const SizedBox(width: 10),
+
+              Expanded(
+                child: StatCard("${data.rating} ⭐", "Rating", Colors.green),
+              ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class HeaderStatCard extends StatelessWidget {
-  final String value;
-  final String label;
-  final Color color;
-
-  const HeaderStatCard(this.value, this.label, this.color, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 90,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-
-        /// subtle glow
-        color: color.withOpacity(0.12),
-
-        border: Border.all(color: color.withOpacity(0.4)),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white54, fontSize: 11),
           ),
         ],
       ),
