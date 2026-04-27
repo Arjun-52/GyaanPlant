@@ -1,54 +1,40 @@
 import 'dart:convert';
-import 'package:gyaanplant/models/student_role_models/course_model.dart';
-import 'base_api_service.dart';
+import 'package:gyaanplant/services/student_services/base_api_service.dart';
 
 class LearningService {
-  Future<List<CourseModel>> getCourses() async {
-    print('🚀 Learning API Call: /api/v1/learning');
+  Future<List<dynamic>> getMyEnrollments(String token) async {
+    print("TOKEN: $token");
+    print("LEARNING API CALL: /api/v1/learning/my-courses");
+    print("AUTH HEADER: Bearer $token");
 
     try {
-      final response = await BaseApiService.get('/api/v1/learning');
+      final headers = {
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      };
 
-      print('✅ Learning Response Status: ${response.statusCode}');
-      print('📄 Learning Response Body: ${response.body}');
+      final response = await BaseApiService.getWithHeaders(
+        '/api/v1/learning/my-courses',
+        headers,
+      );
+
+      print("LEARNING RESPONSE STATUS: ${response.statusCode}");
+      print("LEARNING RESPONSE BODY: ${response.body}");
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-        print('📊 Parsed Response Data: $responseData');
+        print("LEARNING PARSED RESPONSE: $responseData");
 
-        // Handle different response structures
-        dynamic coursesData;
-        if (responseData is Map<String, dynamic>) {
-          if (responseData.containsKey('data')) {
-            coursesData = responseData['data'];
-          } else {
-            coursesData = responseData;
-          }
-        } else if (responseData is List) {
-          coursesData = responseData;
+        if (responseData['success'] == true) {
+          return responseData['data'];
         } else {
-          coursesData = responseData;
+          throw Exception("API returned success: false");
         }
-
-        print('🎯 Courses Data to Parse: $coursesData');
-
-        List<CourseModel> courses = [];
-        if (coursesData is List) {
-          courses = coursesData
-              .map((course) => CourseModel.fromJson(course))
-              .toList();
-        } else if (coursesData is Map<String, dynamic>) {
-          // If it's a single course object
-          courses.add(CourseModel.fromJson(coursesData));
-        }
-
-        return courses;
       } else {
-        print('❌ Learning API Failed: ${response.statusCode}');
-        throw Exception('Failed to load courses: ${response.statusCode}');
+        throw Exception("Failed to fetch enrollments: ${response.statusCode}");
       }
     } catch (e) {
-      print('💥 Learning API Error: $e');
+      print("LEARNING API ERROR: $e");
       rethrow;
     }
   }

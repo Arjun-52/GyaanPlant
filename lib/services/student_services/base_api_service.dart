@@ -30,6 +30,19 @@ class BaseApiService {
     }
   }
 
+  ///  GET with custom headers
+  static Future<http.Response> getWithHeaders(
+    String endpoint,
+    Map<String, String> headers,
+  ) async {
+    try {
+      final response = await http.get(_buildUrl(endpoint), headers: headers);
+      return _handleResponse(response);
+    } catch (e) {
+      throw Exception('Network error: ${e.toString()}');
+    }
+  }
+
   /// 🔥 POST
   static Future<http.Response> post(String endpoint, dynamic data) async {
     final token = await LocalStorageService.getToken();

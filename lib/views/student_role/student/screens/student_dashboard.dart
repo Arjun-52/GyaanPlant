@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/dashboard_viewmodel.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/learning_viewmodel.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/upcoming_drives_section.dart';
 import 'package:provider/provider.dart';
+import 'package:gyaanplant/services/student_services/local_storage_service.dart';
 
 import 'package:gyaanplant/core/common_widgets/common_bottom_nav.dart';
 
@@ -25,10 +27,60 @@ class _StudentDashboardState extends State<StudentDashboard> {
   void initState() {
     super.initState();
 
-    // Use addPostFrameCallback to ensure widget is fully built before accessing Provider
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DashboardViewModel>().fetchDashboard();
+      loadEnrollments();
     });
+  }
+
+  String? _getDriveText(List<dynamic>? drives) {
+    if (drives == null || drives.isEmpty) {
+      return null;
+    }
+
+    // Get the first upcoming drive
+    final firstDrive = drives.first;
+    final company = firstDrive['company'] as String?;
+    final driveDateStr = firstDrive['driveDate'] as String?;
+
+    if (company == null || driveDateStr == null) {
+      return null;
+    }
+
+    try {
+      // Parse the drive date
+      final driveDate = DateTime.parse(driveDateStr);
+      final now = DateTime.now();
+      final difference = driveDate.difference(now).inDays;
+
+      if (difference < 0) {
+        return null; // Past drive, don't show
+      }
+
+      if (difference == 0) {
+        return "$company drive today!";
+      } else if (difference == 1) {
+        return "$company drive tomorrow!";
+      } else {
+        return "$company drive in $difference days";
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  void loadEnrollments() async {
+    print("🚀 DASHBOARD: loadEnrollments() called");
+    final token = await LocalStorageService.getToken();
+    print("🔑 DASHBOARD: Token retrieved: ${token != null ? '✅' : '❌ NULL'}");
+
+    if (token != null && mounted) {
+      print("📱 DASHBOARD: Calling fetchEnrollments with token");
+      final vm = context.read<LearningViewModel>();
+      vm.fetchEnrollments(token);
+    } else {
+      print("❌ DASHBOARD: Token is null or widget not mounted");
+    }
   }
 
   @override
@@ -93,13 +145,14 @@ class _StudentDashboardState extends State<StudentDashboard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ///  HEADER (get user name from AuthViewModel)
+                  ///  HEADER
                   HomeHeader(
                     name: () {
                       final userName = context.read<AuthViewModel>().userName;
                       print(" DEBUG: userName from AuthViewModel: $userName");
                       return userName ?? "User";
                     }(),
+                    driveText: _getDriveText(data.drives),
                   ),
 
                   const SizedBox(height: 20),
@@ -128,12 +181,34 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
                   const SizedBox(height: 20),
 
-                  ///  COURSES (connected to API)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    ),
+                  ),
+
+                  ///  COURSES
                   Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 350),
-                      child: ActiveCoursesSection(
-                        enrollments: data.enrollments,
+                      child: Consumer<LearningViewModel>(
+                        builder: (context, vm, _) {
+                          print("UI RECEIVED IN DASHBOARD: ${vm.enrollments}");
+                          print(
+                            "UI ENROLLMENTS COUNT IN DASHBOARD: ${vm.enrollments.length}",
+                          );
+
+                          if (vm.isLoading) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+
+                          return ActiveCoursesSection(
+                            enrollments: vm.enrollments,
+                          );
+                        },
                       ),
                     ),
                   ),

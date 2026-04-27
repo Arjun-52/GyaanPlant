@@ -26,7 +26,7 @@ class CourseProgressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         gradient: const LinearGradient(
@@ -44,8 +44,8 @@ class CourseProgressCard extends StatelessWidget {
             children: [
               /// Icon Box
               Container(
-                width: 48,
-                height: 48,
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(
                   color: Colors.white10,
                   borderRadius: BorderRadius.circular(12),
@@ -66,7 +66,7 @@ class CourseProgressCard extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                        fontSize: 16,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -74,7 +74,7 @@ class CourseProgressCard extends StatelessWidget {
                       subtitle,
                       style: const TextStyle(
                         color: Colors.white54,
-                        fontSize: 11,
+                        fontSize: 13,
                       ),
                     ),
                   ],
@@ -89,12 +89,10 @@ class CourseProgressCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.transparent, // 👈 no fill
+                    color: Colors.transparent,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: (tagColor ?? Colors.white).withOpacity(
-                        0.6,
-                      ), // 👈 colored border
+                      color: (tagColor ?? Colors.white).withOpacity(0.6),
                       width: 1,
                     ),
                   ),
@@ -109,7 +107,7 @@ class CourseProgressCard extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
           /// Progress Bar
           Row(
@@ -121,7 +119,7 @@ class CourseProgressCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                   child: LinearProgressIndicator(
                     value: progress,
-                    minHeight: 6,
+                    minHeight: 8,
                     backgroundColor: Colors.white12,
                     valueColor: AlwaysStoppedAnimation(progressColor),
                   ),
@@ -143,7 +141,7 @@ class CourseProgressCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   Text(
                     progressCount,
-                    style: const TextStyle(color: Colors.white54, fontSize: 11),
+                    style: const TextStyle(color: Colors.white54, fontSize: 13),
                   ),
                 ],
               ),
@@ -151,10 +149,7 @@ class CourseProgressCard extends StatelessWidget {
 
               /// Resume Button
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                 decoration: BoxDecoration(
                   color: const Color(0xFF00C853),
                   borderRadius: BorderRadius.circular(12),
@@ -164,7 +159,7 @@ class CourseProgressCard extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.w600,
-                    fontSize: 12,
+                    fontSize: 14,
                   ),
                 ),
               ),

@@ -4,12 +4,12 @@ import 'package:gyaanplant/services/student_services/local_storage_service.dart'
 
 class HomeHeader extends StatelessWidget {
   final String name;
+  final String? driveText;
 
-  const HomeHeader({super.key, required this.name});
+  const HomeHeader({super.key, required this.name, this.driveText});
 
   @override
   Widget build(BuildContext context) {
-    // Split first name & last name
     final parts = name.split(" ");
     final firstName = parts.isNotEmpty ? parts[0] : "";
     final lastName = parts.length > 1 ? parts[1] : "";
@@ -19,7 +19,7 @@ class HomeHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          /// 🔹 Left
+          ///  Left
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -30,7 +30,7 @@ class HomeHeader extends StatelessWidget {
 
               const SizedBox(height: 4),
 
-              /// 🔥 Dynamic Name
+              ///  Dynamic Name
               RichText(
                 text: TextSpan(
                   children: [
@@ -56,14 +56,14 @@ class HomeHeader extends StatelessWidget {
 
               const SizedBox(height: 4),
 
-              const Text(
-                "Keep pushing forward 🚀",
-                style: TextStyle(color: Colors.white54, fontSize: 12),
+              Text(
+                driveText ?? "Keep pushing forward 🚀",
+                style: const TextStyle(color: Colors.white54, fontSize: 12),
               ),
             ],
           ),
 
-          /// 🔹 Right
+          ///  Right
           Row(
             children: [
               Container(
@@ -117,7 +117,6 @@ class HomeHeader extends StatelessWidget {
                     ),
                   );
 
-                  // If user confirmed, logout
                   if (shouldLogout == true) {
                     await LocalStorageService.clearToken();
                     if (context.mounted) context.go('/');

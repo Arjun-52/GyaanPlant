@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/views/student_role/learn/screens/learn_screen.dart';
-import 'package:gyaanplant/models/student_role_models/dashboard_model.dart';
 
 class ActiveCoursesSection extends StatelessWidget {
-  final List<Enrollment> enrollments;
+  final List enrollments;
 
   const ActiveCoursesSection({super.key, required this.enrollments});
 
   @override
   Widget build(BuildContext context) {
+    print(
+      "🎯 ACTIVE COURSES: build() called with ${enrollments.length} enrollments",
+    );
+
     // Empty state
     if (enrollments.isEmpty) {
+      print("📭 ACTIVE COURSES: Showing empty state");
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -103,25 +107,24 @@ class ActiveCoursesSection extends StatelessWidget {
           ],
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         // Course List from API data
-        ...enrollments
-            .map((enrollment) => CourseItem(enrollment: enrollment))
-            .toList(),
+        ...enrollments.map((enrollment) => CourseItem(enrollment: enrollment)),
       ],
     );
   }
 }
 
 class CourseItem extends StatelessWidget {
-  final Enrollment enrollment;
+  final Map<String, dynamic> enrollment;
 
   const CourseItem({super.key, required this.enrollment});
 
   /// Get icon based on course category or title
   String getCourseIcon() {
-    final title = enrollment.course.title.toLowerCase();
-    final category = enrollment.course.category?.toLowerCase() ?? '';
+    final course = enrollment['course'] as Map<String, dynamic>? ?? {};
+    final title = (course['title'] as String? ?? '').toLowerCase();
+    final category = (course['category'] as String? ?? '').toLowerCase();
 
     if (category.contains('data') ||
         title.contains('data') ||
@@ -148,7 +151,7 @@ class CourseItem extends StatelessWidget {
 
   /// Get icon background color based on progress
   Color getIconBgColor() {
-    final progress = enrollment.progressPercentage;
+    final progress = getProgress();
     if (progress >= 0.7) {
       return const Color(0xFF0F2A22); // Green tint for high progress
     } else if (progress >= 0.4) {
@@ -160,7 +163,7 @@ class CourseItem extends StatelessWidget {
 
   /// Get progress color based on percentage
   Color getProgressColor() {
-    final progress = enrollment.progressPercentage;
+    final progress = getProgress();
     if (progress >= 0.7) {
       return const Color(0xFF00C853); // Green
     } else if (progress >= 0.4) {
@@ -170,13 +173,24 @@ class CourseItem extends StatelessWidget {
     }
   }
 
+  /// Get progress value from enrollment data
+  double getProgress() {
+    final progress = enrollment['progress'] as int? ?? 0;
+    return (progress / 100.0).clamp(0.0, 1.0);
+  }
+
   @override
   Widget build(BuildContext context) {
     final iconBg = getIconBgColor();
     final icon = getCourseIcon();
-    final title = enrollment.course.title;
-    final subtitle = enrollment.subtitleText;
-    final progress = enrollment.progressPercentage;
+    final course = enrollment['course'] as Map<String, dynamic>? ?? {};
+    final title = course['title'] as String? ?? 'Unknown Course';
+    final totalModules = course['totalModules'] as int? ?? 0;
+    final completedModules = enrollment['completedModules'] as int? ?? 0;
+    final subtitle = completedModules > 0
+        ? '$completedModules/$totalModules modules'
+        : '$totalModules modules';
+    final progress = getProgress();
     final progressColor = getProgressColor();
 
     return Padding(

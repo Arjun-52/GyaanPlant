@@ -5,6 +5,7 @@ import 'services/auth_service.dart';
 
 import 'viewmodels/student_viewmodel/auth_viewmodel.dart';
 import 'viewmodels/student_viewmodel/dashboard_viewmodel.dart';
+import 'viewmodels/student_viewmodel/learning_viewmodel.dart';
 import 'viewmodels/student_viewmodel/test_viewmodel.dart';
 import 'viewmodels/student_viewmodel/job_viewmodel.dart';
 import 'viewmodels/tpo_viewmodels/drives_viewmodel.dart'; // 🔥 ADD THIS
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
         ChangeNotifierProvider(create: (_) => DashboardViewModel()),
+        ChangeNotifierProvider(create: (_) => LearningViewModel()),
         ChangeNotifierProvider(create: (_) => TestViewModel()),
         ChangeNotifierProvider(create: (_) => JobViewModel()),
         ChangeNotifierProvider(create: (_) => DrivesViewModel()), // 🔥 ADD THIS
