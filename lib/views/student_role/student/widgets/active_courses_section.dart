@@ -251,7 +251,7 @@ class CourseItem extends StatelessWidget {
                     const SizedBox(width: 10),
 
                     Text(
-                      "${(progress * 100).toInt()}%",
+                      "${(progress.isFinite ? (progress * 100).round() : 0)}%",
                       style: TextStyle(
                         color: progressColor,
                         fontSize: 12,

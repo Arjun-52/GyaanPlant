@@ -14,7 +14,19 @@ class DriveCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = getStatusColor();
 
-    double progress = drive.registered / drive.eligible;
+    // Safe division to prevent division by zero and Infinity/NaN
+    double progress = 0.0;
+    if (drive.eligible > 0) {
+      progress = drive.registered / drive.eligible;
+      // Ensure progress is finite (not Infinity or NaN)
+      if (!progress.isFinite) {
+        progress = 0.0;
+      }
+    }
+
+    print(
+      "DRIVE DEBUG: registered=${drive.registered}, eligible=${drive.eligible}, progress=$progress",
+    );
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -104,7 +116,7 @@ class DriveCard extends StatelessWidget {
           const SizedBox(height: 6),
 
           Text(
-            "${(progress * 100).toInt()}% registered",
+            "${(progress.isFinite ? (progress * 100).round() : 0)}% registered",
             style: const TextStyle(color: Colors.white54, fontSize: 11),
           ),
 

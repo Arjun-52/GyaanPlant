@@ -81,7 +81,7 @@ class CourseProgressCard extends StatelessWidget {
                 ),
               ),
 
-              /// Tag (optional)
+              /// Tag
               if (tag != null)
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -113,7 +113,7 @@ class CourseProgressCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              /// Progress bar (takes available space)
+              /// Progress bar
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),

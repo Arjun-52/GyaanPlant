@@ -28,10 +28,11 @@ class DeptProgressCard extends StatelessWidget {
           final percent = (dept['percent'] ?? 0) as num;
           final name = dept['name'] ?? "N/A";
 
-          final int percentInt = percent.toInt();
+          // Safe conversion to prevent Infinity/NaN issues
+          final int percentInt = percent.isFinite ? percent.round() : 0;
           final color = getColor(percentInt);
 
-          double progress = percent / 100;
+          double progress = percent.isFinite ? percent / 100 : 0;
 
           if (progress == 0) progress = 0.3;
           return Padding(
