@@ -1,36 +1,52 @@
 import 'dart:convert';
-import 'package:gyaanplant/models/HOD_models/analytics_model.dart';
-import 'package:gyaanplant/services/auth_service.dart';
-import 'package:http/http.dart' as http;
-import 'package:gyaanplant/config/api_config.dart';
+import 'package:gyaanplant/services/student_services/base_api_service.dart';
 
 class AnalyticsService {
-  // Using centralized ApiConfig for consistent base URL
+  // Using BaseApiService for consistent API calls
 
-  Future<AnalyticsModel> fetchAnalytics(String token) async {
-    print("🌍 BASE URL: ${ApiConfig.baseUrl}");
+  Future<Map<String, dynamic>> fetchAnalytics(String token) async {
+    print("🌍 ANALYTICS API CALL: /api/v1/dashboard/analytics");
     print("🔐 TOKEN: $token");
 
-    final res = await http.get(
-      Uri.parse(ApiConfig.buildUrl("/api/v1/dashboard/analytics")),
-      headers: ApiConfig.buildAuthHeaders(token),
-    );
+    try {
+      final response = await BaseApiService.get('/api/v1/dashboard/analytics');
 
-    final data = jsonDecode(res.body);
+      print("📡 ANALYTICS RESPONSE STATUS: ${response.statusCode}");
+      print("📄 ANALYTICS RESPONSE BODY: ${response.body}");
 
-    if (res.statusCode == 200 && data["success"] == true) {
-      return AnalyticsModel.fromJson(data["data"]);
-    } else {
-      final message = data["message"] ?? "Failed to load analytics";
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        print("🔍 ANALYTICS PARSED RESPONSE: $responseData");
 
-      // Handle token expiry
-      if (message.toString().toLowerCase().contains("invalid token") ||
-          message.toString().toLowerCase().contains("unauthorized")) {
-        await AuthService.clearToken();
-        throw Exception("Session expired. Please login again.");
+        if (responseData['success'] == true) {
+          final data = responseData['data'];
+          print("📊 ANALYTICS DATA SECTION: $data");
+
+          // Check for required fields
+          print(
+            "📊 DEPARTMENTS FIELD EXISTS: ${data.containsKey('departments')}",
+          );
+          print("📊 READINESS FIELD EXISTS: ${data.containsKey('readiness')}");
+          print(
+            "📊 PLACEMENT STATS FIELD EXISTS: ${data.containsKey('placementStats')}",
+          );
+          print(
+            "📊 TOP PERFORMERS FIELD EXISTS: ${data.containsKey('topPerformers')}",
+          );
+          print(
+            "📊 LOW PERFORMERS FIELD EXISTS: ${data.containsKey('lowPerformers')}",
+          );
+
+          return data;
+        } else {
+          throw Exception("API returned success: false");
+        }
+      } else {
+        throw Exception("Failed to fetch analytics: ${response.statusCode}");
       }
-
-      throw Exception(message);
+    } catch (e) {
+      print("ANALYTICS API ERROR: $e");
+      rethrow;
     }
   }
 }

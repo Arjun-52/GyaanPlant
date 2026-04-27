@@ -16,7 +16,6 @@ class AnalyticsScreen extends StatelessWidget {
         builder: (context, vm, _) {
           return Scaffold(
             backgroundColor: const Color(0xFF061A14),
-
             body: vm.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : vm.error != null
@@ -32,26 +31,26 @@ class AnalyticsScreen extends StatelessWidget {
                       child: ListView(
                         children: [
                           const Text(
-                            "Analytics 📊",
+                            "Analytics ",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-
                           const SizedBox(height: 20),
 
-                          /// 🔥 Monthly Active Students
+                          /// Monthly Active Students
                           CustomCard(
                             title: "Monthly Active Students",
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: List.generate(6, (index) {
-                                final data =
-                                    vm.data?.monthlyActive ??
-                                    [10, 20, 30, 40, 50, 60];
-
+                                final data = vm.monthlyActive;
+                                // Safety check: ensure index is within bounds
+                                if (index >= data.length) {
+                                  return const Expanded(child: SizedBox());
+                                }
                                 return Expanded(
                                   child: Column(
                                     children: [
@@ -98,9 +97,11 @@ class AnalyticsScreen extends StatelessWidget {
                             title: "Placement Rate by Year",
                             child: Row(
                               children: List.generate(4, (index) {
-                                final rates =
-                                    vm.data?.placementRates ?? [74, 74, 74, 87];
-
+                                final rates = vm.placementRates;
+                                // Safety check: ensure index is within bounds
+                                if (index >= rates.length) {
+                                  return const Expanded(child: SizedBox());
+                                }
                                 return Expanded(
                                   child: Column(
                                     children: [
@@ -143,34 +144,136 @@ class AnalyticsScreen extends StatelessWidget {
 
                           const SizedBox(height: 16),
 
-                          /// 🔥 INFO CARDS (USING YOUR WIDGET)
+                          /// INFO CARDS
                           InfoCard(
                             icon: Icons.people,
                             title: "Students Active This Month",
-                            value: vm.data?.activeStudents.toString() ?? "0",
+                            value: vm.activeStudents.toString(),
                             badge: "+12%",
                           ),
 
                           InfoCard(
                             icon: Icons.timer,
                             title: "Avg Hours / Student",
-                            value: "${vm.data?.avgHours ?? 0} hrs",
+                            value: "${vm.avgHours} hrs",
                             badge: "+2.1 hrs",
                           ),
 
                           InfoCard(
                             icon: Icons.track_changes,
                             title: "Avg Readiness Score",
-                            value: "${vm.data?.readinessScore ?? 0}/100",
+                            value: "${vm.readinessScore}/100",
                             badge: "+4 pts",
                           ),
 
                           InfoCard(
                             icon: Icons.description,
                             title: "Certificates Issued",
-                            value: vm.data?.certificates.toString() ?? "0",
+                            value: vm.certificates.toString(),
                             badge: "+320 this month",
                           ),
+
+                          const SizedBox(height: 20),
+
+                          /// NEW ANALYTICS COMPONENTS
+
+                          // Departments Progress
+                          if (vm.departments.isNotEmpty) ...[
+                            const Text(
+                              "Department Progress",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            // DeptProgressCard(departments: vm.departments),
+                            const SizedBox(height: 20),
+                          ],
+
+                          // Readiness Stats
+                          if (vm.readiness.isNotEmpty) ...[
+                            const Text(
+                              "Readiness Analysis",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            CustomCard(
+                              title: "Readiness by Department",
+                              child: Column(
+                                children: vm.readiness.map((item) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 4,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            item['department'] ?? 'Unknown',
+                                            style: const TextStyle(
+                                              color: Colors.white70,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: LinearProgressIndicator(
+                                            value: (item['score'] ?? 0) / 100,
+                                            backgroundColor: Colors.white12,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  (item['score'] ?? 0) >= 70
+                                                      ? Colors.green
+                                                      : Colors.orange,
+                                                ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          "${item['score'] ?? 0}%",
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+
+                          // Empty states
+                          if (vm.departments.isEmpty &&
+                              vm.readiness.isEmpty) ...[
+                            const Center(
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.analytics,
+                                    size: 50,
+                                    color: Colors.white38,
+                                  ),
+                                  SizedBox(height: 12),
+                                  Text(
+                                    "No detailed analytics data available",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  Text(
+                                    "Check back later for comprehensive analytics",
+                                    style: TextStyle(color: Colors.white54),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),

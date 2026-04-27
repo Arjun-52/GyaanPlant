@@ -5,6 +5,7 @@ import 'package:gyaanplant/views/HOD_role/overview/widgets/dept_progress_card.da
 import 'package:gyaanplant/views/HOD_role/overview/widgets/stat_card.dart';
 import 'package:gyaanplant/views/HOD_role/overview/widgets/syllabus_card.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 class OverViewScreen extends StatelessWidget {
   const OverViewScreen({super.key});
@@ -24,7 +25,56 @@ class OverViewScreen extends StatelessWidget {
 
             if (vm.error != null) {
               return Center(
-                child: Text(vm.error!, style: TextStyle(color: Colors.red)),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "Unable to Load Dashboard",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        vm.error!,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          // Retry the dashboard load
+                          vm.loadDashboard();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00C853),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                        ),
+                        child: const Text(
+                          "Retry",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               );
             }
 
@@ -118,9 +168,17 @@ class OverViewScreen extends StatelessWidget {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Text(
-                                "Detail",
-                                style: TextStyle(color: Colors.white),
+                              GestureDetector(
+                                onTap: () {
+                                  context.push('/depts');
+                                },
+                                child: Text(
+                                  "Detail",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
                               ),
                             ],
                           ),

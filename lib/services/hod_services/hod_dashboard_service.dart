@@ -39,6 +39,22 @@ class HodDashboardService {
       }
 
       final d = data["data"] as Map<String, dynamic>? ?? {};
+      print("🔍 DATA SECTION: $d");
+
+      // Check if departmentStats exists
+      final deptStats = d["departmentStats"];
+      print("🔍 DEPARTMENT STATS RAW: $deptStats");
+      print("🔍 DEPARTMENT STATS TYPE: ${deptStats.runtimeType}");
+
+      if (deptStats != null) {
+        final deptList = deptStats as List;
+        print("🔍 DEPARTMENT STATS LENGTH: ${deptList.length}");
+        if (deptList.isNotEmpty) {
+          print("🔍 FIRST DEPT ITEM: ${deptList[0]}");
+        }
+      } else {
+        print("❌ DEPARTMENT STATS IS NULL");
+      }
 
       return HodDashboardModel.fromJson(d);
     } catch (e) {

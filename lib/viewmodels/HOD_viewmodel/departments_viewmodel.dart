@@ -21,12 +21,17 @@ class DepartmentsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
+      print("🔄 VIEWMODEL: Calling fetchDepts...");
       departments = await _service.fetchDepts(token);
+      print("🔄 VIEWMODEL: Received ${departments.length} departments");
+      print("🔄 VIEWMODEL: Final departments list: $departments");
     } catch (e) {
+      print("❌ VIEWMODEL ERROR: $e");
       error = e.toString();
     }
 
     isLoading = false;
+    print("🔄 VIEWMODEL: Loading finished, notifying listeners");
     notifyListeners();
   }
 }

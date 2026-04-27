@@ -28,7 +28,6 @@ class DeptProgressCard extends StatelessWidget {
           final percent = (dept['percent'] ?? 0) as num;
           final name = dept['name'] ?? "N/A";
 
-          // Safe conversion to prevent Infinity/NaN issues
           final int percentInt = percent.isFinite ? percent.round() : 0;
           final color = getColor(percentInt);
 
@@ -36,8 +35,9 @@ class DeptProgressCard extends StatelessWidget {
 
           if (progress == 0) progress = 0.3;
           return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
                   flex: 2,
@@ -52,14 +52,15 @@ class DeptProgressCard extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
 
                 Expanded(
+                  flex: 5,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: LinearProgressIndicator(
                       value: progress,
-                      minHeight: 8,
+                      minHeight: 10,
                       backgroundColor: Colors.white.withOpacity(0.12),
                       valueColor: AlwaysStoppedAnimation<Color>(color),
                     ),
@@ -68,12 +69,16 @@ class DeptProgressCard extends StatelessWidget {
 
                 const SizedBox(width: 12),
 
-                Text(
-                  "${percentInt}%",
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                SizedBox(
+                  width: 35,
+                  child: Text(
+                    "${percentInt}%",
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],

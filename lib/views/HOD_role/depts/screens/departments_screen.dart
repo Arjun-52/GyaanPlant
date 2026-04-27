@@ -16,6 +16,10 @@ class DepartmentsScreen extends StatelessWidget {
 
         body: Consumer<DepartmentsViewModel>(
           builder: (context, vm, _) {
+            print(
+              "🎯 UI BUILD: isLoading=${vm.isLoading}, error=${vm.error}, departments.length=${vm.departments.length}",
+            );
+
             ///  LOADING
             if (vm.isLoading) {
               return const Center(child: CircularProgressIndicator());
@@ -65,6 +69,7 @@ class DepartmentsScreen extends StatelessWidget {
                         separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (_, i) {
                           final dept = vm.departments[i];
+                          print("🎯 UI RENDERING ITEM $i: ${dept.name}");
 
                           return DepartmentCard(dept: dept);
                         },
