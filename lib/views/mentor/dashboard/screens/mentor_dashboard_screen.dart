@@ -123,7 +123,7 @@ class MentorDashboardScreen extends StatelessWidget {
           },
         ),
 
-        bottomNavigationBar: const TpoBottomNav(currentIndex: 0),
+        bottomNavigationBar: const MentorBottomNav(currentIndex: 0),
       ),
     );
   }

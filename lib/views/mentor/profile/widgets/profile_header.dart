@@ -31,24 +31,30 @@ class ProfileHeader extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            chip("⭐ ${mentor.rating} Rating"),
-            chip("📅 ${mentor.sessions} Sessions"),
-            chip("🏆 Top Mentor"),
+            chip("⭐ ${mentor.rating} Rating", Colors.amber),
+            chip("📅 ${mentor.sessions} Sessions", Colors.blue),
+            chip("🏆 Top Mentor", Colors.green),
           ],
         ),
       ],
     );
   }
 
-  Widget chip(String text) {
+  Widget chip(String text, Color color) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 5),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: Colors.green.withOpacity(0.2),
+
+        color: color.withOpacity(0.12),
+
+        border: Border.all(color: color.withOpacity(0.6), width: 1.2),
       ),
-      child: Text(text, style: TextStyle(color: Colors.green)),
+      child: Text(
+        text,
+        style: TextStyle(color: color, fontWeight: FontWeight.w500),
+      ),
     );
   }
 }

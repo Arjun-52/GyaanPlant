@@ -8,6 +8,7 @@ class SessionHistoryCard extends StatelessWidget {
   final String topic;
   final String feedback;
   final Color avatarColor;
+  final int rating;
 
   const SessionHistoryCard({
     super.key,
@@ -18,6 +19,7 @@ class SessionHistoryCard extends StatelessWidget {
     required this.topic,
     required this.feedback,
     required this.avatarColor,
+    required this.rating,
   });
 
   @override
@@ -78,8 +80,11 @@ class SessionHistoryCard extends StatelessWidget {
               Row(
                 children: List.generate(
                   5,
-                  (index) =>
-                      const Icon(Icons.star, color: Colors.amber, size: 18),
+                  (index) => Icon(
+                    Icons.star,
+                    color: index < rating ? Colors.amber : Colors.grey,
+                    size: 18,
+                  ),
                 ),
               ),
             ],

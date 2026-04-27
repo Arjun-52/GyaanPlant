@@ -106,7 +106,7 @@ class EarningsScreen extends StatelessWidget {
         ),
       ),
 
-      bottomNavigationBar: const TpoBottomNav(currentIndex: 3),
+      bottomNavigationBar: const MentorBottomNav(currentIndex: 3),
     );
   }
 }

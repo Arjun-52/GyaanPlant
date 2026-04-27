@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class TpoBottomNav extends StatelessWidget {
+class MentorBottomNav extends StatelessWidget {
   final int currentIndex;
 
-  const TpoBottomNav({super.key, required this.currentIndex});
+  const MentorBottomNav({super.key, required this.currentIndex});
 
   void _onTap(BuildContext context, int index) {
     switch (index) {

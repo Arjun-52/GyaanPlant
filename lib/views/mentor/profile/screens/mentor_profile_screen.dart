@@ -58,6 +58,7 @@ class MentorProfileScreen extends StatelessWidget {
             );
           },
         ),
+        bottomNavigationBar: const MentorBottomNav(currentIndex: 4),
       ),
     );
   }

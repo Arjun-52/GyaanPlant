@@ -1,74 +1,91 @@
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/viewmodels/mentor_viewmodel/booking_viewmodel.dart';
+import 'package:provider/provider.dart';
+import 'package:gyaanplant/core/common_widgets/mentor_bottom_nav.dart';
+
 import 'package:gyaanplant/views/mentor/bookings/widgets/booking_card.dart';
 import 'package:gyaanplant/views/mentor/bookings/widgets/bookings_header.dart';
 import 'package:gyaanplant/views/mentor/bookings/widgets/tab_selector.dart';
-import 'package:gyaanplant/core/common_widgets/mentor_bottom_nav.dart';
 
 class BookingsScreen extends StatelessWidget {
   const BookingsScreen({super.key});
 
+  String getInitials(String name) {
+    final parts = name.split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    } else if (parts.isNotEmpty) {
+      return parts[0][0].toUpperCase();
+    }
+    return 'S';
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF050A0A),
+    return ChangeNotifierProvider(
+      create: (_) => BookingViewModel()..loadBookings(),
+      child: Scaffold(
+        backgroundColor: const Color(0xFF050A0A),
 
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const BookingsHeader(),
-              const SizedBox(height: 16),
+        body: Consumer<BookingViewModel>(
+          builder: (context, vm, _) {
+            if (vm.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-              const TabSelector(),
-              const SizedBox(height: 20),
+            final list = vm.pending;
 
-              Expanded(
-                child: ListView(
-                  children: const [
-                    BookingCard(
-                      initials: "PG",
-                      name: "Pooja Gupta",
-                      college: "MVSR · IT · 2025",
-                      time: "Mar 15, 2:00 PM",
-                      topic: "Aptitude + mock interview",
-                      price: "₹299",
-                      avatarColor: Colors.green,
-                    ),
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const BookingsHeader(),
+                    const SizedBox(height: 16),
 
-                    SizedBox(height: 14),
+                    const TabSelector(),
+                    const SizedBox(height: 20),
 
-                    BookingCard(
-                      initials: "KN",
-                      name: "Karthik Nair",
-                      college: "CBIT · CSE · 2026",
-                      time: "Mar 16, 11:00 AM",
-                      topic: "Career guidance session",
-                      price: "₹199",
-                      avatarColor: Colors.orange,
-                    ),
+                    Expanded(
+                      child: list.isEmpty
+                          ? const Center(
+                              child: Text(
+                                "No bookings yet",
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: list.length,
+                              itemBuilder: (context, index) {
+                                final b = list[index];
 
-                    SizedBox(height: 14),
-
-                    BookingCard(
-                      initials: "DS",
-                      name: "Divya Sharma",
-                      college: "GRIET · ECE · 2025",
-                      time: "Mar 17, 4:00 PM",
-                      topic: "Resume review",
-                      price: "₹299",
-                      avatarColor: Colors.pink,
+                                return Column(
+                                  children: [
+                                    BookingCard(
+                                      initials: getInitials(b.name),
+                                      name: b.name,
+                                      college: b.college,
+                                      time: b.time,
+                                      topic: b.topic,
+                                      price: "₹${b.price}",
+                                      avatarColor: Colors.green,
+                                    ),
+                                    const SizedBox(height: 14),
+                                  ],
+                                );
+                              },
+                            ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            );
+          },
         ),
-      ),
 
-      bottomNavigationBar: const TpoBottomNav(currentIndex: 1),
+        bottomNavigationBar: const MentorBottomNav(currentIndex: 1),
+      ),
     );
   }
 }
