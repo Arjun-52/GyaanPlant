@@ -11,6 +11,7 @@ class LocalStorageService {
 
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'auth_user';
+  static const String _roleKey = 'user_role';
 
   static Future<void> saveToken(String token) =>
       _storage.write(key: _tokenKey, value: token);
@@ -20,7 +21,13 @@ class LocalStorageService {
   static Future<void> clearToken() async {
     await _storage.delete(key: _tokenKey);
     await _storage.delete(key: _userKey);
+    await _storage.delete(key: _roleKey);
   }
+
+  static Future<void> saveRole(String role) =>
+      _storage.write(key: _roleKey, value: role);
+
+  static Future<String?> getRole() => _storage.read(key: _roleKey);
 
   static Future<void> saveUser(Map<String, dynamic> user) =>
       _storage.write(key: _userKey, value: jsonEncode(user));

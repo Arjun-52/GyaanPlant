@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:gyaanplant/models/tpo_role_models/student_model.dart';
 import 'package:gyaanplant/config/api_config.dart';
 
@@ -51,26 +50,17 @@ class StudentsService {
       print("Testing endpoint: ${ApiConfig.buildUrl('/api/v1/student')}");
       print("With token: ${token != null ? 'YES' : 'NO'}");
 
-      final response = await http
-          .get(
-            Uri.parse(ApiConfig.buildUrl("/api/v1/student")),
-            headers: token != null
-                ? ApiConfig.buildAuthHeaders(token)
-                : ApiConfig.headers,
-          )
-          .timeout(const Duration(seconds: 10));
+      final response = await BaseApiService.get('/api/v1/student');
 
       print("Response status: ${response.statusCode}");
       print("Response body: ${response.body}");
 
       // Try without token
       print("\n--- Testing WITHOUT token ---");
-      final responseNoToken = await http
-          .get(
-            Uri.parse(ApiConfig.buildUrl("/api/v1/student")),
-            headers: ApiConfig.headers,
-          )
-          .timeout(const Duration(seconds: 10));
+      final responseNoToken = await BaseApiService.getWithHeaders(
+        '/api/v1/student',
+        ApiConfig.headers,
+      );
 
       print("Response status (no token): ${responseNoToken.statusCode}");
       print("Response body (no token): ${responseNoToken.body}");
@@ -95,14 +85,7 @@ class StudentsService {
         "Final Authorization header: ${token != null ? 'Bearer $token' : 'NO TOKEN'}",
       );
 
-      final response = await http
-          .get(
-            Uri.parse(ApiConfig.buildUrl("/api/v1/student")),
-            headers: token != null
-                ? ApiConfig.buildAuthHeaders(token)
-                : ApiConfig.headers,
-          )
-          .timeout(ApiConfig.timeout);
+      final response = await BaseApiService.get('/api/v1/student');
 
       print("Response status: ${response.statusCode}");
       print("Response body: ${response.body}");
@@ -145,14 +128,7 @@ class StudentsService {
       // DEBUG: Token validation
       _debugToken(token, "getStudentById");
 
-      final response = await http
-          .get(
-            Uri.parse(ApiConfig.buildUrl("/api/v1/student/$id")),
-            headers: token != null
-                ? ApiConfig.buildAuthHeaders(token)
-                : ApiConfig.headers,
-          )
-          .timeout(ApiConfig.timeout);
+      final response = await BaseApiService.get('/api/v1/student/$id');
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);

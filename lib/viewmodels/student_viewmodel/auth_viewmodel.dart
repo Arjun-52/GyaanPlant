@@ -82,9 +82,12 @@ class AuthViewModel extends ChangeNotifier {
         user = data.user;
         await LocalStorageService.saveToken(data.accessToken);
         await LocalStorageService.saveUser(data.user.toJson());
+        if (data.user.role.isNotEmpty) {
+          await LocalStorageService.saveRole(data.user.role.toLowerCase());
+        }
         AppLogger.info(_tag, 'Login successful for ${data.user.email}');
         if (_disposed || !context.mounted) return;
-        context.goNamed('role');
+        context.go('/');
       } else {
         _showError(context, result.error?.message ?? 'Login failed');
       }
@@ -136,6 +139,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   // REGISTER
+
   Future<void> _register(BuildContext context) async {
     _setLoading(true);
     try {

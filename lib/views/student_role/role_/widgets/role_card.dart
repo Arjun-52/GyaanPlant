@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/role_viewmodel.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gyaanplant/services/student_services/local_storage_service.dart';
 
 class RoleCard extends StatelessWidget {
   final RoleModel role;
@@ -10,18 +11,22 @@ class RoleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         final title = role.title.toLowerCase();
+        String selectedRole = 'student';
 
         if (title.contains('student')) {
-          context.push('/student-dashboard');
+          selectedRole = 'student';
         } else if (title.contains('tpo')) {
-          context.push('/tpo-dashboard');
+          selectedRole = 'tpo';
         } else if (title.contains('hod') || title.contains('principal')) {
-          context.push('/overview');
+          selectedRole = 'hod';
         } else if (title.contains('mentor') || title.contains('alumni')) {
-          context.go('/mentor-dashboard');
+          selectedRole = 'mentor';
         }
+
+        await LocalStorageService.saveRole(selectedRole);
+        context.go('/');
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),

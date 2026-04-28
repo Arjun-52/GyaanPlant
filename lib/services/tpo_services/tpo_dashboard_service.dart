@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:gyaanplant/models/tpo_role_models/dashboard_model.dart';
 import 'package:gyaanplant/config/api_config.dart';
 
@@ -14,18 +13,11 @@ class TpoDashboardService {
   /// GET /api/v1/dashboard/tpo
   static Future<TpoDashboardModel> fetchDashboardData() async {
     try {
-      // Get auth token from local storage
-      final token = await LocalStorageService.getToken();
       print("🌍 BASE URL: ${ApiConfig.baseUrl}");
-      print("🔐 TOKEN: $token");
 
-      // Make API request with authentication
-      final response = await http
-          .get(
-            Uri.parse(ApiConfig.buildUrl('/api/v1/dashboard/tpo')),
-            headers: ApiConfig.buildAuthHeaders(token ?? ''),
-          )
-          .timeout(ApiConfig.timeout);
+      // Make API request using centralized BaseApiService
+      final response = await BaseApiService.get('/api/v1/dashboard/tpo');
+
       print("🌐 RAW RESPONSE:");
       print(response.body);
 

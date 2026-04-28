@@ -108,12 +108,52 @@ class BaseApiService {
     }
 
     String errorMessage = 'Request failed with status: ${response.statusCode}';
+    switch (response.statusCode) {
+      case 400:
+        errorMessage = 'Bad request: Invalid data provided';
+        break;
+      case 401:
+        errorMessage = 'Unauthorized: Invalid or expired token';
+        break;
+      case 403:
+        errorMessage = 'Forbidden: Insufficient permissions';
+        break;
+      case 404:
+        errorMessage = 'Not found: The requested resource does not exist';
+        break;
+      case 408:
+        errorMessage = 'Request timeout: Server took too long to respond';
+        break;
+      case 429:
+        errorMessage = 'Too many requests: Rate limit exceeded';
+        break;
+      case 500:
+        errorMessage = 'Internal server error: Please try again later';
+        break;
+      case 502:
+        errorMessage = 'Bad gateway: Server is temporarily unavailable';
+        break;
+      case 503:
+        errorMessage = 'Service unavailable: Server is down for maintenance';
+        break;
+      default:
+        errorMessage = 'Request failed with status: ${response.statusCode}';
+    }
+
     try {
-      final errorData = jsonDecode(response.body);
-      if (errorData is Map && errorData['message'] != null) {
-        errorMessage = errorData['message'].toString();
+      if (response.body.isNotEmpty) {
+        final errorData = jsonDecode(response.body);
+        errorMessage =
+            errorData['message'] ??
+            errorData['error'] ??
+            errorData['detail'] ??
+            errorMessage;
       }
-    } catch (_) {}
+    } catch (_) {
+      if (response.body.isNotEmpty && response.body.length < 200) {
+        errorMessage = response.body;
+      }
+    }
 
     AppLogger.warning(_tag, 'API error [$endpoint]: $errorMessage');
     throw Exception(errorMessage);

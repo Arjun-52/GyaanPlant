@@ -1,23 +1,11 @@
 import 'dart:convert';
 import 'package:gyaanplant/models/mentor_models/sessions_model.dart';
-import 'package:http/http.dart' as http;
-import '../../config/api_config.dart';
-import '../../data/services/local_storage_service.dart';
+import 'package:gyaanplant/services/student_services/base_api_service.dart';
 
 class SessionService {
   Future<List<Session>> fetchSessions() async {
     try {
-      final token = await LocalStorageService.getToken();
-
-      print("🔐 SESSION TOKEN: $token");
-
-      final response = await http.get(
-        Uri.parse(ApiConfig.buildUrl('/api/v1/session/my')),
-        headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
-        },
-      );
+      final response = await BaseApiService.get('/api/v1/session/my');
 
       print("🌐 SESSION RESPONSE: ${response.body}");
 

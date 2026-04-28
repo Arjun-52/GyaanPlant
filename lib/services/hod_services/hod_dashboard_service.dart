@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:gyaanplant/models/HOD_models/hod_dashboard_model.dart';
 import 'package:gyaanplant/services/auth_service.dart';
-import 'package:http/http.dart' as http;
+import 'package:gyaanplant/services/student_services/base_api_service.dart';
 import 'package:gyaanplant/config/api_config.dart';
 
 class HodDashboardService {
@@ -12,10 +12,11 @@ class HodDashboardService {
     print("🔐 TOKEN: $token");
 
     try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.buildUrl("/api/v1/dashboard/hod")),
-        headers: ApiConfig.buildAuthHeaders(token),
+      final response = await BaseApiService.getWithHeaders(
+        "/api/v1/dashboard/hod",
+        ApiConfig.buildAuthHeaders(token),
       );
+
       print("🌐 HOD RAW RESPONSE:");
       print(response.body);
       if (response.body.isEmpty) {

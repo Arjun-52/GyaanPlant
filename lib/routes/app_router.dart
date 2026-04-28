@@ -24,17 +24,34 @@ import '../data/services/local_storage_service.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/',
+    initialLocation: '/role',
     debugLogDiagnostics: true,
 
     redirect: (context, state) async {
       final token = await LocalStorageService.getToken();
+      final role = await LocalStorageService.getRole(); // if exists
       final isLoggedIn = token != null;
       final location = state.uri.toString();
-      final isPublicRoute = location == '/' || location == '/signup';
+      if (isLoggedIn) {
+        if (location == '/' || location == '/signup' || location == '/role') {
+          switch (role) {
+            case 'student':
+              return '/student-dashboard';
+            case 'tpo':
+              return '/tpo-dashboard';
+            case 'hod':
+              return '/overview';
+            case 'mentor':
+              return '/mentor-dashboard';
+            default:
+              return '/role';
+          }
+        }
+        return null;
+      }
 
-      if (!isLoggedIn && !isPublicRoute) return '/';
-      if (isLoggedIn && isPublicRoute) return '/role';
+      if (role == null && location != '/role') return '/role';
+      if (role != null && location == '/role') return '/';
       return null;
     },
 
