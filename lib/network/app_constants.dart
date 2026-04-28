@@ -1,7 +1,7 @@
 class AppConstants {
   AppConstants._();
 
-  static const String baseUrl = 'https://backend.gyaanplant.in';
+  static const String baseUrl = 'https://backend.gyaanplant.com';
 
   static const int connectTimeout = 30000;
   static const int receiveTimeout = 30000;

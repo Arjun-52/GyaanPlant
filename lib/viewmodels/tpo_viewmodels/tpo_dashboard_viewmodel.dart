@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/tpo_role_models/dashboard_model.dart';
-import 'package:gyaanplant/services/tpo_services/tpo_dashboard_service.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
 
 /// TPO Dashboard ViewModel
 /// Manages dashboard state and API calls
@@ -57,12 +57,12 @@ class TpoDashboardViewModel extends ChangeNotifier {
     try {
       print("🚀 API CALL STARTED");
 
-      final data = await TpoDashboardService.fetchDashboardData();
-
-      print("✅ API RESPONSE SUCCESS:");
-      print(data); // prints parsed model
-
-      _dashboardData = data;
+      final result = await ApiService().tpo.getDashboard();
+      if (result.isSuccess) {
+        _dashboardData = result.data;
+      } else {
+        throw Exception(result.error?.message ?? 'Failed to load dashboard');
+      }
       _errorMessage = null;
     } catch (e) {
       print("❌ API ERROR:");
@@ -86,10 +86,12 @@ class TpoDashboardViewModel extends ChangeNotifier {
 
     try {
       // Call API service
-      final data = await TpoDashboardService.refreshDashboardData();
-
-      // Update data
-      _dashboardData = data;
+      final result = await ApiService().tpo.getDashboard();
+      if (result.isSuccess) {
+        _dashboardData = result.data;
+      } else {
+        throw Exception(result.error?.message ?? 'Failed to load dashboard');
+      }
       _errorMessage = null;
     } catch (e) {
       // Handle errors (don't overwrite existing data on refresh error)

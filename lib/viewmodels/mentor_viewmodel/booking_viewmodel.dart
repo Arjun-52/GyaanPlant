@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/mentor_models/booking_model.dart';
-import 'package:gyaanplant/services/mentor_services/booking_service.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
 
 class BookingViewModel extends ChangeNotifier {
-  final BookingService _service = BookingService();
+  final _mentor = ApiService().mentor;
 
   List<Booking> bookings = [];
   bool isLoading = false;
@@ -12,7 +12,12 @@ class BookingViewModel extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    bookings = await _service.fetchBookings();
+    try {
+      final result = await _mentor.getBookings();
+      if (result.isSuccess) bookings = result.data ?? [];
+    } catch (e) {
+      bookings = [];
+    }
 
     isLoading = false;
     notifyListeners();

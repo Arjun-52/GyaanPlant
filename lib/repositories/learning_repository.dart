@@ -47,4 +47,14 @@ class LearningRepository {
       },
     );
   }
+
+  Future<ApiResponse<List<dynamic>>> getMyEnrollments() {
+    return _api.get<List<dynamic>>(
+      ApiEndpoints.myEnrollments,
+      fromJson: (json) {
+        final map = json as Map<String, dynamic>;
+        return map['data'] as List<dynamic>;
+      },
+    );
+  }
 }

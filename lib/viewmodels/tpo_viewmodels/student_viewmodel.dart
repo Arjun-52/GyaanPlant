@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/tpo_role_models/student_model.dart';
-import 'package:gyaanplant/services/tpo_services/students_service.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
 
 class StudentViewModel extends ChangeNotifier {
-  final StudentsService _service = StudentsService();
+  final _tpo = ApiService().tpo;
 
   List<Student> _students = [];
   bool _isLoading = false;
@@ -46,7 +46,12 @@ class StudentViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _students = await _service.fetchStudents();
+      final result = await _tpo.getStudents();
+      if (result.isSuccess) {
+        _students = result.data ?? [];
+      } else {
+        throw Exception(result.error?.message ?? 'Failed to load students');
+      }
     } catch (e) {
       _errorMessage = e.toString();
       _students = [];

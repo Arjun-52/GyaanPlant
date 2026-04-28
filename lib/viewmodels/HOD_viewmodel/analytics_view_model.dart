@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/services/hod_services/analytics_service.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
+import 'package:gyaanplant/models/HOD_models/analytics_model.dart';
 import 'package:gyaanplant/services/auth_service.dart';
 
 class AnalyticsViewModel extends ChangeNotifier {
-  final AnalyticsService _service = AnalyticsService();
+  final _hod = ApiService().hod;
 
-  Map<String, dynamic>? analyticsData;
+  AnalyticsModel? analyticsData;
   bool isLoading = false;
   String? error;
   bool _disposed = false;
@@ -21,27 +22,18 @@ class AnalyticsViewModel extends ChangeNotifier {
     if (!_disposed) super.notifyListeners();
   }
 
-  List<int> get monthlyActive {
-    final list = (analyticsData?['monthlyActive'] as List? ?? []);
-    return list.map((e) => e as int).toList();
-  }
+  List<int> get monthlyActive => analyticsData?.monthlyActive ?? [];
+  List<int> get placementRates => analyticsData?.placementRates ?? [];
+  int get activeStudents => analyticsData?.activeStudents ?? 0;
+  double get avgHours => analyticsData?.avgHours ?? 0.0;
+  int get readinessScore => analyticsData?.readinessScore ?? 0;
+  int get certificates => analyticsData?.certificates ?? 0;
 
-  List<int> get placementRates {
-    final list = (analyticsData?['placementRates'] as List? ?? []);
-    return list.map((e) => e as int).toList();
-  }
-
-  int get activeStudents => analyticsData?['activeStudents'] ?? 0;
-  double get avgHours => (analyticsData?['avgHours'] ?? 0).toDouble();
-  int get readinessScore => analyticsData?['readinessScore'] ?? 0;
-  int get certificates => analyticsData?['certificates'] ?? 0;
-
-  List<dynamic> get departments => analyticsData?['departments'] as List? ?? [];
-  List<dynamic> get readiness => analyticsData?['readiness'] as List? ?? [];
-  Map<String, dynamic> get placementStats =>
-      Map<String, dynamic>.from(analyticsData?['placementStats'] as Map? ?? {});
-  List<dynamic> get topPerformers => analyticsData?['topPerformers'] as List? ?? [];
-  List<dynamic> get lowPerformers => analyticsData?['lowPerformers'] as List? ?? [];
+  List<dynamic> get departments => analyticsData?.departments ?? [];
+  List<dynamic> get readiness => analyticsData?.readiness ?? [];
+  Map<String, dynamic> get placementStats => analyticsData?.placementStats ?? {};
+  List<dynamic> get topPerformers => analyticsData?.topPerformers ?? [];
+  List<dynamic> get lowPerformers => analyticsData?.lowPerformers ?? [];
 
   Future<void> fetchAnalytics() async {
     final token = AuthService.token;
@@ -52,7 +44,12 @@ class AnalyticsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      analyticsData = await _service.fetchAnalytics(token);
+      final result = await _hod.getAnalytics();
+      if (result.isSuccess) {
+        analyticsData = result.data;
+      } else {
+        throw Exception(result.error?.message ?? 'Failed to load analytics');
+      }
     } catch (e) {
       error = e.toString();
     } finally {

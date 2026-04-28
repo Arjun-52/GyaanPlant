@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/tpo_role_models/drive_model.dart';
-import 'package:gyaanplant/services/tpo_services/drives_service.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
 
 class DrivesViewModel extends ChangeNotifier {
-  final DrivesService _service = DrivesService();
+  final _tpo = ApiService().tpo;
 
   List<Drive> _drives = [];
   bool _isLoading = false;
@@ -31,7 +31,12 @@ class DrivesViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _drives = await _service.fetchDrives();
+      final result = await _tpo.getDrives();
+      if (result.isSuccess) {
+        _drives = result.data ?? [];
+      } else {
+        throw Exception(result.error?.message ?? 'Failed to load drives');
+      }
     } catch (e) {
       _error = e.toString();
       _drives = [];

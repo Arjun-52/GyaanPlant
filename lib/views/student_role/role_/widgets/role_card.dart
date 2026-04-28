@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/role_viewmodel.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gyaanplant/services/student_services/local_storage_service.dart';
+import 'package:gyaanplant/data/services/local_storage_service.dart';
 
 class RoleCard extends StatelessWidget {
   final RoleModel role;

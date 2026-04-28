@@ -105,6 +105,7 @@ class ApiEndpoints {
   static const String dashboardMentor = '/api/v1/dashboard/mentor';
   static const String dashboardTpo = '/api/v1/dashboard/tpo';
   static const String dashboardHod = '/api/v1/dashboard/hod';
+  static const String dashboardAnalytics = '/api/v1/dashboard/analytics';
 
   // ── Notifications ────────────────────────────────────────────────────────
   static const String notifications = '/api/v1/notification';

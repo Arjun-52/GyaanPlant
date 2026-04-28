@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 void main() async {
   const String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZTliMmU5YjcwODY2ZDFhMjIxY2E5ZSIsInJvbGUiOiJ0cG8iLCJ0b2tlblZlcnNpb24iOjAsImlhdCI6MTc3NjkyMzM3MCwiZXhwIjoxNzc3NTI4MTcwLCJpc3MiOiJneWFhbnBsYW50In0.W2jw3XtksLM9dPVswsbNS2k_8JzZJXUKiAM-ARQYm8o";
-  const String baseUrl = 'https://backend.gyaanplant.in';
+  const String baseUrl = 'https://backend.gyaanplant.com';
   
   final headers = {
     'Content-Type': 'application/json',

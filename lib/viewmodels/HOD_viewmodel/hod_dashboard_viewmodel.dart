@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/HOD_models/hod_dashboard_model.dart';
-import 'package:gyaanplant/services/hod_services/hod_dashboard_service.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
 import 'package:gyaanplant/services/auth_service.dart';
 
 class HodDashboardViewModel extends ChangeNotifier {
-  final HodDashboardService _service = HodDashboardService();
+  final _hod = ApiService().hod;
 
   HodDashboardModel? data;
   bool isLoading = false;
@@ -21,7 +21,12 @@ class HodDashboardViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      data = await _service.fetchDashboard(token);
+      final result = await _hod.getDashboard();
+      if (result.isSuccess) {
+        data = result.data;
+      } else {
+        throw Exception(result.error?.message ?? 'Failed to load dashboard');
+      }
       print("🔍 PARSED DATA: ${data?.departmentsData}");
 
       // TEMPORARY: Add mock data if API returns empty departments

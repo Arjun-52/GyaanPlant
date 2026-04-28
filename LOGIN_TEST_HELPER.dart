@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 /// Run this to debug login issues
 
 class LoginTestHelper {
-  static const String baseUrl = 'https://backend.gyaanplant.in';
+  static const String baseUrl = 'https://backend.gyaanplant.com';
   
   /// Test registration with new TPO user
   static Future<void> testRegistration() async {

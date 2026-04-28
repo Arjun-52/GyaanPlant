@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/services/student_services/learning_service.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
 
 class LearningViewModel extends ChangeNotifier {
-  final _service = LearningService();
+  final _learning = ApiService().learning;
 
   List enrollments = [];
   bool isLoading = false;
@@ -26,7 +26,13 @@ class LearningViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      enrollments = await _service.getMyEnrollments(token);
+      final result = await _learning.getMyEnrollments();
+      if (result.isSuccess) {
+        enrollments = result.data!;
+      } else {
+        errorMessage = result.error?.message ?? 'Failed to fetch enrollments';
+        enrollments = [];
+      }
     } catch (e) {
       errorMessage = e.toString();
       enrollments = [];

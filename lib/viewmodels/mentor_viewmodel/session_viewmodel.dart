@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/mentor_models/sessions_model.dart';
-import 'package:gyaanplant/services/mentor_services/session_service.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
 
 class SessionViewModel extends ChangeNotifier {
-  final SessionService _service = SessionService();
+  final _mentor = ApiService().mentor;
 
   List<Session> sessions = [];
   bool isLoading = false;
@@ -12,7 +12,12 @@ class SessionViewModel extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    sessions = await _service.fetchSessions();
+    try {
+      final result = await _mentor.getSessions();
+      if (result.isSuccess) sessions = result.data ?? [];
+    } catch (e) {
+      sessions = [];
+    }
 
     isLoading = false;
     notifyListeners();

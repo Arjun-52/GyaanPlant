@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/services/hod_services/dept_service.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
 import 'package:gyaanplant/models/HOD_models/department_model.dart';
 import 'package:gyaanplant/services/auth_service.dart';
 
 class DepartmentsViewModel extends ChangeNotifier {
-  final DeptService _service = DeptService();
+  final _hod = ApiService().hod;
 
   List<Department> departments = [];
   bool isLoading = false;
@@ -31,7 +31,12 @@ class DepartmentsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      departments = await _service.fetchDepts(token);
+      final result = await _hod.getDepartments();
+      if (result.isSuccess) {
+        departments = result.data ?? [];
+      } else {
+        throw Exception(result.error?.message ?? 'Failed to load departments');
+      }
     } catch (e) {
       error = e.toString();
     } finally {
