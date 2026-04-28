@@ -152,7 +152,18 @@ class SignUpScreen extends StatelessWidget {
 
             CustomDropdown(
               value: vm.role,
-              items: const ["Student", "Mentor", "Admin"],
+              items: const [
+                "Student",
+                "Mentor",
+                "TPO",
+                "HOD",
+                "College Admin",
+                "Employee / Staff",
+                "HR Manager",
+                "L&D Manager",
+                "Department Head",
+                "Executive",
+              ],
               onChanged: vm.setRole,
             ),
 

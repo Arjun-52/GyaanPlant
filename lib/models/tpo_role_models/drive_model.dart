@@ -16,4 +16,16 @@ class Drive {
     required this.pending,
     required this.status,
   });
+
+  factory Drive.fromJson(Map<String, dynamic> json) {
+    return Drive(
+      company: json['company'] ?? '',
+      role: json['role'] ?? '',
+      date: json['date'] ?? '',
+      eligible: json['eligible'] ?? 0,
+      registered: json['registered'] ?? 0,
+      pending: json['pending'] ?? 0,
+      status: json['status'] ?? '',
+    );
+  }
 }

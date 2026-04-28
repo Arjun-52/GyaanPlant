@@ -38,6 +38,22 @@ class BaseApiService {
     }
   }
 
+  static Future<http.Response> getWithHeaders(
+    String endpoint,
+    Map<String, String> headers,
+  ) async {
+    AppLogger.debug(_tag, 'GET $endpoint');
+    try {
+      final response = await http
+          .get(_buildUrl(endpoint), headers: headers)
+          .timeout(_timeout);
+      return _handleResponse(endpoint, response);
+    } on Exception catch (e) {
+      AppLogger.error(_tag, 'GET $endpoint failed', e);
+      throw Exception('Network error: $e');
+    }
+  }
+
   static Future<http.Response> post(String endpoint, dynamic data) async {
     AppLogger.debug(_tag, 'POST $endpoint');
     try {

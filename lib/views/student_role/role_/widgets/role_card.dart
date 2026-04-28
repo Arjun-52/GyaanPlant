@@ -11,44 +11,42 @@ class RoleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (role.title.toLowerCase().contains('student')) {
-          context.go('/student-dashboard');
-        } else if (role.title.toLowerCase().contains('tpo')) {
-          context.go('/tpo-dashboard');
-        } else if (role.title.toLowerCase().contains('hod') ||
-            role.title.toLowerCase().contains('principal')) {
-          context.go('/overview');
+        final title = role.title.toLowerCase();
+
+        if (title.contains('student')) {
+          context.push('/student-dashboard');
+        } else if (title.contains('tpo')) {
+          context.push('/tpo-dashboard');
+        } else if (title.contains('hod') || title.contains('principal')) {
+          context.push('/overview');
+        } else if (title.contains('mentor') || title.contains('alumni')) {
+          context.go('/mentor-dashboard');
         }
-        // Add other role navigation here as needed
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16),
-
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
-
           border: Border.all(color: Color(0xFF0B2F25), width: 1.2),
-
           color: const Color(0xFF0A0F0D),
         ),
-
         child: Row(
           children: [
-            //  Icon box
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: const Color(0xFF0F2A22),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Color(0xFF00C853).withValues(alpha: 0.35)),
+                border: Border.all(
+                  color: Color(0xFF00C853).withValues(alpha: 0.35),
+                ),
               ),
               child: Text(role.icon, style: const TextStyle(fontSize: 20)),
             ),
 
             const SizedBox(width: 16),
 
-            //  Text section
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

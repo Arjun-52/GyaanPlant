@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/dashboard_viewmodel.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/learning_viewmodel.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/upcoming_drives_section.dart';
 import 'package:provider/provider.dart';
+import 'package:gyaanplant/data/services/local_storage_service.dart';
 
 import 'package:gyaanplant/views/student_role/student/widgets/active_courses_section.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/home_header.dart';
@@ -23,8 +25,38 @@ class _StudentDashboardState extends State<StudentDashboard> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.read<DashboardViewModel>().fetchDashboard();
+      if (mounted) {
+        context.read<DashboardViewModel>().fetchDashboard();
+        _loadEnrollments();
+      }
     });
+  }
+
+  String? _getDriveText(List<dynamic>? drives) {
+    if (drives == null || drives.isEmpty) return null;
+
+    final firstDrive = drives.first;
+    final company = firstDrive['company'] as String?;
+    final driveDateStr = firstDrive['driveDate'] as String?;
+    if (company == null || driveDateStr == null) return null;
+
+    try {
+      final driveDate = DateTime.parse(driveDateStr);
+      final difference = driveDate.difference(DateTime.now()).inDays;
+      if (difference < 0) return null;
+      if (difference == 0) return '$company drive today!';
+      if (difference == 1) return '$company drive tomorrow!';
+      return '$company drive in $difference days';
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _loadEnrollments() async {
+    final token = await LocalStorageService.getToken();
+    if (token != null && mounted) {
+      context.read<LearningViewModel>().fetchEnrollments(token);
+    }
   }
 
   @override
@@ -84,7 +116,10 @@ class _StudentDashboardState extends State<StudentDashboard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  HomeHeader(name: userName),
+                  HomeHeader(
+                    name: userName,
+                    driveText: _getDriveText(data.drives),
+                  ),
                   const SizedBox(height: 20),
                   ScoreCard(
                     xp: data.xp,
@@ -98,10 +133,18 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   const SizedBox(height: 20),
                   const BotCard(),
                   const SizedBox(height: 20),
+
                   Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 350),
-                      child: ActiveCoursesSection(enrollments: data.enrollments),
+                      child: Consumer<LearningViewModel>(
+                        builder: (context, lvm, _) {
+                          if (lvm.isLoading) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+                          return ActiveCoursesSection(enrollments: lvm.enrollments);
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),

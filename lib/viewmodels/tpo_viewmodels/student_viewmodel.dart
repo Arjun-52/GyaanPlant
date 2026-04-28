@@ -1,8 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/tpo_role_models/student_model.dart';
+import 'package:gyaanplant/services/tpo_services/students_service.dart';
 
 class StudentViewModel extends ChangeNotifier {
+  final StudentsService _service = StudentsService();
+
+  List<Student> _students = [];
+  bool _isLoading = false;
+  String? _errorMessage;
+  bool _hasInitialized = false;
   bool _disposed = false;
+
+  String _searchQuery = '';
+  String _selectedFilter = 'All';
+
+  List<Student> get students => _students;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+  bool get hasError => _errorMessage != null;
+  bool get hasData => _students.isNotEmpty;
+  bool get hasInitialized => _hasInitialized;
+  String get selectedFilter => _selectedFilter;
+  String get searchQuery => _searchQuery;
 
   @override
   void dispose() {
@@ -15,77 +34,105 @@ class StudentViewModel extends ChangeNotifier {
     if (!_disposed) super.notifyListeners();
   }
 
-  final List<Student> _students = [
-    Student(
-      name: "Arjun Kumar",
-      branch: "CSE",
-      year: "4th Year",
-      score: 92,
-      initials: "AK",
-    ),
-    Student(
-      name: "Sneha Murthy",
-      branch: "IT",
-      year: "4th Year",
-      score: 88,
-      initials: "SM",
-    ),
-    Student(
-      name: "Ravi Teja",
-      branch: "CSE",
-      year: "4th Year",
-      score: 81,
-      initials: "RT",
-    ),
-    Student(
-      name: "Divya Sharma",
-      branch: "ECE",
-      year: "4th Year",
-      score: 76,
-      initials: "DS",
-    ),
-    Student(
-      name: "Karthik Nair",
-      branch: "CSE",
-      year: "3rd Year",
-      score: 69,
-      initials: "KN",
-    ),
-  ];
+  Future<void> initialize() async {
+    if (_hasInitialized) return;
+    await fetchStudents();
+    _hasInitialized = true;
+  }
 
-  String _searchQuery = "";
+  Future<void> fetchStudents() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
 
-  String _selectedFilter = "All";
+    try {
+      _students = await _service.fetchStudents();
+    } catch (e) {
+      _errorMessage = e.toString();
+      _students = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
-  List<Student> get students => _students;
-  String get selectedFilter => _selectedFilter;
-  String get searchQuery => _searchQuery;
+  Future<void> refreshStudents() async => fetchStudents();
 
   void setSearch(String value) {
-    _searchQuery = value;
-    notifyListeners();
+    if (_searchQuery != value) {
+      _searchQuery = value;
+      notifyListeners();
+    }
   }
 
   void setFilter(String filter) {
-    _selectedFilter = filter;
-    notifyListeners();
+    if (_selectedFilter != filter) {
+      _selectedFilter = filter;
+      notifyListeners();
+    }
+  }
+
+  void clearError() {
+    if (_errorMessage != null) {
+      _errorMessage = null;
+      notifyListeners();
+    }
   }
 
   List<Student> get filteredStudents {
+    if (_students.isEmpty) return [];
+
     return _students.where((student) {
-      final matchesSearch = student.name.toLowerCase().contains(
-        _searchQuery.toLowerCase(),
-      );
+      final matchesSearch =
+          student.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          student.email.toLowerCase().contains(_searchQuery.toLowerCase());
 
       bool matchesFilter = true;
-
-      if (_selectedFilter == "MNC Ready") {
-        matchesFilter = student.score >= 75;
-      } else if (_selectedFilter == "At-Risk") {
-        matchesFilter = student.score < 75;
+      switch (_selectedFilter) {
+        case 'MNC Ready':
+          matchesFilter = student.status == 'MNC Ready';
+          break;
+        case 'At Risk':
+          matchesFilter = student.status == 'At Risk';
+          break;
+        case 'Average':
+          matchesFilter = student.status == 'Average';
+          break;
+        default:
+          matchesFilter = _selectedFilter == 'All' || student.branch == _selectedFilter;
       }
 
       return matchesSearch && matchesFilter;
     }).toList();
+  }
+
+  List<String> get availableFilters {
+    final filters = <String>{'All'};
+    filters.addAll(_students.map((s) => s.status).toSet());
+    filters.addAll(_students.map((s) => s.branch).where((b) => b != 'N/A').toSet());
+    return filters.toList();
+  }
+
+  Map<String, int> get statistics {
+    final stats = <String, int>{
+      'total': _students.length,
+      'mncReady': 0,
+      'atRisk': 0,
+      'average': 0,
+    };
+    for (final student in _students) {
+      switch (student.status) {
+        case 'MNC Ready':
+          stats['mncReady'] = (stats['mncReady'] ?? 0) + 1;
+          break;
+        case 'At Risk':
+          stats['atRisk'] = (stats['atRisk'] ?? 0) + 1;
+          break;
+        case 'Average':
+          stats['average'] = (stats['average'] ?? 0) + 1;
+          break;
+      }
+    }
+    return stats;
   }
 }

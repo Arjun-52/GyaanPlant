@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:gyaanplant/viewmodels/HOD_viewmodel/departments_viewmodel.dart';
 import 'package:gyaanplant/views/HOD_role/depts/widgets/department_card.dart';
-import 'package:provider/provider.dart';
 
 class DepartmentsScreen extends StatefulWidget {
   const DepartmentsScreen({super.key});
@@ -17,6 +17,7 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
   void initState() {
     super.initState();
     _vm = DepartmentsViewModel();
+    _vm.loadDepartments();
   }
 
   @override
@@ -33,6 +34,28 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
         backgroundColor: const Color(0xFF061A14),
         body: Consumer<DepartmentsViewModel>(
           builder: (context, vm, _) {
+            if (vm.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (vm.error != null) {
+              return Center(
+                child: Text(
+                  vm.error!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              );
+            }
+
+            if (vm.departments.isEmpty) {
+              return const Center(
+                child: Text(
+                  'No Departments Found',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
+            }
+
             return SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -42,17 +65,17 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                     const Text(
                       'Departments',
                       style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold),
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Expanded(
                       child: ListView.separated(
                         itemCount: vm.departments.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (_, i) =>
-                            DepartmentCard(dept: vm.departments[i]),
+                        itemBuilder: (_, i) => DepartmentCard(dept: vm.departments[i]),
                       ),
                     ),
                   ],

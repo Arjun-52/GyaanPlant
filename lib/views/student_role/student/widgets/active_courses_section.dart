@@ -4,13 +4,12 @@ import 'package:gyaanplant/viewmodels/student_viewmodel/student_tab_controller.d
 import 'package:gyaanplant/models/student_role_models/dashboard_model.dart';
 
 class ActiveCoursesSection extends StatelessWidget {
-  final List<Enrollment> enrollments;
+  final List enrollments;
 
   const ActiveCoursesSection({super.key, required this.enrollments});
 
   @override
   Widget build(BuildContext context) {
-    // Empty state
     if (enrollments.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,35 +26,25 @@ class ActiveCoursesSection extends StatelessWidget {
             ),
             child: Column(
               children: [
-                Icon(Icons.menu_book, size: 40, color: Colors.white38),
-                SizedBox(height: 10),
-                Text("No active courses yet"),
-                SizedBox(height: 6),
-                Text("Start learning to see your courses"),
-
-                SizedBox(height: 12),
-
+                const Icon(Icons.menu_book, size: 40, color: Colors.white38),
+                const SizedBox(height: 10),
+                const Text('No active courses yet'),
+                const SizedBox(height: 6),
+                const Text('Start learning to see your courses'),
+                const SizedBox(height: 12),
                 ElevatedButton(
-                  onPressed: () {
-                    context.read<StudentTabController>().switchTab(1);
-                  },
+                  onPressed: () => context.read<StudentTabController>().switchTab(1),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     elevation: 0,
-                    side: const BorderSide(
-                      color: Color(0xFF00C853),
-                      width: 1.5,
-                    ),
+                    side: const BorderSide(color: Color(0xFF00C853), width: 1.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   ),
                   child: const Text(
-                    "Explore Courses",
+                    'Explore Courses',
                     style: TextStyle(
                       color: Color(0xFF00C853),
                       fontWeight: FontWeight.w600,
@@ -72,12 +61,11 @@ class ActiveCoursesSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        //  Title Row
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              "Active Courses",
+              'Active Courses',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -85,11 +73,9 @@ class ActiveCoursesSection extends StatelessWidget {
               ),
             ),
             InkWell(
-              onTap: () {
-                context.read<StudentTabController>().switchTab(1);
-              },
+              onTap: () => context.read<StudentTabController>().switchTab(1),
               child: const Text(
-                "See all →",
+                'See all →',
                 style: TextStyle(
                   color: Color(0xFF00C853),
                   fontSize: 13,
@@ -99,80 +85,62 @@ class ActiveCoursesSection extends StatelessWidget {
             ),
           ],
         ),
-
-        const SizedBox(height: 16),
-        // Course List from API data
-        ...enrollments
-            .map((enrollment) => CourseItem(enrollment: enrollment)),
+        const SizedBox(height: 8),
+        ...enrollments.map((enrollment) => CourseItem(enrollment: enrollment)),
       ],
     );
   }
 }
 
 class CourseItem extends StatelessWidget {
-  final Enrollment enrollment;
+  final Map<String, dynamic> enrollment;
 
   const CourseItem({super.key, required this.enrollment});
 
-  /// Get icon based on course category or title
   String getCourseIcon() {
-    final title = enrollment.course.title.toLowerCase();
-    final category = enrollment.course.category?.toLowerCase() ?? '';
+    final course = enrollment['course'] as Map<String, dynamic>? ?? {};
+    final title = (course['title'] as String? ?? '').toLowerCase();
+    final category = (course['category'] as String? ?? '').toLowerCase();
 
-    if (category.contains('data') ||
-        title.contains('data') ||
-        title.contains('algorithm')) {
-      return '📊';
-    } else if (category.contains('quant') ||
-        title.contains('quant') ||
-        title.contains('aptitude')) {
-      return '🧮';
-    } else if (category.contains('verbal') ||
-        title.contains('verbal') ||
-        title.contains('communication')) {
-      return '💬';
-    } else if (category.contains('coding') ||
-        title.contains('programming') ||
-        title.contains('code')) {
-      return '💻';
-    } else if (category.contains('hr') || title.contains('interview')) {
-      return '👔';
-    } else {
-      return '📚';
-    }
+    if (category.contains('data') || title.contains('data') || title.contains('algorithm')) return '📊';
+    if (category.contains('quant') || title.contains('quant') || title.contains('aptitude')) return '🧮';
+    if (category.contains('verbal') || title.contains('verbal') || title.contains('communication')) return '💬';
+    if (category.contains('coding') || title.contains('programming') || title.contains('code')) return '💻';
+    if (category.contains('hr') || title.contains('interview')) return '👔';
+    return '📚';
   }
 
-  /// Get icon background color based on progress
   Color getIconBgColor() {
-    final progress = enrollment.progressPercentage;
-    if (progress >= 0.7) {
-      return const Color(0xFF0F2A22); // Green tint for high progress
-    } else if (progress >= 0.4) {
-      return const Color(0xFF1A2332); // Blue tint for medium progress
-    } else {
-      return const Color(0xFF1E1E2F); // Purple tint for low progress
-    }
+    final p = getProgress();
+    if (p >= 0.7) return const Color(0xFF0F2A22);
+    if (p >= 0.4) return const Color(0xFF1A2332);
+    return const Color(0xFF1E1E2F);
   }
 
-  /// Get progress color based on percentage
   Color getProgressColor() {
-    final progress = enrollment.progressPercentage;
-    if (progress >= 0.7) {
-      return const Color(0xFF00C853); // Green
-    } else if (progress >= 0.4) {
-      return const Color(0xFFFFA726); // Orange
-    } else {
-      return const Color(0xFFEF5350); // Red
-    }
+    final p = getProgress();
+    if (p >= 0.7) return const Color(0xFF00C853);
+    if (p >= 0.4) return const Color(0xFFFFA726);
+    return const Color(0xFFEF5350);
+  }
+
+  double getProgress() {
+    final progress = enrollment['progress'] as int? ?? 0;
+    return (progress / 100.0).clamp(0.0, 1.0);
   }
 
   @override
   Widget build(BuildContext context) {
     final iconBg = getIconBgColor();
     final icon = getCourseIcon();
-    final title = enrollment.course.title;
-    final subtitle = enrollment.subtitleText;
-    final progress = enrollment.progressPercentage;
+    final course = enrollment['course'] as Map<String, dynamic>? ?? {};
+    final title = course['title'] as String? ?? 'Unknown Course';
+    final totalModules = course['totalModules'] as int? ?? 0;
+    final completedModules = enrollment['completedModules'] as int? ?? 0;
+    final subtitle = completedModules > 0
+        ? '$completedModules/$totalModules modules'
+        : '$totalModules modules';
+    final progress = getProgress();
     final progressColor = getProgressColor();
 
     return Padding(
@@ -180,7 +148,6 @@ class CourseItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          //  Icon Box
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -189,10 +156,7 @@ class CourseItem extends StatelessWidget {
             ),
             child: Text(icon, style: const TextStyle(fontSize: 18)),
           ),
-
           const SizedBox(width: 14),
-
-          //  Text + Progress
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,17 +169,12 @@ class CourseItem extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-
                 const SizedBox(height: 2),
-
                 Text(
                   subtitle,
                   style: const TextStyle(color: Colors.white54, fontSize: 12),
                 ),
-
                 const SizedBox(height: 10),
-
-                //  Progress Bar + %
                 Row(
                   children: [
                     Expanded(
@@ -229,11 +188,9 @@ class CourseItem extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     const SizedBox(width: 10),
-
                     Text(
-                      "${(progress * 100).toInt()}%",
+                      '${(progress.isFinite ? (progress * 100).round() : 0)}%',
                       style: TextStyle(
                         color: progressColor,
                         fontSize: 12,

@@ -1,42 +1,27 @@
 import 'dart:convert';
-import '../../core/utils/app_logger.dart';
-import '../../models/student_role_models/course_model.dart';
-import 'base_api_service.dart';
+import 'package:gyaanplant/services/student_services/base_api_service.dart';
 
 class LearningService {
-  static const String _tag = 'LearningService';
+  Future<List<dynamic>> getMyEnrollments(String token) async {
+    final headers = {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
 
-  Future<List<CourseModel>> getCourses() async {
-    AppLogger.info(_tag, 'Fetching courses');
-    try {
-      final response = await BaseApiService.get('/api/v1/learning');
+    final response = await BaseApiService.getWithHeaders(
+      '/api/v1/learning/my-courses',
+      headers,
+    );
+
+    if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
-
-      dynamic coursesData;
-      if (responseData is Map<String, dynamic>) {
-        coursesData = responseData.containsKey('data')
-            ? responseData['data']
-            : responseData;
+      if (responseData['success'] == true) {
+        return responseData['data'] as List<dynamic>;
       } else {
-        coursesData = responseData;
+        throw Exception('API returned success: false');
       }
-
-      List<CourseModel> courses;
-      if (coursesData is List) {
-        courses = coursesData
-            .map((e) => CourseModel.fromJson(e as Map<String, dynamic>))
-            .toList();
-      } else if (coursesData is Map<String, dynamic>) {
-        courses = [CourseModel.fromJson(coursesData)];
-      } else {
-        courses = [];
-      }
-
-      AppLogger.info(_tag, 'Fetched ${courses.length} courses');
-      return courses;
-    } catch (e, st) {
-      AppLogger.error(_tag, 'Failed to fetch courses', e, st);
-      rethrow;
+    } else {
+      throw Exception('Failed to fetch enrollments: ${response.statusCode}');
     }
   }
 }

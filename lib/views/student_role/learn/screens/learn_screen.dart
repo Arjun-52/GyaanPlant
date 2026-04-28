@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/learning_viewmodel.dart';
+import 'package:gyaanplant/data/services/local_storage_service.dart';
 import 'package:provider/provider.dart';
 
 import 'package:gyaanplant/views/student_role/learn/widgets/course_progress_card.dart';
@@ -19,11 +20,14 @@ class _LearnScreenState extends State<LearnScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      if (mounted) {
-        context.read<LearningViewModel>().fetchCourses();
-      }
-    });
+    _loadEnrollments();
+  }
+
+  void _loadEnrollments() async {
+    final token = await LocalStorageService.getToken();
+    if (token != null && mounted) {
+      context.read<LearningViewModel>().fetchEnrollments(token);
+    }
   }
 
   @override
@@ -52,17 +56,7 @@ class _LearnScreenState extends State<LearnScreen> {
                 const SprintBannerCard(),
                 const SizedBox(height: 16),
 
-                if (vm.errorMessage != null)
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Text(
-                        'Failed to load courses. Please try again.',
-                        style: const TextStyle(color: Colors.redAccent),
-                      ),
-                    ),
-                  )
-                else if (vm.courses.isEmpty)
+                if (vm.enrollments.isEmpty)
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.all(20),
@@ -98,12 +92,13 @@ class _LearnScreenState extends State<LearnScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
-                      children: vm.courses.map((course) {
+                      children: vm.enrollments.map((enrollment) {
+                        final course = enrollment['course'] ?? {};
                         return CourseProgressCard(
-                          title: course.title,
-                          subtitle: 'Modules: ${course.totalModules}',
+                          title: course['title'] ?? 'Unknown Course',
+                          subtitle: 'Modules: ${course['totalModules'] ?? 0}',
                           percentText: '0%',
-                          progressCount: '0/${course.totalModules}',
+                          progressCount: '0/${course['totalModules'] ?? 0}',
                           progress: 0.0,
                           progressColor: Colors.green,
                           tag: 'New',

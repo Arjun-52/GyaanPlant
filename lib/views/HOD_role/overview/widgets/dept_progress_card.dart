@@ -13,61 +13,72 @@ class DeptProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("🔥 DEPT DATA: $departments");
+
     return Container(
       padding: const EdgeInsets.all(16),
-
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.green.withValues(alpha: 0.6)),
+        border: Border.all(color: Colors.green.withOpacity(0.6)),
         borderRadius: BorderRadius.circular(20),
-
         color: const Color(0xFF0F3D34),
       ),
-
       child: Column(
         children: departments.map((dept) {
-          final color = getColor(dept.percent);
+          // ✅ FIX: read from Map correctly
+          final percent = (dept['percent'] ?? 0) as num;
+          final name = dept['name'] ?? "N/A";
 
+          final int percentInt = percent.isFinite ? percent.round() : 0;
+          final color = getColor(percentInt);
+
+          double progress = percent.isFinite ? percent / 100 : 0;
+
+          if (progress == 0) progress = 0.3;
           return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                ///DEPT NAME
-                SizedBox(
-                  width: 50,
+                Expanded(
+                  flex: 2,
                   child: Text(
-                    dept.name,
+                    name,
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
 
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
 
-                ///  PROGRESS BAR
                 Expanded(
+                  flex: 5,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: LinearProgressIndicator(
-                      value: dept.percent / 100,
-                      minHeight: 8,
-                      color: color,
-                      backgroundColor: Colors.white.withValues(alpha: 0.08),
+                      value: progress,
+                      minHeight: 10,
+                      backgroundColor: Colors.white.withOpacity(0.12),
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
                     ),
                   ),
                 ),
 
                 const SizedBox(width: 12),
 
-                ///  PERCENT
-                Text(
-                  "${dept.percent}%",
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                SizedBox(
+                  width: 35,
+                  child: Text(
+                    "${percentInt}%",
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],

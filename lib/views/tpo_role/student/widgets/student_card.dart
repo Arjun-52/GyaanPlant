@@ -100,7 +100,7 @@ class StudentCard extends StatelessWidget {
                   border: Border.all(color: color),
                 ),
                 child: Text(
-                  student.score >= 75 ? "MNC Ready" : "At Risk",
+                  student.status,
                   style: TextStyle(
                     color: color,
                     fontSize: 10,
