@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorageService {
   static const String _tokenKey = "auth_token";
+  static const String _roleKey = "user_role";
 
   /// Save token
   static Future<void> saveToken(String token) async {
@@ -23,6 +24,19 @@ class LocalStorageService {
 
     await prefs.remove(_tokenKey);
     await prefs.remove(_userKey);
+    await prefs.remove(_roleKey);
+  }
+
+  /// Save role
+  static Future<void> saveRole(String role) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_roleKey, role);
+  }
+
+  /// Get role
+  static Future<String?> getRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_roleKey);
   }
 
   static const String _userKey = "user";

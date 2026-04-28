@@ -36,33 +36,57 @@ import 'package:provider/provider.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/',
+    initialLocation: '/role',
     debugLogDiagnostics: true,
 
     redirect: (context, state) async {
       final token = await LocalStorageService.getToken();
+      final role = await LocalStorageService.getRole(); // if exists
       final isLoggedIn = token != null;
 
       final location = state.uri.toString();
       print("🔍 ROUTER REDIRECT CHECK: $location");
       print("🔍 IS LOGGED IN: $isLoggedIn");
+      print("🔍 USER ROLE: $role");
 
-      //  PUBLIC ROUTES (allowed without login)
-      final isPublicRoute = location == '/' || location == '/signup';
-      print("🔍 IS PUBLIC ROUTE: $isPublicRoute");
-
-      //  If NOT logged in → block private routes
-      if (!isLoggedIn && !isPublicRoute) {
-        print("🚫 BLOCKING PRIVATE ROUTE - redirecting to /");
-        return '/';
+      //  If logged in → go to role-based dashboard
+      if (isLoggedIn) {
+        if (location == '/' || location == '/signup' || location == '/role') {
+          switch (role) {
+            case 'student':
+              print("🔄 STUDENT LOGGED IN - redirecting to /students");
+              return '/students';
+            case 'tpo':
+              print("🔄 TPO LOGGED IN - redirecting to /tpo-dashboard");
+              return '/tpo-dashboard';
+            case 'hod':
+              print("🔄 HOD LOGGED IN - redirecting to /overview");
+              return '/overview';
+            case 'mentor':
+              print("🔄 MENTOR LOGGED IN - redirecting to /mentor-dashboard");
+              return '/mentor-dashboard';
+            default:
+              print("🔄 UNKNOWN ROLE - redirecting to /role");
+              return '/role'; // fallback safety
+          }
+        }
+        return null;
       }
 
-      //  If logged in → prevent going back to login/signup
-      if (isLoggedIn && (location == '/' || location == '/signup')) {
-        print("🔄 USER LOGGED IN - redirecting to /role");
+      //  If NOT logged in
+      //  Step 1: No role selected → go to role screen
+      if (role == null && location != '/role') {
+        print("� NO ROLE SELECTED - redirecting to /role");
         return '/role';
       }
 
+      //  Step 2: Role selected → allow login/signup
+      if (role != null && location == '/role') {
+        print("🔄 ROLE SELECTED - redirecting to /");
+        return '/';
+      }
+
+      //  Allow public routes
       print("✅ ALLOWING NAVIGATION TO: $location");
       return null;
     },

@@ -1,21 +1,11 @@
 import 'dart:convert';
 import 'package:gyaanplant/models/mentor_models/mentor_dashboard_model.dart';
-import 'package:gyaanplant/config/api_config.dart';
-import 'package:gyaanplant/services/student_services/local_storage_service.dart';
-import 'package:http/http.dart' as http;
+import 'package:gyaanplant/services/student_services/base_api_service.dart';
 
 class MentorDashboardService {
   Future<MentorDashboardModel?> fetchDashboard() async {
     try {
-      final token = await LocalStorageService.getToken();
-
-      final response = await http.get(
-        Uri.parse(ApiConfig.buildUrl('/api/v1/dashboard/mentor')),
-        headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
-        },
-      );
+      final response = await BaseApiService.get('/api/v1/dashboard/mentor');
 
       print("🌐 RESPONSE: ${response.body}");
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/role_viewmodel.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gyaanplant/services/student_services/local_storage_service.dart';
 
 class RoleCard extends StatelessWidget {
   final RoleModel role;
@@ -10,28 +11,32 @@ class RoleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         print("🔍 ROLE TAPPED: ${role.title}");
         print("🔍 LOWERCASE: ${role.title.toLowerCase()}");
 
+        // Save role and navigate to sign-in
+        String selectedRole = 'student'; // default
+
         if (role.title.toLowerCase().contains('student')) {
-          print("🚀 NAVIGATING TO: /student-dashboard");
-          context.push('/student-dashboard');
+          selectedRole = 'student';
         } else if (role.title.toLowerCase().contains('tpo')) {
-          print("🚀 NAVIGATING TO: /tpo-dashboard");
-          context.push('/tpo-dashboard');
+          selectedRole = 'tpo';
         } else if (role.title.toLowerCase().contains('hod') ||
             role.title.toLowerCase().contains('principal')) {
-          print("🚀 NAVIGATING TO: /overview");
-          context.push('/overview');
+          selectedRole = 'hod';
         } else if (role.title.toLowerCase().contains('mentor') ||
             role.title.toLowerCase().contains('alumni')) {
-          print("🚀 NAVIGATING TO: /mentor-dashboard");
-          context.go('/mentor-dashboard');
-        } else {
-          print("❌ NO ROUTE FOUND FOR: ${role.title}");
+          selectedRole = 'mentor';
         }
-        // Add other role navigation here as needed
+
+        // Save role to local storage
+        await LocalStorageService.saveRole(selectedRole);
+        print("💾 ROLE SAVED: $selectedRole");
+
+        // Navigate to sign-in screen
+        print("🚀 NAVIGATING TO: /");
+        context.go('/');
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),

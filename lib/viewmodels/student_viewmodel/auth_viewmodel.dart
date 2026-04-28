@@ -159,10 +159,17 @@ class AuthViewModel extends ChangeNotifier {
       print("👤 USER: $user");
       print("📛 USER NAME: $userName");
 
+      //  Save role from backend response
+      final backendRole = userData?['role']?.toString();
+      if (backendRole != null && backendRole.isNotEmpty) {
+        await LocalStorageService.saveRole(backendRole);
+        print("💾 BACKEND ROLE SAVED: $backendRole");
+      }
+
       print("🎯 USER ROLE FROM RESPONSE: ${userData?['role']}");
 
-      //  Navigate
-      context.go('/role');
+      //  Navigate - let GoRouter handle role-based redirection
+      context.go('/');
     } catch (e) {
       print("❌ LOGIN ERROR: $e");
 
