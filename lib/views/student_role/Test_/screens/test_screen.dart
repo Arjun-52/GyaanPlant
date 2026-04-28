@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/core/common_widgets/common_bottom_nav.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/test_viewmodel.dart';
 
@@ -278,7 +277,6 @@ class _TestScreenState extends State<TestScreen> {
               ),
       ),
 
-      bottomNavigationBar: const CommonBottomNav(currentIndex: 2),
     );
   }
 }

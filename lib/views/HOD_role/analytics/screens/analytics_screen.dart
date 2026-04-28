@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/viewmodels/HOD_viewmodel/analytics_view_model.dart';
-import 'package:gyaanplant/core/common_widgets/HOD_bottom_nav.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -129,7 +128,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       ],
                     ),
                   ),
-            bottomNavigationBar: const HODBottomNav(currentIndex: 2),
           );
         },
       ),

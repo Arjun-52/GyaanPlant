@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/core/common_widgets/HOD_bottom_nav.dart';
 import 'package:provider/provider.dart';
 import '../../../../viewmodels/HOD_viewmodel/settings_view_model.dart';
 
@@ -107,7 +106,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ],
                         ),
                       ),
-            bottomNavigationBar: const HODBottomNav(currentIndex: 4),
           );
         },
       ),

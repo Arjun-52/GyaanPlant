@@ -1,30 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class TpoBottomNav extends StatelessWidget {
   final int currentIndex;
+  final ValueChanged<int> onTabSelected;
 
-  const TpoBottomNav({super.key, required this.currentIndex});
-
-  void _onTap(BuildContext context, int index) {
-    switch (index) {
-      case 0:
-        context.go('/tpo-dashboard');
-        break;
-      case 1:
-        context.go('/students');
-        break;
-      case 2:
-        context.go('/drives');
-        break;
-      case 3:
-        context.go('/reports');
-        break;
-      case 4:
-        context.go('/settings');
-        break;
-    }
-  }
+  const TpoBottomNav({
+    super.key,
+    required this.currentIndex,
+    required this.onTabSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,55 +28,53 @@ class TpoBottomNav extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _navItem(context, 0, "🏠", "Home"),
-            _navItem(context, 1, "👥", "Students"),
-            _navItem(context, 2, "💼", "Drives"),
-            _navItem(context, 3, "📊", "Reports"),
-            _navItem(context, 4, "⚙️", "Settings"),
+            _navItem(0, "🏠", "Home"),
+            _navItem(1, "👥", "Students"),
+            _navItem(2, "💼", "Drives"),
+            _navItem(3, "📊", "Reports"),
+            _navItem(4, "⚙️", "Settings"),
           ],
         ),
       ),
     );
   }
 
-  Widget _navItem(BuildContext context, int index, String emoji, String label) {
+  Widget _navItem(int index, String emoji, String label) {
     final bool isActive = currentIndex == index;
 
     return GestureDetector(
-      onTap: () => _onTap(context, index),
+      onTap: () => onTabSelected(index),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            emoji,
+          AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 200),
             style: TextStyle(
               fontSize: 22,
               color: isActive ? Colors.white : Colors.white38,
             ),
+            child: Text(emoji),
           ),
-
           const SizedBox(height: 4),
-
-          Text(
-            label,
+          AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 200),
             style: TextStyle(
               fontSize: 12,
               color: isActive ? const Color(0xFF00C853) : Colors.white54,
               fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
             ),
+            child: Text(label),
           ),
-
           const SizedBox(height: 4),
-
-          if (isActive)
-            Container(
-              width: 5,
-              height: 5,
-              decoration: const BoxDecoration(
-                color: Color(0xFF00C853),
-                shape: BoxShape.circle,
-              ),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 5,
+            height: 5,
+            decoration: BoxDecoration(
+              color: isActive ? const Color(0xFF00C853) : Colors.transparent,
+              shape: BoxShape.circle,
             ),
+          ),
         ],
       ),
     );

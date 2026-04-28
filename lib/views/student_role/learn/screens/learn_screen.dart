@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/learning_viewmodel.dart';
 import 'package:provider/provider.dart';
 
-import 'package:gyaanplant/core/common_widgets/common_bottom_nav.dart';
 import 'package:gyaanplant/views/student_role/learn/widgets/course_progress_card.dart';
 import 'package:gyaanplant/views/student_role/learn/widgets/filter_chips.dart';
 import 'package:gyaanplant/views/student_role/learn/widgets/learning_header.dart';
@@ -120,7 +119,6 @@ class _LearnScreenState extends State<LearnScreen> {
           );
         },
       ),
-      bottomNavigationBar: const CommonBottomNav(currentIndex: 1),
     );
   }
 }

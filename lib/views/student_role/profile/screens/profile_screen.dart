@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/core/common_widgets/common_bottom_nav.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/dashboard_viewmodel.dart';
 import 'package:gyaanplant/views/student_role/profile/widgets/achievements_section.dart';
 import 'package:gyaanplant/views/student_role/profile/widgets/badge_card.dart';
@@ -31,7 +30,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF020B08),
-      bottomNavigationBar: const CommonBottomNav(currentIndex: 4),
       body: Consumer<DashboardViewModel>(
         builder: (context, vm, child) {
           if (vm.isLoading) {

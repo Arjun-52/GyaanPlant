@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/student_tab_controller.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/ai_advisor_sheet.dart';
 
 class QuickActions extends StatelessWidget {
@@ -35,7 +37,7 @@ class QuickActions extends StatelessWidget {
               "Mock Test",
               borderColor: Colors.green,
               onTap: () {
-                context.push('/test');
+                context.read<StudentTabController>().switchTab(2);
               },
             ),
             ActionItem(
@@ -51,7 +53,7 @@ class QuickActions extends StatelessWidget {
               "Jobs",
               borderColor: Colors.blue,
               onTap: () {
-                context.push('/jobs');
+                context.read<StudentTabController>().switchTab(3);
               },
             ),
             ActionItem(

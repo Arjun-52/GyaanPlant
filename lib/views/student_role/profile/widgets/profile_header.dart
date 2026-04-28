@@ -12,8 +12,8 @@ class ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = Provider.of<AuthViewModel>(context);
 
-    final name = vm.user?['name'] ?? 'User';
-    final email = vm.user?['email'] ?? '';
+    final name = vm.user?.name ?? 'User';
+    final email = vm.user?.email ?? '';
 
     String initials = "U";
     if (name.isNotEmpty) {

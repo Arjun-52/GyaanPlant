@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/HOD_viewmodel/departments_viewmodel.dart';
 import 'package:gyaanplant/views/HOD_role/depts/widgets/department_card.dart';
 import 'package:provider/provider.dart';
-import 'package:gyaanplant/core/common_widgets/hod_bottom_nav.dart';
 
 class DepartmentsScreen extends StatefulWidget {
   const DepartmentsScreen({super.key});
@@ -62,7 +61,6 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
             );
           },
         ),
-        bottomNavigationBar: const HODBottomNav(currentIndex: 1),
       ),
     );
   }

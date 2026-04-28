@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/core/common_widgets/HOD_bottom_nav.dart';
 import 'package:gyaanplant/viewmodels/HOD_viewmodel/naac_view_model.dart';
 import 'package:provider/provider.dart';
 
@@ -156,7 +155,6 @@ class _NaacScreenState extends State<NaacScreen> {
                           ],
                         ),
                       ),
-            bottomNavigationBar: const HODBottomNav(currentIndex: 3),
           );
         },
       ),

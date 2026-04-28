@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/core/common_widgets/common_bottom_nav.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/job_viewmodel.dart';
 import 'package:gyaanplant/views/student_role/jobs/widgets/job_card.dart';
 import 'package:gyaanplant/views/student_role/jobs/widgets/job_filter_row.dart';
@@ -29,7 +28,6 @@ class _JobScreenState extends State<JobScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF020B08),
-      bottomNavigationBar: const CommonBottomNav(currentIndex: 3),
       body: Consumer<JobViewModel>(
         builder: (context, vm, child) {
           if (vm.isLoading) {

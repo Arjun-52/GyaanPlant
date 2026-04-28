@@ -12,12 +12,12 @@ class RoleCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         if (role.title.toLowerCase().contains('student')) {
-          context.push('/student-dashboard');
+          context.go('/student-dashboard');
         } else if (role.title.toLowerCase().contains('tpo')) {
-          context.push('/tpo-dashboard');
+          context.go('/tpo-dashboard');
         } else if (role.title.toLowerCase().contains('hod') ||
             role.title.toLowerCase().contains('principal')) {
-          context.push('/overview');
+          context.go('/overview');
         }
         // Add other role navigation here as needed
       },

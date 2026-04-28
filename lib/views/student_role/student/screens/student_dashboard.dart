@@ -4,7 +4,6 @@ import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/upcoming_drives_section.dart';
 import 'package:provider/provider.dart';
 
-import 'package:gyaanplant/core/common_widgets/common_bottom_nav.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/active_courses_section.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/home_header.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/bot_card.dart';
@@ -113,7 +112,6 @@ class _StudentDashboardState extends State<StudentDashboard> {
           },
         ),
       ),
-      bottomNavigationBar: const CommonBottomNav(currentIndex: 0),
     );
   }
 }

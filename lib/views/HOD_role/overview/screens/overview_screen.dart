@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/core/common_widgets/HOD_bottom_nav.dart';
 import 'package:gyaanplant/viewmodels/HOD_viewmodel/hod_viewmodel.dart';
 import 'package:gyaanplant/views/HOD_role/overview/widgets/dept_progress_card.dart';
 import 'package:gyaanplant/views/HOD_role/overview/widgets/stat_card.dart';
@@ -128,7 +127,6 @@ class _OverViewScreenState extends State<OverViewScreen> {
             );
           },
         ),
-        bottomNavigationBar: const HODBottomNav(currentIndex: 0),
       ),
     );
   }

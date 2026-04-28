@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/core/utils/app_logger.dart';
-import 'package:gyaanplant/models/student_role_models/assessment_model.dart';
-import 'package:gyaanplant/services/student_services/test_service.dart';
+import '../../data/services/api_service.dart';
+import '../../models/learning/learning_model.dart';
 
 class TestViewModel extends ChangeNotifier {
   static const _tag = 'TestViewModel';
-  final TestService _service = TestService();
+
+  final _learning = ApiService().learning;
 
   List<AssessmentModel> tests = [];
   bool isLoading = false;
@@ -33,15 +34,21 @@ class TestViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      tests = await _service.getTests();
-      isLoaded = true;
-      AppLogger.info(_tag, 'Loaded ${tests.length} assessments');
+      final result = await _learning.getAssessments();
+      if (result.isSuccess) {
+        tests = result.data!;
+        isLoaded = true;
+        AppLogger.info(_tag, 'Loaded ${tests.length} assessments');
+      } else {
+        errorMessage = result.error?.message ?? 'Failed to fetch tests';
+        AppLogger.error(_tag, errorMessage!);
+      }
     } catch (e, st) {
       errorMessage = e.toString();
       AppLogger.error(_tag, 'Failed to fetch tests', e, st);
     } finally {
       isLoading = false;
-      notifyListeners();
+      if (!_disposed) notifyListeners();
     }
   }
 

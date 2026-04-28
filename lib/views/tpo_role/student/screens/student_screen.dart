@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/core/common_widgets/tpo_bottom_nav.dart';
 import 'package:gyaanplant/viewmodels/tpo_viewmodels/student_viewmodel.dart';
 import 'package:gyaanplant/views/tpo_role/student/widgets/filter_chip.dart';
 import 'package:gyaanplant/views/tpo_role/student/widgets/student_card.dart';
@@ -107,7 +106,6 @@ class _StudentScreenState extends State<StudentScreen> {
             );
           },
         ),
-        bottomNavigationBar: const TpoBottomNav(currentIndex: 1),
       ),
     );
   }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/tpo_viewmodels/settings_viewmodel.dart';
 import 'package:gyaanplant/views/tpo_role/settings/widgets/settings_tile.dart';
 import 'package:provider/provider.dart';
-import 'package:gyaanplant/core/common_widgets/tpo_bottom_nav.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -96,7 +95,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             );
           },
         ),
-        bottomNavigationBar: const TpoBottomNav(currentIndex: 4),
       ),
     );
   }

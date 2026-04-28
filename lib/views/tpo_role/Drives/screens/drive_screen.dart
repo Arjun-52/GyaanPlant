@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/tpo_viewmodels/drives_viewmodel.dart';
 import 'package:gyaanplant/views/tpo_role/Drives/widegts/drive_card.dart';
 import 'package:provider/provider.dart';
-import 'package:gyaanplant/core/common_widgets/tpo_bottom_nav.dart';
 
 class DrivesScreen extends StatefulWidget {
   const DrivesScreen({super.key});
@@ -78,7 +77,6 @@ class _DrivesScreenState extends State<DrivesScreen> {
             );
           },
         ),
-        bottomNavigationBar: const TpoBottomNav(currentIndex: 2),
       ),
     );
   }

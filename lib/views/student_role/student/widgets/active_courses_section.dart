@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:gyaanplant/views/student_role/learn/screens/learn_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/student_tab_controller.dart';
 import 'package:gyaanplant/models/student_role_models/dashboard_model.dart';
 
 class ActiveCoursesSection extends StatelessWidget {
@@ -37,7 +37,7 @@ class ActiveCoursesSection extends StatelessWidget {
 
                 ElevatedButton(
                   onPressed: () {
-                    context.go('/learn');
+                    context.read<StudentTabController>().switchTab(1);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
@@ -86,10 +86,7 @@ class ActiveCoursesSection extends StatelessWidget {
             ),
             InkWell(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LearnScreen()),
-                );
+                context.read<StudentTabController>().switchTab(1);
               },
               child: const Text(
                 "See all →",

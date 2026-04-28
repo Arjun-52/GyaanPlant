@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/tpo_viewmodels/reports_viewmodel.dart';
 import 'package:gyaanplant/views/tpo_role/reports/widgets/report_card.dart';
 import 'package:provider/provider.dart';
-import 'package:gyaanplant/core/common_widgets/tpo_bottom_nav.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -59,7 +58,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
             );
           },
         ),
-        bottomNavigationBar: const TpoBottomNav(currentIndex: 3),
       ),
     );
   }
