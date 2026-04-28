@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gyaanplant/services/student_services/local_storage_service.dart';
+
+import '../../../../data/services/local_storage_service.dart';
 
 class HomeHeader extends StatelessWidget {
   final String name;

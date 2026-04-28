@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:gyaanplant/models/mentor_models/mentor_dashboard_model.dart';
 import 'package:gyaanplant/config/api_config.dart';
-import 'package:gyaanplant/services/student_services/local_storage_service.dart';
 import 'package:http/http.dart' as http;
+
+import '../../data/services/local_storage_service.dart';
 
 class MentorDashboardService {
   Future<MentorDashboardModel?> fetchDashboard() async {

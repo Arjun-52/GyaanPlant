@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:gyaanplant/models/tpo_role_models/dashboard_model.dart';
-import 'package:gyaanplant/services/student_services/local_storage_service.dart';
 import 'package:gyaanplant/config/api_config.dart';
+
+import '../../data/services/local_storage_service.dart';
 
 /// TPO Dashboard API Service
 /// Handles all dashboard-related API calls

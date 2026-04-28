@@ -1,7 +1,7 @@
 // Add this method to your StudentViewModel to test token storage
 // You can call this from a button or in initState for debugging
 
-import 'package:gyaanplant/services/student_services/local_storage_service.dart';
+import 'package:gyaanplant/data/services/local_storage_service.dart';
 
 Future<void> debugTokenStorage() async {
   print("=== TOKEN STORAGE DEBUG ===");

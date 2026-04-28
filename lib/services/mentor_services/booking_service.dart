@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:gyaanplant/models/mentor_models/booking_model.dart';
 import 'package:http/http.dart' as http;
 import '../../config/api_config.dart';
-import '../student_services/local_storage_service.dart';
+import '../../data/services/local_storage_service.dart';
 
 class BookingService {
   Future<List<Booking>> fetchBookings() async {

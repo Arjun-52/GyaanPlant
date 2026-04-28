@@ -96,7 +96,6 @@ class _StudentScreenState extends State<StudentScreen> {
           );
         },
       ),
-      bottomNavigationBar: const TpoBottomNav(currentIndex: 1),
     );
   }
 
