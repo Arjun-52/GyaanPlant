@@ -17,7 +17,13 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
   void initState() {
     super.initState();
     _vm = DepartmentsViewModel();
-    _vm.loadDepartments();
+
+    // Wrap API call in addPostFrameCallback to prevent setState during build error
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _vm.loadDepartments();
+      }
+    });
   }
 
   @override
@@ -75,7 +81,8 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                       child: ListView.separated(
                         itemCount: vm.departments.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (_, i) => DepartmentCard(dept: vm.departments[i]),
+                        itemBuilder: (_, i) =>
+                            DepartmentCard(dept: vm.departments[i]),
                       ),
                     ),
                   ],

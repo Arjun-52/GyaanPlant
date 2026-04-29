@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'network/api_manager.dart';
 import 'network/interceptors/auth_interceptor.dart';
+import 'network/auth_cache.dart';
 import 'routes/app_router.dart';
-import 'services/auth_service.dart';
+import 'data/services/local_storage_service.dart';
 import 'viewmodels/student_viewmodel/auth_viewmodel.dart';
 import 'viewmodels/student_viewmodel/student_tab_controller.dart';
 import 'viewmodels/student_viewmodel/dashboard_viewmodel.dart';
@@ -17,7 +18,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   NetworkAPIManager.initialize();
-  await AuthService.loadToken();
+
+  // Load token from LocalStorageService and populate AuthCache
+  final token = await LocalStorageService.getToken();
+  AuthCache.token = token;
+  print("🔑 TOKEN LOADED ON STARTUP: $token");
+  print("🔑 TOKEN IS NULL: ${token == null}");
 
   AuthInterceptor.onUnauthorized = () {
     AppRouter.router.go('/');

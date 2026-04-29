@@ -15,6 +15,7 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
+  bool _isPasswordVisible = false;
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<AuthViewModel>(context);
@@ -34,7 +35,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   children: [
                     const SizedBox(height: 20),
 
-                    // 🔝 Top Section (logo + title)
+                    //  Top Section (logo + title)
                     const Icon(Icons.auto_awesome, size: 28),
 
                     const SizedBox(height: 10),
@@ -84,11 +85,19 @@ class _SignInScreenState extends State<SignInScreen> {
 
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              Text("PASSWORD"),
-                              Text(
-                                "Forgot?",
-                                style: TextStyle(color: Colors.grey),
+                            children: [
+                              const Text("PASSWORD"),
+                              GestureDetector(
+                                onTap: () {
+                                  context.go('/forgot-password');
+                                },
+                                child: const Text(
+                                  "Forgot?",
+                                  style: TextStyle(
+                                    color: Colors.blue,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -97,9 +106,21 @@ class _SignInScreenState extends State<SignInScreen> {
 
                           CustomTextField(
                             hint: "********",
-                            isPassword: true,
+                            isPassword: !_isPasswordVisible,
                             onChanged: vm.setPassword,
-                            suffix: const Icon(Icons.visibility_off, size: 18),
+                            suffix: IconButton(
+                              icon: Icon(
+                                _isPasswordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                size: 18,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isPasswordVisible = !_isPasswordVisible;
+                                });
+                              },
+                            ),
                           ),
 
                           const SizedBox(height: 20),

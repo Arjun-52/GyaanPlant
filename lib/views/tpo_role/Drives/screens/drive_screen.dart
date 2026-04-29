@@ -14,8 +14,12 @@ class _DrivesScreenState extends State<DrivesScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      if (mounted) context.read<DrivesViewModel>().fetchDrives();
+
+    // Wrap API call in addPostFrameCallback to prevent setState during build error
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<DrivesViewModel>().fetchDrives();
+      }
     });
   }
 

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/utils/app_logger.dart';
-import '../../data/services/api_service.dart';
 import '../../data/services/local_storage_service.dart';
+import '../../data/services/api_service.dart';
 import '../../models/auth/auth_user_model.dart';
+import '../../network/auth_cache.dart';
+import '../../core/utils/app_logger.dart';
 
 class AuthViewModel extends ChangeNotifier {
   static const _tag = 'AuthViewModel';
@@ -80,7 +81,22 @@ class AuthViewModel extends ChangeNotifier {
       if (result.isSuccess) {
         final data = result.data!;
         user = data.user;
+
+        print("🔑 LOGIN SUCCESS - TOKEN: ${data.accessToken}");
+        print("🔑 TOKEN LENGTH: ${data.accessToken?.length}");
+
+        // Update in-memory cache first for immediate performance
+        AuthCache.token = data.accessToken;
+        print("🔑 TOKEN SAVED TO AUTH CACHE: ${AuthCache.token}");
+
+        // Persist to storage (async, no blocking)
         await LocalStorageService.saveToken(data.accessToken);
+        print("🔑 TOKEN SAVED TO LOCAL STORAGE");
+
+        // Verify token was saved
+        final savedToken = await LocalStorageService.getToken();
+        print("🔑 VERIFICATION - TOKEN FROM STORAGE: $savedToken");
+
         await LocalStorageService.saveUser(data.user.toJson());
         if (data.user.role.isNotEmpty) {
           await LocalStorageService.saveRole(data.user.role.toLowerCase());
@@ -167,11 +183,66 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> logout(BuildContext context) async {
-    await _auth.logout();
+    // Clear in-memory cache immediately
+    AuthCache.token = null;
+
+    // Clear persistent storage
     await LocalStorageService.clearToken();
+
+    // Call logout API (best effort)
+    try {
+      await _auth.logout();
+    } catch (e) {
+      // Ignore logout API errors since we're already clearing local state
+    }
+
     user = null;
     notifyListeners();
     if (context.mounted) context.go('/');
+  }
+
+  Future<void> forgotPassword(BuildContext context, String email) async {
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Email is required")));
+      return;
+    }
+
+    try {
+      _setLoading(true);
+
+      final result = await _auth.forgotPassword(email: email);
+
+      if (result.isSuccess) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result.message ?? "If that email exists, a reset link was sent.",
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+        AppLogger.info(_tag, 'Password reset email sent to $email');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.error?.message ?? "Failed to send reset link"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e, st) {
+      AppLogger.error(_tag, 'Forgot password error', e, st);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Something went wrong. Please try again."),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      _setLoading(false);
+    }
   }
 
   // PRIVATE HELPERS
@@ -209,8 +280,8 @@ class AuthViewModel extends ChangeNotifier {
   void _showError(BuildContext context, String message) {
     errorMessage = message;
     notifyListeners();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }

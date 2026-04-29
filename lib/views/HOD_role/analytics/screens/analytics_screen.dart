@@ -18,7 +18,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   void initState() {
     super.initState();
     _vm = AnalyticsViewModel();
-    _vm.fetchAnalytics();
+
+    // Wrap API call in addPostFrameCallback to prevent setState during build error
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _vm.fetchAnalytics();
+      }
+    });
   }
 
   @override
@@ -73,17 +79,28 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                     children: [
                                       Container(
                                         height: data[index].toDouble(),
-                                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: 4,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: index == data.length - 1
                                               ? Colors.green
                                               : Colors.white12,
-                                          borderRadius: BorderRadius.circular(6),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(height: 6),
                                       Text(
-                                        ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'][index],
+                                        [
+                                          'Oct',
+                                          'Nov',
+                                          'Dec',
+                                          'Jan',
+                                          'Feb',
+                                          'Mar',
+                                        ][index],
                                         style: const TextStyle(
                                           color: Colors.white54,
                                           fontSize: 10,
@@ -111,10 +128,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                     children: [
                                       Container(
                                         height: rates[index].toDouble(),
-                                        margin: const EdgeInsets.symmetric(horizontal: 6),
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                        ),
                                         decoration: BoxDecoration(
-                                          color: index == 3 ? Colors.green : Colors.white12,
-                                          borderRadius: BorderRadius.circular(8),
+                                          color: index == 3
+                                              ? Colors.green
+                                              : Colors.white12,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(height: 6),
@@ -184,31 +207,38 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                               child: Column(
                                 children: vm.readiness.map((item) {
                                   return Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 4,
+                                    ),
                                     child: Row(
                                       children: [
                                         Expanded(
                                           flex: 2,
                                           child: Text(
                                             item['department'] ?? 'Unknown',
-                                            style: const TextStyle(color: Colors.white70),
+                                            style: const TextStyle(
+                                              color: Colors.white70,
+                                            ),
                                           ),
                                         ),
                                         Expanded(
                                           child: LinearProgressIndicator(
                                             value: (item['score'] ?? 0) / 100,
                                             backgroundColor: Colors.white12,
-                                            valueColor: AlwaysStoppedAnimation<Color>(
-                                              (item['score'] ?? 0) >= 70
-                                                  ? Colors.green
-                                                  : Colors.orange,
-                                            ),
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  (item['score'] ?? 0) >= 70
+                                                      ? Colors.green
+                                                      : Colors.orange,
+                                                ),
                                           ),
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
                                           '${item['score'] ?? 0}%',
-                                          style: const TextStyle(color: Colors.white),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -219,11 +249,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             const SizedBox(height: 20),
                           ],
 
-                          if (vm.departments.isEmpty && vm.readiness.isEmpty) ...[
+                          if (vm.departments.isEmpty &&
+                              vm.readiness.isEmpty) ...[
                             const Center(
                               child: Column(
                                 children: [
-                                  Icon(Icons.analytics, size: 50, color: Colors.white38),
+                                  Icon(
+                                    Icons.analytics,
+                                    size: 50,
+                                    color: Colors.white38,
+                                  ),
                                   SizedBox(height: 12),
                                   Text(
                                     'No detailed analytics data available',

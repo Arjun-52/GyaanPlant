@@ -4,7 +4,6 @@ import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/learning_viewmodel.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/upcoming_drives_section.dart';
 import 'package:provider/provider.dart';
-import 'package:gyaanplant/data/services/local_storage_service.dart';
 
 import 'package:gyaanplant/views/student_role/student/widgets/active_courses_section.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/home_header.dart';
@@ -53,9 +52,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
   }
 
   void _loadEnrollments() async {
-    final token = await LocalStorageService.getToken();
-    if (token != null && mounted) {
-      context.read<LearningViewModel>().fetchEnrollments(token);
+    if (mounted) {
+      context.read<LearningViewModel>().fetchEnrollments();
     }
   }
 
@@ -75,7 +73,11 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.cloud_off, color: Colors.white38, size: 48),
+                    const Icon(
+                      Icons.cloud_off,
+                      color: Colors.white38,
+                      size: 48,
+                    ),
                     const SizedBox(height: 16),
                     const Text(
                       'Could not load dashboard',
@@ -140,9 +142,13 @@ class _StudentDashboardState extends State<StudentDashboard> {
                       child: Consumer<LearningViewModel>(
                         builder: (context, lvm, _) {
                           if (lvm.isLoading) {
-                            return const Center(child: CircularProgressIndicator());
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
                           }
-                          return ActiveCoursesSection(enrollments: lvm.enrollments);
+                          return ActiveCoursesSection(
+                            enrollments: lvm.enrollments,
+                          );
                         },
                       ),
                     ),

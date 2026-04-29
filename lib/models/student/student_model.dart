@@ -12,11 +12,11 @@ class StudentUser {
   });
 
   factory StudentUser.fromJson(Map<String, dynamic> json) => StudentUser(
-        id: json['_id'] as String,
-        name: json['name'] as String,
-        email: json['email'] as String,
-        avatar: json['avatar'] as String?,
-      );
+    id: json['_id'] as String,
+    name: json['name'] as String,
+    email: json['email'] as String,
+    avatar: json['avatar'] as String?,
+  );
 }
 
 class StudentCollege {
@@ -27,10 +27,10 @@ class StudentCollege {
   const StudentCollege({required this.id, required this.name, this.city});
 
   factory StudentCollege.fromJson(Map<String, dynamic> json) => StudentCollege(
-        id: json['_id'] as String,
-        name: json['name'] as String,
-        city: json['city'] as String?,
-      );
+    id: json['_id'] as String,
+    name: json['name'] as String,
+    city: json['city'] as String?,
+  );
 }
 
 class StudentModel {
@@ -100,7 +100,8 @@ class StudentModel {
       year: json['year'] as int? ?? 1,
       cgpa: (json['cgpa'] as num?)?.toDouble() ?? 0.0,
       careerPath: json['career_path'] as String?,
-      skills: (json['skills'] as List<dynamic>?)
+      skills:
+          (json['skills'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],
@@ -114,7 +115,8 @@ class StudentModel {
       level: json['level'] as int? ?? 1,
       xp: json['xp'] as int? ?? 0,
       streakDays: json['streakDays'] as int? ?? 0,
-      badges: (json['badges'] as List<dynamic>?)
+      badges:
+          (json['badges'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],

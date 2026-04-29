@@ -202,13 +202,24 @@ class NetworkAPIManager {
     T Function(dynamic)? fromJson,
     int retryCount = 0,
   }) async {
+    print("=== API MANAGER DEBUG ===");
+    print("PERFORMING REQUEST (RETRY: $retryCount)");
+
     try {
       final response = await request();
+      print("✅ REQUEST SUCCESSFUL");
+      print("STATUS CODE: ${response.statusCode}");
+      print("RESPONSE DATA: ${response.data}");
+
       return _handleResponse<T>(response, fromJson: fromJson);
     } on DioException catch (e) {
       if (retryCount < AppConstants.maxRetries && _shouldRetry(e)) {
         await Future.delayed(AppConstants.retryDelay * (retryCount + 1));
-        return _perform(request, fromJson: fromJson, retryCount: retryCount + 1);
+        return _perform(
+          request,
+          fromJson: fromJson,
+          retryCount: retryCount + 1,
+        );
       }
       final error = _mapDioError(e);
       return ApiResponse.failure(
@@ -249,10 +260,7 @@ class NetworkAPIManager {
       } else {
         parsed = raw as T?;
       }
-      return ApiResponse.success(
-        data: parsed as T,
-        statusCode: statusCode,
-      );
+      return ApiResponse.success(data: parsed as T, statusCode: statusCode);
     }
 
     final error = _parseErrorBody(response.data);

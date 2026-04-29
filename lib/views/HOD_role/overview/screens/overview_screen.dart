@@ -20,7 +20,13 @@ class _OverViewScreenState extends State<OverViewScreen> {
   void initState() {
     super.initState();
     _vm = HodDashboardViewModel();
-    _vm.loadDashboard();
+
+    // Wrap API call in addPostFrameCallback to prevent setState during build error
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _vm.loadDashboard();
+      }
+    });
   }
 
   @override
@@ -48,7 +54,11 @@ class _OverViewScreenState extends State<OverViewScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Colors.red,
+                      ),
                       const SizedBox(height: 16),
                       const Text(
                         'Unable to Load Dashboard',
@@ -61,7 +71,10 @@ class _OverViewScreenState extends State<OverViewScreen> {
                       const SizedBox(height: 8),
                       Text(
                         vm.error!,
-                        style: const TextStyle(color: Colors.white70, fontSize: 16),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 16,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
@@ -183,10 +196,12 @@ class _OverViewScreenState extends State<OverViewScreen> {
                           Builder(
                             builder: (context) {
                               final deptList = vm.departmentsData
-                                  .map((dept) => {
-                                        'name': dept.name,
-                                        'percent': dept.value,
-                                      })
+                                  .map(
+                                    (dept) => {
+                                      'name': dept.name,
+                                      'percent': dept.value,
+                                    },
+                                  )
                                   .toList();
                               return DeptProgressCard(departments: deptList);
                             },

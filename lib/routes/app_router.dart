@@ -8,6 +8,7 @@ import 'package:gyaanplant/viewmodels/mentor_viewmodel/mentor_dashboard_viewmode
 
 import 'package:gyaanplant/views/auth/screens/sign_in_screen.dart';
 import 'package:gyaanplant/views/auth/screens/sign_up_screen.dart';
+import 'package:gyaanplant/views/auth/screens/forgot_password_screen.dart';
 import 'package:gyaanplant/views/student_role/role_/screens/role_screen.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/leaderboard_view.dart';
 import 'package:gyaanplant/views/shells/student_shell.dart';
@@ -69,6 +70,12 @@ class AppRouter {
       ),
 
       GoRoute(
+        path: '/forgot-password',
+        name: 'forgotPassword',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+
+      GoRoute(
         path: '/role',
         name: 'role',
         builder: (context, state) => const RoleScreen(),
@@ -81,10 +88,7 @@ class AppRouter {
       ),
 
       // HOD SHELL (tabs managed internally via IndexedStack)
-      GoRoute(
-        path: '/overview',
-        builder: (context, state) => const HODShell(),
-      ),
+      GoRoute(path: '/overview', builder: (context, state) => const HODShell()),
 
       // TPO SHELL — provide TPO-specific VMs above the shell
       GoRoute(

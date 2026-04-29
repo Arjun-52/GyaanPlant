@@ -9,8 +9,15 @@ import 'package:provider/provider.dart';
 
 import '../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
 
-class SignUpScreen extends StatelessWidget {
+class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
+
+  @override
+  State<SignUpScreen> createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> {
+  bool _isPasswordVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -137,8 +144,19 @@ class SignUpScreen extends StatelessWidget {
             const SizedBox(height: 6),
             CustomTextField(
               hint: "Min. 8 chars",
-              isPassword: true,
+              isPassword: !_isPasswordVisible,
               onChanged: vm.setPassword,
+              suffix: IconButton(
+                icon: Icon(
+                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                  size: 18,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isPasswordVisible = !_isPasswordVisible;
+                  });
+                },
+              ),
             ),
           ],
         );

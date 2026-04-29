@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/learning_viewmodel.dart';
-import 'package:gyaanplant/data/services/local_storage_service.dart';
 import 'package:provider/provider.dart';
 
 import 'package:gyaanplant/views/student_role/learn/widgets/course_progress_card.dart';
@@ -20,13 +20,18 @@ class _LearnScreenState extends State<LearnScreen> {
   @override
   void initState() {
     super.initState();
-    _loadEnrollments();
+
+    // Wrap API call in addPostFrameCallback to prevent setState during build error
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadEnrollments();
+      }
+    });
   }
 
   void _loadEnrollments() async {
-    final token = await LocalStorageService.getToken();
-    if (token != null && mounted) {
-      context.read<LearningViewModel>().fetchEnrollments(token);
+    if (mounted) {
+      context.read<LearningViewModel>().fetchEnrollments();
     }
   }
 
@@ -56,13 +61,17 @@ class _LearnScreenState extends State<LearnScreen> {
                 const SprintBannerCard(),
                 const SizedBox(height: 16),
 
-                if (vm.enrollments.isEmpty)
+                if (vm.courses.isEmpty)
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Column(
                         children: [
-                          const Icon(Icons.menu_book, size: 50, color: Colors.white38),
+                          const Icon(
+                            Icons.menu_book,
+                            size: 50,
+                            color: Colors.white38,
+                          ),
                           const SizedBox(height: 12),
                           const Text(
                             'No courses available',
@@ -74,15 +83,31 @@ class _LearnScreenState extends State<LearnScreen> {
                             style: TextStyle(color: Colors.white54),
                           ),
                           const SizedBox(height: 14),
-                          ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF00C853),
-                            ),
-                            child: const Text(
-                              'Browse Courses',
-                              style: TextStyle(color: Colors.black),
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () => context.go('/signup'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange,
+                                ),
+                                child: const Text(
+                                  'Sign Up',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              ElevatedButton(
+                                onPressed: () {},
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF00C853),
+                                ),
+                                child: const Text(
+                                  'Browse Courses',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -92,13 +117,12 @@ class _LearnScreenState extends State<LearnScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
-                      children: vm.enrollments.map((enrollment) {
-                        final course = enrollment['course'] ?? {};
+                      children: vm.courses.map((course) {
                         return CourseProgressCard(
-                          title: course['title'] ?? 'Unknown Course',
-                          subtitle: 'Modules: ${course['totalModules'] ?? 0}',
+                          title: course.title,
+                          subtitle: 'Modules: ${course.totalModules}',
                           percentText: '0%',
-                          progressCount: '0/${course['totalModules'] ?? 0}',
+                          progressCount: '0/${course.totalModules}',
                           progress: 0.0,
                           progressColor: Colors.green,
                           tag: 'New',
