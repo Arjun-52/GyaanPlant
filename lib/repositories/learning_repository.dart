@@ -1,4 +1,5 @@
 import '../models/learning/learning_model.dart';
+import '../models/prep_pack_model.dart';
 import '../models/student_role_models/dashboard_model.dart';
 import '../network/api_endpoints.dart';
 import '../network/api_manager.dart';
@@ -70,6 +71,29 @@ class LearningRepository {
             .map((e) => Enrollment.fromJson(e as Map<String, dynamic>))
             .toList();
       },
+    );
+  }
+
+  /// Get Prep Packs (Test Packs)
+  Future<ApiResponse<List<PrepPack>>> getPrepPacks() {
+    return _api.get<List<PrepPack>>(
+      ApiEndpoints.prepPacks,
+      fromJson: (json) {
+        final map = json as Map<String, dynamic>;
+        final list = map['data'] as List<dynamic>;
+
+        return list
+            .map((e) => PrepPack.fromJson(e as Map<String, dynamic>))
+            .toList();
+      },
+    );
+  }
+
+  /// Start Prep Pack Attempt
+  Future<ApiResponse<Map<String, dynamic>>> startAttempt(String packId) {
+    return _api.post<Map<String, dynamic>>(
+      '${ApiEndpoints.startAttempt}/$packId/attempts/start',
+      data: {},
     );
   }
 }

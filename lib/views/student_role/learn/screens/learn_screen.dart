@@ -24,14 +24,14 @@ class _LearnScreenState extends State<LearnScreen> {
     // Wrap API call in addPostFrameCallback to prevent setState during build error
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _loadEnrollments();
+        _loadCourses();
       }
     });
   }
 
-  void _loadEnrollments() async {
+  void _loadCourses() async {
     if (mounted) {
-      context.read<LearningViewModel>().fetchEnrollments();
+      context.read<LearningViewModel>().fetchCourses();
     }
   }
 
@@ -41,9 +41,23 @@ class _LearnScreenState extends State<LearnScreen> {
       backgroundColor: const Color(0xFF020B08),
       body: Consumer<LearningViewModel>(
         builder: (context, vm, child) {
+          // 8. Verify UI is listening
+          print(
+            "🎯 UI REBUILDING - isLoading: ${vm.isLoading}, courses: ${vm.courses.length}",
+          );
+
           if (vm.isLoading) {
+            print("⏳ SHOWING LOADING INDICATOR");
             return const Center(child: CircularProgressIndicator());
           }
+
+          if (vm.errorMessage != null) {
+            print("❌ SHOWING ERROR: ${vm.errorMessage}");
+            return Center(child: Text("Error: ${vm.errorMessage}"));
+          }
+
+          // 8. Add temporary UI debug
+          print("🎯 BUILDING UI WITH ${vm.courses.length} COURSES");
 
           return SingleChildScrollView(
             child: Column(
@@ -61,6 +75,7 @@ class _LearnScreenState extends State<LearnScreen> {
                 const SprintBannerCard(),
                 const SizedBox(height: 16),
 
+                // 9. Handle empty data case
                 if (vm.courses.isEmpty)
                   Center(
                     child: Padding(
@@ -83,19 +98,18 @@ class _LearnScreenState extends State<LearnScreen> {
                             style: TextStyle(color: Colors.white54),
                           ),
                           const SizedBox(height: 14),
+                          // 8. Add temporary UI debug
+                          Text(
+                            'Debug: ${vm.courses.length} courses',
+                            style: const TextStyle(
+                              color: Colors.yellow,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              ElevatedButton(
-                                onPressed: () => context.go('/signup'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange,
-                                ),
-                                child: const Text(
-                                  'Sign Up',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
                               const SizedBox(width: 12),
                               ElevatedButton(
                                 onPressed: () {},
@@ -118,6 +132,7 @@ class _LearnScreenState extends State<LearnScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       children: vm.courses.map((course) {
+                        print("🎯 BUILDING COURSE CARD: ${course.title}");
                         return CourseProgressCard(
                           title: course.title,
                           subtitle: 'Modules: ${course.totalModules}',

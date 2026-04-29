@@ -27,60 +27,79 @@ class LearningViewModel extends ChangeNotifier {
   }
 
   Future<void> fetchCourses() async {
-    isLoading = true;
-    errorMessage = null;
-    notifyListeners();
+    // 1. Verify API request is being triggered
+    print("🚀 CALLING COURSES API - fetchCourses() started");
 
-    try {
-      final result = await _learning.getCourses();
-
-      if (result.isSuccess) {
-        courses = result.data ?? [];
-      } else {
-        errorMessage = result.error?.message ?? 'Failed to fetch courses';
-        courses = [];
-      }
-    } catch (e) {
-      errorMessage = e.toString();
-      courses = [];
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> fetchEnrollments() async {
-    // Check if token is available before making API call
+    // 2. Verify token is attached
     final token = AuthCache.token;
     if (token == null) {
-      errorMessage = 'Please login to access enrollments';
+      print("❌ TOKEN MISSING: No authentication token found");
+      errorMessage = 'Please login to access courses';
       notifyListeners();
       return;
     }
 
-    print("🔑 FETCHING ENROLLMENTS WITH TOKEN: ${token.substring(0, 20)}...");
+    print("🔑 TOKEN: ${token.substring(0, 20)}...");
+    print("🔑 TOKEN LENGTH: ${token.length} characters");
+
+    // 3. Log API request details
+    print("🌐 URL: /api/v1/learning");
+    print("🌐 METHOD: GET");
+    print("🌐 HEADERS: Authorization: Bearer ${token.substring(0, 20)}...");
 
     isLoading = true;
     errorMessage = null;
     notifyListeners();
 
     try {
-      final result = await _learning.getMyEnrollments();
+      print("📡 MAKING API CALL...");
+      final result = await _learning.getCourses();
+
+      // 4. Log API response
+      print("📦 STATUS: ${result.isSuccess ? 'SUCCESS' : 'FAILED'}");
+      print("📦 RESPONSE: ${result.data}");
+      print("📦 ERROR: ${result.error}");
 
       if (result.isSuccess) {
-        enrollments = result.data ?? [];
-        print("✅ ENROLLMENTS FETCHED: ${enrollments.length} items");
+        // 5. Validate response structure
+        final data = result.data;
+        print("📊 RESPONSE TYPE: ${data.runtimeType}");
+        print("📊 RESPONSE DATA: $data");
+
+        if (data != null && data is List) {
+          print("📊 COURSES COUNT: ${data.length}");
+          print(
+            "📊 FIRST COURSE: ${data.isNotEmpty ? data.first : 'NO COURSES'}",
+          );
+        } else {
+          print("⚠️ RESPONSE IS NOT A LIST: $data");
+        }
+
+        // 6. Verify ViewModel mapping
+        courses = data ?? [];
+        print("✅ COURSES STORED: ${courses.length} items");
+        print("✅ COURSES TYPE: ${courses.runtimeType}");
+
+        if (courses.isNotEmpty) {
+          print("✅ FIRST COURSE: ${courses.first}");
+        }
       } else {
-        errorMessage = result.error?.message ?? 'Failed to fetch enrollments';
-        enrollments = [];
-        print("❌ ENROLLMENTS FETCH FAILED: $errorMessage");
+        errorMessage = result.error?.message ?? 'Failed to fetch courses';
+        courses = [];
+        print("❌ COURSES FETCH FAILED: $errorMessage");
+        print("❌ ERROR DETAILS: ${result.error}");
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       errorMessage = e.toString();
-      enrollments = [];
-      print("💥 ENROLLMENTS FETCH ERROR: $e");
+      courses = [];
+      print("💥 COURSES FETCH ERROR: $e");
+      print("💥 STACK TRACE: $stackTrace");
     } finally {
       isLoading = false;
+      // 7. Verify notifyListeners() timing
+      print(
+        "🔄 notifyListeners() called - isLoading: $isLoading, courses: ${courses.length}",
+      );
       notifyListeners();
     }
   }

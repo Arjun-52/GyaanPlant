@@ -63,12 +63,18 @@ class ApiEndpoints {
   static const String bulkAssign = '/api/v1/learning/bulk-assign';
   static const String learningPaths = '/api/v1/learning/paths';
   static const String assessments = '/api/v1/learning/assessments';
-  static const String myAssessmentHistory = '/api/v1/learning/assessments/my-history';
+  static const String myAssessmentHistory =
+      '/api/v1/learning/assessments/my-history';
+
+  // ── Prep Packs ───────────────────────────────────────────────────────────
+  static const String prepPacks = '/api/v1/prep-packs';
+  static const String startAttempt = '/api/v1/prep-packs';
 
   // ── Gamification ─────────────────────────────────────────────────────────
   static const String gamificationProfile = '/api/v1/gamification/profile';
   static const String leaderboard = '/api/v1/gamification/leaderboard';
-  static const String collarLeaderboard = '/api/v1/gamification/leaderboard/collar';
+  static const String collarLeaderboard =
+      '/api/v1/gamification/leaderboard/collar';
   static const String badges = '/api/v1/gamification/badges';
   static const String pointHistory = '/api/v1/gamification/point-history';
   static const String awardPoints = '/api/v1/gamification/award';

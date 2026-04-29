@@ -53,7 +53,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   void _loadEnrollments() async {
     if (mounted) {
-      context.read<LearningViewModel>().fetchEnrollments();
+      context.read<LearningViewModel>().fetchCourses();
     }
   }
 

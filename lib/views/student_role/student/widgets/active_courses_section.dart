@@ -28,20 +28,33 @@ class ActiveCoursesSection extends StatelessWidget {
               children: [
                 const Icon(Icons.menu_book, size: 40, color: Colors.white38),
                 const SizedBox(height: 10),
-                const Text('No active courses yet'),
+                const Text(
+                  'No active courses yet',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
                 const SizedBox(height: 6),
-                const Text('Start learning to see your courses'),
+                const Text(
+                  'Start learning to see your courses',
+                  style: TextStyle(color: Colors.white54, fontSize: 14),
+                ),
                 const SizedBox(height: 12),
                 ElevatedButton(
-                  onPressed: () => context.read<StudentTabController>().switchTab(1),
+                  onPressed: () =>
+                      context.read<StudentTabController>().switchTab(1),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     elevation: 0,
-                    side: const BorderSide(color: Color(0xFF00C853), width: 1.5),
+                    side: const BorderSide(
+                      color: Color(0xFF00C853),
+                      width: 1.5,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                   ),
                   child: const Text(
                     'Explore Courses',
@@ -102,10 +115,22 @@ class CourseItem extends StatelessWidget {
     final title = (course['title'] as String? ?? '').toLowerCase();
     final category = (course['category'] as String? ?? '').toLowerCase();
 
-    if (category.contains('data') || title.contains('data') || title.contains('algorithm')) return '📊';
-    if (category.contains('quant') || title.contains('quant') || title.contains('aptitude')) return '🧮';
-    if (category.contains('verbal') || title.contains('verbal') || title.contains('communication')) return '💬';
-    if (category.contains('coding') || title.contains('programming') || title.contains('code')) return '💻';
+    if (category.contains('data') ||
+        title.contains('data') ||
+        title.contains('algorithm'))
+      return '📊';
+    if (category.contains('quant') ||
+        title.contains('quant') ||
+        title.contains('aptitude'))
+      return '🧮';
+    if (category.contains('verbal') ||
+        title.contains('verbal') ||
+        title.contains('communication'))
+      return '💬';
+    if (category.contains('coding') ||
+        title.contains('programming') ||
+        title.contains('code'))
+      return '💻';
     if (category.contains('hr') || title.contains('interview')) return '👔';
     return '📚';
   }

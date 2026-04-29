@@ -8,6 +8,7 @@ import 'package:gyaanplant/views/student_role/Test_/widgets/timer_section.dart';
 import 'package:gyaanplant/views/student_role/Test_/widgets/question_card.dart';
 import 'package:gyaanplant/views/student_role/Test_/widgets/option_tile.dart';
 import 'package:gyaanplant/views/student_role/Test_/widgets/filter_chip_test.dart';
+import 'package:gyaanplant/views/student_role/Test_/widgets/test_pack_card.dart';
 
 class TestScreen extends StatefulWidget {
   const TestScreen({super.key});
@@ -29,6 +30,7 @@ class _TestScreenState extends State<TestScreen> {
       if (vm.tests.isEmpty && !vm.isLoading) {
         vm.fetchTests();
       }
+      vm.fetchPrepPacks();
     });
   }
 
@@ -230,7 +232,7 @@ class _TestScreenState extends State<TestScreen> {
 
                   ///  UPCOMING TESTS (DYNAMIC)
                   const Text(
-                    "Upcoming Test Packs",
+                    "Available Tests",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -273,10 +275,65 @@ class _TestScreenState extends State<TestScreen> {
                     ),
 
                   const SizedBox(height: 20),
+
+                  // Prep Packs Section
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'Prep Packs',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  if (vm.packs.isEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.quiz,
+                              size: 50,
+                              color: Colors.white38,
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'No test packs available',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Check back later for new test packs',
+                              style: TextStyle(color: Colors.white54),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Column(
+                      children: vm.packs.map((pack) {
+                        return GestureDetector(
+                          onTap: () {
+                            vm.startPackAttempt(pack.id);
+                          },
+                          child: TestPackCard(pack: pack),
+                        );
+                      }).toList(),
+                    ),
+
+                  const SizedBox(height: 20),
                 ],
               ),
       ),
-
     );
   }
 }
