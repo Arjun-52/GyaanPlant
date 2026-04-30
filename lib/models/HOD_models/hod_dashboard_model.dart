@@ -22,10 +22,24 @@ class HodDashboardModel {
       lmsAdoption: json["overview"]?["completionRate"] ?? 0,
       naacGrade: "N/A",
 
-      departmentsData: (json["departmentStats"] as List? ?? [])
-          .map((e) => DeptModel.fromJson(e))
-          .toList(),
+      departmentsData: _parseDepartments(json),
     );
+  }
+
+  static List<DeptModel> _parseDepartments(Map<String, dynamic> json) {
+    print("🔍 PARSING DEPARTMENTS");
+
+    final departmentStats = json["departmentStats"] as List? ?? [];
+    print("🔍 DEPARTMENT STATS RAW: $departmentStats");
+
+    if (departmentStats.isEmpty) {
+      print("❌ NO DEPARTMENT DATA FROM BACKEND - RETURNING EMPTY LIST");
+      return [];
+    }
+
+    final parsed = departmentStats.map((e) => DeptModel.fromJson(e)).toList();
+    print("✅ REAL DEPARTMENT DATA PARSED: ${parsed.length} departments");
+    return parsed;
   }
 }
 
