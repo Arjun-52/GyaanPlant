@@ -23,10 +23,55 @@ class MentorDashboardScreen extends StatelessWidget {
             }
 
             if (vm.dashboard == null) {
-              return const Center(
-                child: Text(
-                  "Failed to load",
-                  style: TextStyle(color: Colors.white),
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Unable to Load Dashboard',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (vm.error != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          vm.error!,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: vm.loadDashboard,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00C853),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                        ),
+                        child: const Text(
+                          'Retry',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }

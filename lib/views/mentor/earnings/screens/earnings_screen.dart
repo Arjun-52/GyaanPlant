@@ -80,24 +80,57 @@ class EarningsScreen extends StatelessWidget {
 
               Expanded(
                 child: ListView(
-                  children: const [
-                    PayoutCard(
+                  children: [
+                    const PayoutCard(
                       date: "Mar 1, 2026",
                       sessions: "16 sessions",
                       amount: "₹6,400",
                     ),
-                    SizedBox(height: 10),
-                    PayoutCard(
+                    const SizedBox(height: 10),
+
+                    const PayoutCard(
                       date: "Feb 1, 2026",
                       sessions: "20 sessions",
                       amount: "₹8,000",
                     ),
-                    SizedBox(height: 10),
-                    PayoutCard(
+                    const SizedBox(height: 10),
+
+                    const PayoutCard(
                       date: "Dec 1, 2025",
                       sessions: "20 sessions",
                       amount: "₹8,320",
                     ),
+
+                    const SizedBox(height: 20),
+
+                    /// ✅ Withdraw Button (scrollable, below cards)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF16C47F),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            // TODO: Withdraw logic
+                          },
+                          child: const Text(
+                            "Withdraw ₹5,680",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
