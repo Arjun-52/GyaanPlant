@@ -98,14 +98,8 @@ class _LearnScreenState extends State<LearnScreen> {
                             style: TextStyle(color: Colors.white54),
                           ),
                           const SizedBox(height: 14),
+
                           // 8. Add temporary UI debug
-                          Text(
-                            'Debug: ${vm.courses.length} courses',
-                            style: const TextStyle(
-                              color: Colors.yellow,
-                              fontSize: 12,
-                            ),
-                          ),
                           const SizedBox(height: 8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,

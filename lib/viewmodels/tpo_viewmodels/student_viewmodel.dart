@@ -8,7 +8,6 @@ class StudentViewModel extends ChangeNotifier {
   List<Student> _students = [];
   bool _isLoading = false;
   String? _errorMessage;
-  bool _hasInitialized = false;
   bool _disposed = false;
 
   String _searchQuery = '';
@@ -19,7 +18,6 @@ class StudentViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get hasError => _errorMessage != null;
   bool get hasData => _students.isNotEmpty;
-  bool get hasInitialized => _hasInitialized;
   String get selectedFilter => _selectedFilter;
   String get searchQuery => _searchQuery;
 
@@ -35,29 +33,38 @@ class StudentViewModel extends ChangeNotifier {
   }
 
   Future<void> initialize() async {
-    if (_hasInitialized) return;
+    print('🚀 StudentViewModel.initialize() called');
     await fetchStudents();
-    _hasInitialized = true;
   }
 
   Future<void> fetchStudents() async {
+    print('📡 StudentViewModel.fetchStudents() called');
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
+      print('🔍 Calling API: _tpo.getStudents()');
       final result = await _tpo.getStudents();
+      print(
+        '📦 API Response: isSuccess=${result.isSuccess}, data=${result.data}',
+      );
+
       if (result.isSuccess) {
         _students = result.data ?? [];
+        print('✅ Successfully loaded ${_students.length} students');
       } else {
         throw Exception(result.error?.message ?? 'Failed to load students');
       }
     } catch (e) {
+      print('❌ Error fetching students: $e');
       _errorMessage = e.toString();
       _students = [];
     } finally {
       _isLoading = false;
       notifyListeners();
+      print('🏁 fetchStudents() completed');
     }
   }
 
@@ -104,7 +111,8 @@ class StudentViewModel extends ChangeNotifier {
           matchesFilter = student.status == 'Average';
           break;
         default:
-          matchesFilter = _selectedFilter == 'All' || student.branch == _selectedFilter;
+          matchesFilter =
+              _selectedFilter == 'All' || student.branch == _selectedFilter;
       }
 
       return matchesSearch && matchesFilter;
@@ -114,7 +122,9 @@ class StudentViewModel extends ChangeNotifier {
   List<String> get availableFilters {
     final filters = <String>{'All'};
     filters.addAll(_students.map((s) => s.status).toSet());
-    filters.addAll(_students.map((s) => s.branch).where((b) => b != 'N/A').toSet());
+    filters.addAll(
+      _students.map((s) => s.branch).where((b) => b != 'N/A').toSet(),
+    );
     return filters.toList();
   }
 

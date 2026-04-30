@@ -14,8 +14,12 @@ class _StudentScreenState extends State<StudentScreen> {
   @override
   void initState() {
     super.initState();
+    print('🎯 StudentScreen.initState() called');
     Future.microtask(() {
-      if (mounted) context.read<StudentViewModel>().initialize();
+      if (mounted) {
+        print('🔔 Calling StudentViewModel.initialize() from initState');
+        context.read<StudentViewModel>().initialize();
+      }
     });
   }
 
@@ -26,7 +30,10 @@ class _StudentScreenState extends State<StudentScreen> {
       body: Consumer<StudentViewModel>(
         builder: (context, viewModel, _) {
           return RefreshIndicator(
-            onRefresh: viewModel.refreshStudents,
+            onRefresh: () {
+              print('🔄 Refresh triggered');
+              return viewModel.refreshStudents();
+            },
             color: Colors.green,
             child: SafeArea(
               child: Padding(
@@ -49,7 +56,10 @@ class _StudentScreenState extends State<StudentScreen> {
                       decoration: InputDecoration(
                         hintText: 'Search by name, roll number...',
                         hintStyle: const TextStyle(color: Colors.white38),
-                        prefixIcon: const Icon(Icons.search, color: Colors.white38),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: Colors.white38,
+                        ),
                         filled: true,
                         fillColor: const Color(0xFF0F2A22),
                         contentPadding: const EdgeInsets.symmetric(
@@ -128,7 +138,10 @@ class _StudentScreenState extends State<StudentScreen> {
           children: [
             CircularProgressIndicator(color: Colors.green),
             SizedBox(height: 16),
-            Text('Loading students...', style: TextStyle(color: Colors.white54)),
+            Text(
+              'Loading students...',
+              style: TextStyle(color: Colors.white54),
+            ),
           ],
         ),
       );
@@ -157,7 +170,10 @@ class _StudentScreenState extends State<StudentScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: viewModel.refreshStudents,
+              onPressed: () {
+                print('🔄 Retry button pressed');
+                viewModel.refreshStudents();
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.black,
@@ -176,7 +192,10 @@ class _StudentScreenState extends State<StudentScreen> {
           children: [
             Icon(Icons.people_outline, color: Colors.white54, size: 48),
             SizedBox(height: 16),
-            Text('No students found', style: TextStyle(color: Colors.white54, fontSize: 16)),
+            Text(
+              'No students found',
+              style: TextStyle(color: Colors.white54, fontSize: 16),
+            ),
           ],
         ),
       );
@@ -199,6 +218,7 @@ class _StudentScreenState extends State<StudentScreen> {
       );
     }
 
+    print('📱 Displaying ${filteredStudents.length} students');
     return ListView.builder(
       itemCount: filteredStudents.length,
       itemBuilder: (context, index) {

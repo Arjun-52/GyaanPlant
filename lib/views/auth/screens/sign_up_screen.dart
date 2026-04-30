@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/views/auth/widgets/auth_redirect_text.dart';
 import 'package:gyaanplant/views/auth/widgets/custom_dropdown.dart';
 import 'package:gyaanplant/views/auth/widgets/custom_text_field.dart';
@@ -30,23 +31,41 @@ class _SignUpScreenState extends State<SignUpScreen> {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              //  HEADER + STEPPER
-              const SizedBox(height: 10),
-
-              const Icon(Icons.auto_awesome, size: 28),
-
-              const SizedBox(height: 10),
-
-              const Text(
-                "Join GyaanPlant",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-
-              const SizedBox(height: 6),
-
-              const Text(
-                "PROFESSIONAL DEVELOPMENT, UNIFIED.",
-                style: TextStyle(fontSize: 11, color: Colors.grey),
+              //  HEADER WITH BACK BUTTON
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      print(
+                        "🔙 SIGNUP: Back button tapped - navigating to role screen",
+                      );
+                      context.go('/role');
+                    },
+                    icon: const Icon(Icons.arrow_back),
+                    tooltip: 'Back to Role Selection',
+                  ),
+                  const Expanded(
+                    child: Column(
+                      children: [
+                        SizedBox(height: 10),
+                        Icon(Icons.auto_awesome, size: 28),
+                        SizedBox(height: 10),
+                        Text(
+                          "Join GyaanPlant",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          "PROFESSIONAL DEVELOPMENT, UNIFIED.",
+                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 20),

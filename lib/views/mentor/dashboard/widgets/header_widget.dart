@@ -4,6 +4,7 @@ import 'package:gyaanplant/models/mentor_models/mentor_dashboard_model.dart';
 import 'package:gyaanplant/views/mentor/dashboard/widgets/stat_card.dart';
 
 import '../../../../data/services/local_storage_service.dart';
+import '../../../../network/auth_cache.dart';
 
 class HeaderWidget extends StatelessWidget {
   final MentorDashboardModel data;
@@ -80,21 +81,27 @@ class HeaderWidget extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  GestureDetector(
-                    onTap: () {
-                      _showLogoutDialog(context);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.red.withOpacity(0.5)),
-                      ),
-                      child: const Icon(
-                        Icons.logout,
-                        color: Colors.red,
-                        size: 20,
+                  Tooltip(
+                    message: 'Logout',
+                    child: GestureDetector(
+                      onTap: () {
+                        print("🔥 LOGOUT: Logout button tapped");
+                        _showLogoutDialog(context);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.red.withOpacity(0.5),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.logout,
+                          color: Colors.red,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),
@@ -137,6 +144,7 @@ class HeaderWidget extends StatelessWidget {
   }
 
   void _showLogoutDialog(BuildContext context) {
+    print("🔥 LOGOUT: Showing logout dialog");
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -150,20 +158,36 @@ class HeaderWidget extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
+                print("🔥 LOGOUT: Cancel pressed");
                 Navigator.of(context).pop();
               },
               child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
             ),
             TextButton(
               onPressed: () async {
+                print("🔥 LOGOUT: Logout confirmed - starting logout process");
                 Navigator.of(context).pop();
 
-                // Clear token and user data
-                await LocalStorageService.clearToken();
+                try {
+                  // Clear in-memory cache immediately
+                  print("🔥 LOGOUT: Clearing AuthCache");
+                  AuthCache.token = null;
 
-                // Navigate to sign-in screen
-                if (context.mounted) {
-                  context.go('/');
+                  // Clear token and user data from storage
+                  print("🔥 LOGOUT: Clearing token from LocalStorageService");
+                  await LocalStorageService.clearToken();
+                  print("🔥 LOGOUT: Token cleared successfully");
+
+                  // Navigate to sign-in screen
+                  if (context.mounted) {
+                    print("🔥 LOGOUT: Navigating to login screen");
+                    context.go('/');
+                    print("🔥 LOGOUT: Navigation completed");
+                  } else {
+                    print("❌ LOGOUT: Context not mounted, cannot navigate");
+                  }
+                } catch (e) {
+                  print("❌ LOGOUT: Error during logout: $e");
                 }
               },
               child: const Text('Logout', style: TextStyle(color: Colors.red)),

@@ -30,11 +30,19 @@ class AppRouter {
 
     redirect: (context, state) async {
       final token = await LocalStorageService.getToken();
-      final role = await LocalStorageService.getRole(); // if exists
-      final isLoggedIn = token != null;
+      final role = await LocalStorageService.getRole();
       final location = state.uri.toString();
-      if (isLoggedIn) {
+
+      print(
+        "🔄 ROUTER: Checking redirect - token=${token != null}, role=$role, location=$location",
+      );
+
+      // If user is logged in (has token) and on auth/role screens, redirect to dashboard
+      if (token != null && role != null) {
         if (location == '/' || location == '/signup' || location == '/role') {
+          print(
+            "🔄 ROUTER: Redirecting logged-in user from $location to dashboard",
+          );
           switch (role) {
             case 'student':
               return '/student-dashboard';
@@ -48,11 +56,22 @@ class AppRouter {
               return '/role';
           }
         }
-        return null;
       }
 
-      if (role == null && location != '/role') return '/role';
-      if (role != null && location == '/role') return '/';
+      // If user has role but no token, they need to sign in (but prevent loop)
+      if (token == null && role != null && location == '/role') {
+        print("🔄 ROUTER: User has role but no token - redirecting to sign in");
+        return '/';
+      }
+
+      // If user is not logged in and has no role, go to role screen
+      // But if they have a role, let them stay on sign-in screen
+      if (token == null && role == null && location != '/role') {
+        print("🔄 ROUTER: Redirecting to role screen (no role selected)");
+        return '/role';
+      }
+
+      print("🔄 ROUTER: No redirect needed");
       return null;
     },
 
@@ -108,7 +127,7 @@ class AppRouter {
         builder: (context, state) => const LeaderboardView(),
       ),
 
-      // Standalone students screen (used outside TPO shell if needed)
+      // Standalone students screen (for direct access outside TPO shell)
       GoRoute(
         path: '/students',
         builder: (context, state) => ChangeNotifierProvider(

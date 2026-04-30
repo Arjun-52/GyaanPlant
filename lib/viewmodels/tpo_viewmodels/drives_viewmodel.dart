@@ -26,23 +26,71 @@ class DrivesViewModel extends ChangeNotifier {
   }
 
   Future<void> fetchDrives() async {
+    // Prevent multiple concurrent API calls
+    if (_isLoading) {
+      print('⚠️ fetchDrives() already in progress, skipping');
+      return;
+    }
+
+    print('🚀 DrivesViewModel.fetchDrives() called');
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
+      print('📡 Calling API: _tpo.getDrives()');
       final result = await _tpo.getDrives();
+      print(
+        '📦 API Response: isSuccess=${result.isSuccess}, data=${result.data}',
+      );
+
       if (result.isSuccess) {
         _drives = result.data ?? [];
+        print('✅ Successfully loaded ${_drives.length} drives');
       } else {
+        print('❌ API Error: ${result.error?.message}');
         throw Exception(result.error?.message ?? 'Failed to load drives');
       }
     } catch (e) {
+      print('💥 Exception in fetchDrives(): $e');
       _error = e.toString();
       _drives = [];
     } finally {
       _isLoading = false;
       notifyListeners();
+      print('🏁 fetchDrives() completed');
+    }
+  }
+
+  // Force refresh - bypasses loading guard
+  Future<void> refreshDrives() async {
+    print('🔄 DrivesViewModel.refreshDrives() called - force refresh');
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      print('📡 Calling API: _tpo.getDrives() (refresh)');
+      final result = await _tpo.getDrives();
+      print(
+        '📦 API Response: isSuccess=${result.isSuccess}, data=${result.data}',
+      );
+
+      if (result.isSuccess) {
+        _drives = result.data ?? [];
+        print('✅ Successfully refreshed ${_drives.length} drives');
+      } else {
+        print('❌ API Error: ${result.error?.message}');
+        throw Exception(result.error?.message ?? 'Failed to refresh drives');
+      }
+    } catch (e) {
+      print('💥 Exception in refreshDrives(): $e');
+      _error = e.toString();
+      _drives = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+      print('🏁 refreshDrives() completed');
     }
   }
 }
