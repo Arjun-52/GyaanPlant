@@ -17,9 +17,13 @@ class _JobScreenState extends State<JobScreen> {
   @override
   void initState() {
     super.initState();
+    print("🖥️ JobScreen initState() called");
     Future.microtask(() {
       if (mounted) {
+        print("🖥️ Calling fetchJobs() from JobScreen initState");
         context.read<JobViewModel>().fetchJobs();
+      } else {
+        print("❌ Widget not mounted, skipping fetchJobs()");
       }
     });
   }
@@ -46,17 +50,66 @@ class _JobScreenState extends State<JobScreen> {
                 const JobFilterRow(),
                 const SizedBox(height: 20),
 
+                // Debug info
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black26,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "DEBUG INFO",
+                        style: TextStyle(
+                          color: Colors.yellow,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        "Loading: ${vm.isLoading}",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      Text(
+                        "Jobs Count: ${vm.jobs.length}",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      Text(
+                        "Error: ${vm.errorMessage ?? 'None'}",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      Text(
+                        "Is Loaded: ${vm.isLoaded}",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
                 if (vm.errorMessage != null)
                   Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
-                        Icon(Icons.error_outline, size: 50, color: Colors.redAccent),
+                        Icon(
+                          Icons.error_outline,
+                          size: 50,
+                          color: Colors.redAccent,
+                        ),
                         SizedBox(height: 12),
-                        Text('Failed to load jobs', style: TextStyle(color: Colors.white)),
+                        Text(
+                          'Failed to load jobs',
+                          style: TextStyle(color: Colors.white),
+                        ),
                         SizedBox(height: 6),
-                        Text('Please check your connection and try again',
-                            style: TextStyle(color: Colors.white54)),
+                        Text(
+                          'Please check your connection and try again',
+                          style: TextStyle(color: Colors.white54),
+                        ),
                       ],
                     ),
                   )
@@ -67,10 +120,15 @@ class _JobScreenState extends State<JobScreen> {
                       children: const [
                         Icon(Icons.work, size: 50, color: Colors.white38),
                         SizedBox(height: 12),
-                        Text('No jobs available', style: TextStyle(color: Colors.white)),
+                        Text(
+                          'No jobs available',
+                          style: TextStyle(color: Colors.white),
+                        ),
                         SizedBox(height: 6),
-                        Text('Check back later for opportunities',
-                            style: TextStyle(color: Colors.white54)),
+                        Text(
+                          'Check back later for opportunities',
+                          style: TextStyle(color: Colors.white54),
+                        ),
                       ],
                     ),
                   )

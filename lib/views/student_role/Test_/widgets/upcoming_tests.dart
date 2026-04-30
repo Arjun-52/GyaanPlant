@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'test_pack_card.dart';
+import 'package:gyaanplant/models/prep_pack_model.dart';
 
 class UpcomingTests extends StatelessWidget {
   const UpcomingTests({super.key});
@@ -8,7 +9,7 @@ class UpcomingTests extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
+      children: [
         Text(
           "Upcoming Test Packs",
           style: TextStyle(
@@ -20,24 +21,30 @@ class UpcomingTests extends StatelessWidget {
         SizedBox(height: 14),
 
         TestPackCard(
-          "TCS NQT Full Mock",
-          "3 rounds · 90 min",
-          "₹299",
-          Color(0xFF00C853), // green
+          pack: PrepPack(
+            id: '1',
+            title: "TCS NQT Full Mock",
+            description: "3 rounds · 90 min",
+            price: 299.0,
+          ),
         ),
 
         TestPackCard(
-          "Infosys InfyTQ Prep",
-          "Aptitude + Coding",
-          "₹249",
-          Color(0xFFFFA726), // orange
+          pack: PrepPack(
+            id: '2',
+            title: "Infosys InfyTQ Prep",
+            description: "Aptitude + Coding",
+            price: 249.0,
+          ),
         ),
 
         TestPackCard(
-          "Wipro NLTH Pack",
-          "4 sections · 120 min",
-          "₹279",
-          Color(0xFF42A5F5), // blue
+          pack: PrepPack(
+            id: '3',
+            title: "Wipro NLTH Pack",
+            description: "4 sections · 120 min",
+            price: 279.0,
+          ),
         ),
       ],
     );

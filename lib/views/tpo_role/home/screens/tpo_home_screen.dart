@@ -16,8 +16,14 @@ class _TPODashboardState extends State<TPODashboard> {
   @override
   void initState() {
     super.initState();
+    print("🖥️ TPO Dashboard initState() called");
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.read<TpoDashboardViewModel>().initialize();
+      if (mounted) {
+        print("🖥️ Calling TPO Dashboard initialize() from initState");
+        context.read<TpoDashboardViewModel>().initialize();
+      } else {
+        print("❌ Widget not mounted, skipping initialize()");
+      }
     });
   }
 
@@ -81,14 +87,16 @@ class _TPODashboardState extends State<TPODashboard> {
                                 ),
                                 actions: [
                                   TextButton(
-                                    onPressed: () => Navigator.pop(context, false),
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
                                     child: const Text(
                                       'Cancel',
                                       style: TextStyle(color: Colors.white70),
                                     ),
                                   ),
                                   ElevatedButton(
-                                    onPressed: () => Navigator.pop(context, true),
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.red,
                                       foregroundColor: Colors.white,
@@ -111,7 +119,9 @@ class _TPODashboardState extends State<TPODashboard> {
                             decoration: BoxDecoration(
                               color: Colors.red.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.red.withOpacity(0.3)),
+                              border: Border.all(
+                                color: Colors.red.withOpacity(0.3),
+                              ),
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
@@ -131,6 +141,74 @@ class _TPODashboardState extends State<TPODashboard> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Debug info panel
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.black26,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "DEBUG INFO",
+                            style: TextStyle(
+                              color: Colors.yellow,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            "Loading: ${viewModel.isLoading}",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          Text(
+                            "Has Data: ${viewModel.hasData}",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          Text(
+                            "Has Error: ${viewModel.hasError}",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          if (viewModel.hasError)
+                            Text(
+                              "Error: ${viewModel.errorMessage}",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          if (viewModel.hasData) ...[
+                            Text(
+                              "Active Drives: ${viewModel.activeDrives}",
+                              style: TextStyle(color: Colors.green),
+                            ),
+                            Text(
+                              "Total Students: ${viewModel.totalStudents}",
+                              style: TextStyle(color: Colors.green),
+                            ),
+                            Text(
+                              "Placement Rate: ${viewModel.placementRate}%",
+                              style: TextStyle(color: Colors.green),
+                            ),
+                            Text(
+                              "Weekly Offers: ${viewModel.weeklyOffers}",
+                              style: TextStyle(color: Colors.green),
+                            ),
+                          ],
+                          SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () => viewModel.debugApiCall(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: Text("DEBUG API CALL"),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 20),
 
@@ -188,22 +266,22 @@ class _TPODashboardState extends State<TPODashboard> {
           children: [
             DashboardStatCard(
               title: 'Total Students',
-              value: vm.summary.totalStudents.toString(),
+              value: vm.totalStudents.toString(),
               subtitle: 'From API',
             ),
             DashboardStatCard(
               title: 'Active Drives',
-              value: vm.summary.activeDrives.toString(),
-              subtitle: '${vm.summary.closingSoon} closing soon',
+              value: vm.activeDrives.toString(),
+              subtitle: '${vm.closingSoon} closing soon',
             ),
             DashboardStatCard(
               title: 'Placement Rate',
               value: vm.placementRateText,
-              subtitle: '${vm.summary.studentsPlaced} placed',
+              subtitle: '${vm.studentsPlaced} placed',
             ),
             DashboardStatCard(
               title: 'Weekly Offers',
-              value: vm.summary.weeklyOffers.toString(),
+              value: vm.weeklyOffers.toString(),
               subtitle: vm.weeklyOffersText,
             ),
           ],
@@ -222,20 +300,20 @@ class _TPODashboardState extends State<TPODashboard> {
         ),
         const SizedBox(height: 10),
         if (vm.hasUpcomingDrives) ...[
-          ...vm.upcomingDrives.map((drive) {
+          ...vm.drives.map((drive) {
             return Card(
               color: Colors.white10,
               child: ListTile(
                 title: Text(
-                  drive.company ?? 'Company',
+                  drive['company'] ?? 'Company',
                   style: const TextStyle(color: Colors.white),
                 ),
                 subtitle: Text(
-                  '${drive.role ?? ''} • ${_formatDate(drive.driveDate)}',
+                  '${drive['role'] ?? ''} • ${_formatDate(drive['driveDate'])}',
                   style: const TextStyle(color: Colors.white54),
                 ),
                 trailing: Text(
-                  '${drive.eligibleCount ?? 0} eligible',
+                  '${drive['eligibleCount'] ?? 0} eligible',
                   style: const TextStyle(color: Colors.green),
                 ),
               ),

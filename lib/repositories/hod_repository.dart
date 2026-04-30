@@ -30,12 +30,34 @@ class HodRepository {
   }
 
   Future<ApiResponse<List<Department>>> getDepartments() {
+    print("🔍 HOD REPO: Fetching departments from ${ApiEndpoints.departments}");
+
     return _api.get<List<Department>>(
       ApiEndpoints.departments,
       fromJson: (json) {
+        print("🔍 HOD REPO: Raw JSON response: $json");
+
         final map = json as Map<String, dynamic>;
-        final list = map['data'] as List<dynamic>? ?? [];
-        return list.map((e) => Department.fromJson(e as Map<String, dynamic>)).toList();
+        print("🔍 HOD REPO: Response keys: ${map.keys.toList()}");
+
+        if (map.containsKey('data')) {
+          final list = map['data'] as List<dynamic>? ?? [];
+          print("🔍 HOD REPO: Data list length: ${list.length}");
+
+          if (list.isNotEmpty) {
+            print("🔍 HOD REPO: First raw department: ${list.first}");
+          }
+
+          final departments = list
+              .map((e) => Department.fromJson(e as Map<String, dynamic>))
+              .toList();
+          print("🔍 HOD REPO: Parsed ${departments.length} departments");
+
+          return departments;
+        } else {
+          print("❌ HOD REPO: No 'data' key found in response");
+          return [];
+        }
       },
     );
   }

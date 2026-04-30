@@ -9,10 +9,10 @@ class TpoRepository {
   final NetworkAPIManager _api;
   TpoRepository(this._api);
 
-  Future<ApiResponse<TpoDashboardModel>> getDashboard() {
-    return _api.get<TpoDashboardModel>(
+  Future<ApiResponse<Map<String, dynamic>>> getDashboard() {
+    return _api.get<Map<String, dynamic>>(
       ApiEndpoints.dashboardTpo,
-      fromJson: (json) => TpoDashboardModel.fromJson(json as Map<String, dynamic>),
+      fromJson: (json) => json as Map<String, dynamic>,
     );
   }
 
@@ -22,7 +22,9 @@ class TpoRepository {
       fromJson: (json) {
         final map = json as Map<String, dynamic>;
         final list = map['data'] as List<dynamic>? ?? [];
-        return list.map((e) => Drive.fromJson(e as Map<String, dynamic>)).toList();
+        return list
+            .map((e) => Drive.fromJson(e as Map<String, dynamic>))
+            .toList();
       },
     );
   }
@@ -33,7 +35,9 @@ class TpoRepository {
       fromJson: (json) {
         final map = json as Map<String, dynamic>;
         final list = map['data'] as List<dynamic>? ?? [];
-        return list.map((e) => Student.fromJson(e as Map<String, dynamic>)).toList();
+        return list
+            .map((e) => Student.fromJson(e as Map<String, dynamic>))
+            .toList();
       },
     );
   }

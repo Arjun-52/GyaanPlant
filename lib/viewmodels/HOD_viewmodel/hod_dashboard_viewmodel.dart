@@ -11,90 +11,44 @@ class HodDashboardViewModel extends ChangeNotifier {
   String? error;
 
   Future<void> loadDashboard() async {
-    final token = AuthService.token;
-    if (token == null) throw Exception("User not logged in");
+    print("🚀 LOADING HOD DASHBOARD");
 
-    print("TOKEN USED: $token");
+    final token = AuthService.token;
+    print(
+      "🔑 TOKEN: ${token != null ? 'Present (${token.length} chars)' : 'MISSING'}",
+    );
+    if (token == null) throw Exception("User not logged in");
 
     isLoading = true;
     error = null;
     notifyListeners();
 
     try {
+      print("🌐 API CALL: GET /api/v1/dashboard/hod");
       final result = await _hod.getDashboard();
+      print("📦 RESPONSE STATUS: ${result.isSuccess ? 'SUCCESS' : 'FAILED'}");
+
       if (result.isSuccess) {
         data = result.data;
+        print("✅ HOD DASHBOARD DATA LOADED:");
+        print("   - Total Students: ${data?.totalStudents}");
+        print("   - Departments: ${data?.departments}");
+        print("   - LMS Adoption: ${data?.lmsAdoption}");
+        print("🔍 PARSED DATA: ${data?.departmentsData}");
       } else {
+        print("❌ API ERROR: ${result.error?.message}");
         throw Exception(result.error?.message ?? 'Failed to load dashboard');
       }
-      print("🔍 PARSED DATA: ${data?.departmentsData}");
-
-      // TEMPORARY: Add mock data if API returns empty departments
-      if (data?.departmentsData.isEmpty ?? true) {
-        print("🧪 ADDING MOCK DEPARTMENT DATA FOR TESTING");
-        data = HodDashboardModel(
-          totalStudents: data?.totalStudents ?? 1250,
-          departments: data?.departments ?? 4,
-          lmsAdoption: data?.lmsAdoption ?? 75,
-          naacGrade: data?.naacGrade ?? "A",
-          departmentsData: [
-            DeptModel(name: "CSE", value: 85.0),
-            DeptModel(name: "IT", value: 72.5),
-            DeptModel(name: "ECE", value: 68.0),
-            DeptModel(name: "MECH", value: 45.5),
-          ],
-        );
-        print(
-          "🧪 MOCK DATA ADDED: ${data?.departmentsData.length} departments",
-        );
-      }
     } catch (e) {
-      print("🧪 API ERROR: $e");
-      error = _getErrorMessage(e.toString());
-
-      // Don't add mock data on error - let the UI show the error message
-      // This prevents crashes and shows user-friendly error messages
+      print("💥 EXCEPTION: $e");
+      error = e.toString();
+    } finally {
+      isLoading = false;
+      print(
+        "� HOD Dashboard notifyListeners() called - isLoading=$isLoading, hasData=${data != null}",
+      );
+      notifyListeners();
     }
-
-    isLoading = false;
-    notifyListeners();
-  }
-
-  // Convert technical error messages to user-friendly messages
-  String _getErrorMessage(String technicalError) {
-    print("🔍 TECHNICAL ERROR: $technicalError");
-
-    // Check for specific error patterns and return user-friendly messages
-    if (technicalError.toLowerCase().contains("no department assigned")) {
-      return "No department assigned. Contact admin.";
-    }
-
-    if (technicalError.toLowerCase().contains("invalid token") ||
-        technicalError.toLowerCase().contains("unauthorized")) {
-      return "Session expired. Please login again.";
-    }
-
-    if (technicalError.toLowerCase().contains("forbidden") ||
-        technicalError.toLowerCase().contains("access denied")) {
-      return "Access denied. You don't have HOD permissions.";
-    }
-
-    if (technicalError.toLowerCase().contains("network") ||
-        technicalError.toLowerCase().contains("connection")) {
-      return "Network error. Please check your internet connection.";
-    }
-
-    if (technicalError.toLowerCase().contains("server") ||
-        technicalError.toLowerCase().contains("500")) {
-      return "Server error. Please try again later.";
-    }
-
-    if (technicalError.toLowerCase().contains("404")) {
-      return "Service not found. Contact support.";
-    }
-
-    // Default fallback for unknown errors
-    return "Unable to load dashboard. Please try again.";
   }
 
   // Safe getters for UI

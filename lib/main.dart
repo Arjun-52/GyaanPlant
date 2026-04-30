@@ -13,6 +13,8 @@ import 'viewmodels/student_viewmodel/leaderboard_viewmodel.dart';
 import 'viewmodels/student_viewmodel/learning_viewmodel.dart';
 import 'viewmodels/student_viewmodel/test_viewmodel.dart';
 import 'viewmodels/tpo_viewmodels/drives_viewmodel.dart';
+import 'viewmodels/tpo_viewmodels/tpo_dashboard_viewmodel.dart';
+import 'viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +49,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => LeaderboardViewModel()),
         ChangeNotifierProvider(create: (_) => StudentTabController()),
         ChangeNotifierProvider(create: (_) => DrivesViewModel()),
+        ChangeNotifierProvider(create: (_) => TpoDashboardViewModel()),
+        ChangeNotifierProvider(
+          create: (_) => HodDashboardViewModel()..loadDashboard(),
+        ),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

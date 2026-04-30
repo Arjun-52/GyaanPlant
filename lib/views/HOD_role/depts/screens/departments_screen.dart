@@ -54,10 +54,66 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
             }
 
             if (vm.departments.isEmpty) {
-              return const Center(
-                child: Text(
-                  'No Departments Found',
-                  style: TextStyle(color: Colors.white),
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'No Departments Found',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.black26,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'DEBUG INFO',
+                            style: TextStyle(
+                              color: Colors.yellow,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Loading: ${vm.isLoading}',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          Text(
+                            'Error: ${vm.error ?? "None"}',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          Text(
+                            'Departments: ${vm.departments.length}',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: () => vm.debugUserInfo(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('DEBUG USER INFO'),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () => vm.loadDepartments(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('RELOAD DEPARTMENTS'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               );
             }
