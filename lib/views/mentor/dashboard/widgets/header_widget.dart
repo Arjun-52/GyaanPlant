@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:gyaanplant/models/mentor_models/mentor_dashboard_model.dart';
 import 'package:gyaanplant/views/mentor/dashboard/widgets/stat_card.dart';
-
-import '../../../../data/services/local_storage_service.dart';
-import '../../../../network/auth_cache.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
 
 class HeaderWidget extends StatelessWidget {
   final MentorDashboardModel data;
@@ -145,9 +144,10 @@ class HeaderWidget extends StatelessWidget {
 
   void _showLogoutDialog(BuildContext context) {
     print("🔥 LOGOUT: Showing logout dialog");
+
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           backgroundColor: const Color(0xFF1A0033),
           title: const Text('Logout', style: TextStyle(color: Colors.white)),
@@ -159,36 +159,22 @@ class HeaderWidget extends StatelessWidget {
             TextButton(
               onPressed: () {
                 print("🔥 LOGOUT: Cancel pressed");
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
               },
               child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
             ),
+
             TextButton(
               onPressed: () async {
-                print("🔥 LOGOUT: Logout confirmed - starting logout process");
-                Navigator.of(context).pop();
+                print("🔥 LOGOUT: Confirmed");
 
-                try {
-                  // Clear in-memory cache immediately
-                  print("🔥 LOGOUT: Clearing AuthCache");
-                  AuthCache.token = null;
+                Navigator.of(dialogContext).pop();
 
-                  // Clear token and user data from storage
-                  print("🔥 LOGOUT: Clearing token from LocalStorageService");
-                  await LocalStorageService.clearToken();
-                  print("🔥 LOGOUT: Token cleared successfully");
+                await context.read<AuthViewModel>().logout(context);
 
-                  // Navigate to sign-in screen
-                  if (context.mounted) {
-                    print("🔥 LOGOUT: Navigating to login screen");
-                    context.go('/');
-                    print("🔥 LOGOUT: Navigation completed");
-                  } else {
-                    print("❌ LOGOUT: Context not mounted, cannot navigate");
-                  }
-                } catch (e) {
-                  print("❌ LOGOUT: Error during logout: $e");
-                }
+                if (!context.mounted) return;
+
+                context.go('/role');
               },
               child: const Text('Logout', style: TextStyle(color: Colors.red)),
             ),

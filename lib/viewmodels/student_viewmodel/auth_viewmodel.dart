@@ -183,22 +183,29 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> logout(BuildContext context) async {
-    // Clear in-memory cache immediately
-    AuthCache.token = null;
+    print("🔥 LOGOUT: Starting proper logout flow");
 
-    // Clear persistent storage
-    await LocalStorageService.clearToken();
-
-    // Call logout API (best effort)
     try {
+      // ✅ STEP 1: Call API FIRST (token still exists)
       await _auth.logout();
+      print("✅ LOGOUT API SUCCESS");
     } catch (e) {
-      // Ignore logout API errors since we're already clearing local state
+      print("⚠️ LOGOUT API FAILED: $e");
+      // Don't block logout if API fails
     }
+
+    // ✅ STEP 2: Now clear local data
+    await LocalStorageService.clearToken();
+    await LocalStorageService.removeRole();
+
+    print("🔥 LOGOUT: Local data cleared");
 
     user = null;
     notifyListeners();
-    if (context.mounted) context.go('/');
+
+    if (context.mounted) {
+      context.go('/role');
+    }
   }
 
   Future<void> forgotPassword(BuildContext context, String email) async {

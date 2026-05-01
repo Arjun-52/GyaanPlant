@@ -29,6 +29,8 @@ class LocalStorageService {
 
   static Future<String?> getRole() => _storage.read(key: _roleKey);
 
+  static Future<void> removeRole() => _storage.delete(key: _roleKey);
+
   static Future<void> saveUser(Map<String, dynamic> user) =>
       _storage.write(key: _userKey, value: jsonEncode(user));
 

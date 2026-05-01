@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -33,49 +32,45 @@ class AppRouter {
       final role = await LocalStorageService.getRole();
       final location = state.uri.toString();
 
-      print(
-        "🔄 ROUTER: Checking redirect - token=${token != null}, role=$role, location=$location",
-      );
+      final isLoggedIn = token != null && token.isNotEmpty;
 
-      // If user is logged in (has token) and on auth/role screens, redirect to dashboard
-      if (token != null && role != null) {
-        if (location == '/' || location == '/signup' || location == '/role') {
-          print(
-            "🔄 ROUTER: Redirecting logged-in user from $location to dashboard",
-          );
-          switch (role) {
-            case 'student':
-              return '/student-dashboard';
-            case 'tpo':
-              return '/tpo-dashboard';
-            case 'hod':
-              return '/overview';
-            case 'mentor':
-              return '/mentor-dashboard';
-            default:
-              return '/role';
-          }
+      print("🔄 ROUTER: token=$isLoggedIn role=$role location=$location");
+
+      // NOT LOGGED IN → allow only auth screens
+      if (!isLoggedIn) {
+        if (location == '/role' ||
+            location == '/' ||
+            location == '/signup' ||
+            location == '/forgot-password') {
+          return null;
         }
-      }
-
-      // If user has role but no token, they need to sign in (but prevent loop)
-      if (token == null && role != null && location == '/role') {
-        print("🔄 ROUTER: User has role but no token - redirecting to sign in");
-        return '/';
-      }
-
-      // If user is not logged in and has no role, go to role screen
-      // But if they have a role, let them stay on sign-in screen
-      if (token == null && role == null && location != '/role') {
-        print("🔄 ROUTER: Redirecting to role screen (no role selected)");
         return '/role';
       }
 
-      print("🔄 ROUTER: No redirect needed");
+      // LOGGED IN → prevent going to auth screens
+      if (location == '/' ||
+          location == '/signup' ||
+          location == '/forgot-password' ||
+          location == '/role') {
+        switch (role) {
+          case 'student':
+            return '/student-dashboard';
+          case 'tpo':
+            return '/tpo-dashboard';
+          case 'hod':
+            return '/overview';
+          case 'mentor':
+            return '/mentor-dashboard';
+          default:
+            return '/role';
+        }
+      }
+
       return null;
     },
 
     routes: [
+      ///  AUTH
       GoRoute(
         path: '/',
         name: 'signIn',
@@ -100,16 +95,16 @@ class AppRouter {
         builder: (context, state) => const RoleScreen(),
       ),
 
-      // STUDENT SHELL (tabs managed internally via IndexedStack + StudentTabController)
+      ///  STUDENT
       GoRoute(
         path: '/student-dashboard',
         builder: (context, state) => const StudentShell(),
       ),
 
-      // HOD SHELL (tabs managed internally via IndexedStack)
+      ///  HOD
       GoRoute(path: '/overview', builder: (context, state) => const HODShell()),
 
-      // TPO SHELL — provide TPO-specific VMs above the shell
+      ///  TPO
       GoRoute(
         path: '/tpo-dashboard',
         builder: (context, state) => MultiProvider(
@@ -121,13 +116,12 @@ class AppRouter {
         ),
       ),
 
-      // Sub-screen pushed on top of student shell (not a tab)
+      ///  COMMON
       GoRoute(
         path: '/leaderboard',
         builder: (context, state) => const LeaderboardView(),
       ),
 
-      // Standalone students screen (for direct access outside TPO shell)
       GoRoute(
         path: '/students',
         builder: (context, state) => ChangeNotifierProvider(
@@ -136,7 +130,7 @@ class AppRouter {
         ),
       ),
 
-      // MENTOR
+      ///  MENTOR
       GoRoute(
         path: '/mentor-dashboard',
         builder: (context, state) => ChangeNotifierProvider(

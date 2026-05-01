@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/mentor_models/mentor_dashboard_model.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
-import 'package:gyaanplant/network/api_response.dart';
 
 class MentorDashboardViewModel extends ChangeNotifier {
   final _mentor = ApiService().mentor;
