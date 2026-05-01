@@ -105,7 +105,11 @@ class MentorDashboardScreen extends StatelessWidget {
 
                           const SizedBox(height: 16),
 
-                          _buildSessionsList(),
+                          Consumer<MentorDashboardViewModel>(
+                            builder: (context, vm, _) {
+                              return _buildSessionsList(vm);
+                            },
+                          ),
 
                           const SizedBox(height: 24),
 
@@ -173,20 +177,8 @@ class MentorDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSessionsList() {
-    // Mock session data since the model doesn't have upcomingSessions
-    final sessions = [
-      {
-        'studentName': 'John Doe',
-        'topic': 'Career Guidance',
-        'time': '10:00 AM',
-      },
-      {
-        'studentName': 'Jane Smith',
-        'topic': 'Skill Development',
-        'time': '2:00 PM',
-      },
-    ];
+  Widget _buildSessionsList(MentorDashboardViewModel vm) {
+    final sessions = vm.dashboard?.upcomingSessions ?? [];
 
     if (sessions.isEmpty) {
       return const Text(
@@ -196,13 +188,13 @@ class MentorDashboardScreen extends StatelessWidget {
     }
 
     return Column(
-      children: sessions.map<Widget>((session) {
+      children: sessions.map((session) {
         return SessionCard(
-          initials: _getInitials(session['studentName'] ?? "Student"),
-          name: session['studentName'] ?? "Student",
+          initials: _getInitials(session.studentName),
+          name: session.studentName,
           detail: "Session",
-          time: session['time'] ?? "TBD",
-          topic: session['topic'] ?? "Mentoring",
+          time: session.time,
+          topic: session.topic,
         );
       }).toList(),
     );
