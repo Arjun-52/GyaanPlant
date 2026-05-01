@@ -23,6 +23,9 @@ class TpoDashboardViewModel extends ChangeNotifier {
   int studentsPlaced = 0;
   List<Map<String, dynamic>> drives = [];
 
+  // College information
+  String collegeName = "Loading...";
+
   // Getters
   bool get isLoading => _isLoading;
   bool get isRefreshing => _isRefreshing;
@@ -295,10 +298,44 @@ class TpoDashboardViewModel extends ChangeNotifier {
     }
   }
 
+  /// Fetch college name dynamically using collegeId from user profile
+  Future<void> fetchCollegeName() async {
+    print("🏫 Fetching college name...");
+
+    try {
+      final userRes = await ApiService().auth.getCurrentUser();
+
+      print("👤 FULL RESPONSE: $userRes");
+
+      final userData = userRes.data;
+
+      print("👤 USER DATA: $userData");
+
+      final college = userData?.college;
+
+      print("🏫 College object: $college");
+
+      if (college == null) {
+        collegeName = "No College Assigned";
+      } else {
+        collegeName = college.toString();
+      }
+
+      print("🏫 Final College Name: $collegeName");
+    } catch (e, stack) {
+      print("💥 ERROR: $e");
+      print("📍 STACK: $stack");
+      collegeName = "Error loading college";
+    }
+
+    notifyListeners();
+  }
+
   /// Initialize ViewModel - called when screen is first created
   void initialize() {
     print("🧠 ViewModel initialize() called");
     // Auto-fetch data when ViewModel is created
     fetchDashboardData();
+    fetchCollegeName();
   }
 }

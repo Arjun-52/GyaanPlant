@@ -17,6 +17,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _vm = SettingsViewModel();
+    // Initialize to fetch college name
+    _vm.initialize();
   }
 
   @override
@@ -39,11 +41,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Settings',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Settings',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -53,28 +58,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           colors: [Color(0xFF0F3B2E), Color(0xFF0A241D)],
                         ),
                         border: Border.all(
-                            color: Colors.greenAccent.withAlpha(51)),
+                          color: Colors.greenAccent.withAlpha(51),
+                        ),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          CircleAvatar(
+                          const CircleAvatar(
                             radius: 26,
                             backgroundColor: Colors.blue,
                             child: Text('RP'),
                           ),
-                          SizedBox(width: 12),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Ramesh Prasad',
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 19)),
-                                SizedBox(height: 4),
-                                Text('TPO · GRIET Hyderabad',
-                                    style: TextStyle(color: Colors.white54)),
+                                const Text(
+                                  'Ramesh Prasad',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 19,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Consumer<SettingsViewModel>(
+                                  builder: (context, vm, _) {
+                                    return Text(
+                                      'TPO · ${vm.collegeName}',
+                                      style: const TextStyle(
+                                        color: Colors.white54,
+                                      ),
+                                    );
+                                  },
+                                ),
                               ],
                             ),
                           ),

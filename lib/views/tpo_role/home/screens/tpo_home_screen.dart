@@ -53,23 +53,18 @@ class _TPODashboardState extends State<TPODashboard> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Good morning, TPO 👋',
-                              style: TextStyle(color: Colors.white54),
-                            ),
-                            SizedBox(height: 6),
-                            Text(
-                              'GRIET Hyderabad',
-                              style: TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
+                        Consumer<TpoDashboardViewModel>(
+                          builder: (context, vm, _) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Good morning, TPO 👋',
+                                  style: TextStyle(color: Colors.white54),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                         GestureDetector(
                           onTap: () async {

@@ -45,8 +45,38 @@ class StudentViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      print('🔍 Calling API: _tpo.getStudents()');
-      final result = await _tpo.getStudents();
+      // STEP 1: FETCH COLLEGE ID FROM USER
+      print('🏫 Fetching current user to get collegeId...');
+      final userRes = await ApiService().auth.getCurrentUser();
+
+      print("👤 USER RESPONSE OBJECT: $userRes");
+      print("👤 USER DATA: ${userRes.data}");
+
+      final college = userRes.data?.college;
+      String? collegeId;
+
+      if (college == null) {
+        print('❌ College data is null');
+      } else {
+        collegeId = college.id;
+        print('🏫 College ID extracted: $collegeId');
+        print('🏫 College name: ${college.name}');
+      }
+
+      // STEP 2: SAFETY CHECKS
+      if (collegeId == null) {
+        print('❌ No collegeId found, skipping API call');
+        _errorMessage = 'No college assigned to user';
+        _students = [];
+        return;
+      }
+
+      print('🏫 Using collegeId for filtering: $collegeId');
+      print('🏫 collegeId type: ${collegeId.runtimeType}');
+
+      // STEP 3: UPDATE VIEWMODEL CALL
+      print('�� Calling API: _tpo.getStudents(collegeId)');
+      final result = await _tpo.getStudents(collegeId);
       print(
         '📦 API Response: isSuccess=${result.isSuccess}, data=${result.data}',
       );
@@ -54,6 +84,11 @@ class StudentViewModel extends ChangeNotifier {
       if (result.isSuccess) {
         _students = result.data ?? [];
         print('✅ Successfully loaded ${_students.length} students');
+        print('📊 FILTERED STUDENTS COUNT: ${_students.length}');
+
+        if (_students.isNotEmpty) {
+          print('📊 First student name: ${_students.first.name}');
+        }
       } else {
         throw Exception(result.error?.message ?? 'Failed to load students');
       }

@@ -23,6 +23,7 @@ class ApiEndpoints {
 
   // ── Colleges ─────────────────────────────────────────────────────────────
   static const String colleges = '/api/v1/colleges';
+  static const String college = '/api/v1/college';
 
   // ── Students ─────────────────────────────────────────────────────────────
   static const String students = '/api/v1/student';
