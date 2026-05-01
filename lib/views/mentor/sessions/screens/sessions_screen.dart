@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/mentor_viewmodel/session_viewmodel.dart';
-import 'package:gyaanplant/views/mentor/dashboard/widgets/session_card.dart';
+
 import 'package:gyaanplant/views/mentor/sessions/widgets/session_history_card.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/core/common_widgets/mentor_bottom_nav.dart';

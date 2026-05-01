@@ -1,6 +1,7 @@
 import '../models/mentor_models/booking_model.dart';
 import '../models/mentor_models/mentor_dashboard_model.dart';
 import '../models/mentor_models/sessions_model.dart';
+import '../models/student_role_models/mentor_model.dart';
 import '../network/api_endpoints.dart';
 import '../network/api_manager.dart';
 import '../network/api_response.dart';
@@ -76,6 +77,19 @@ class MentorRepository {
         final list = map['data'] as List<dynamic>? ?? [];
         return list
             .map((e) => Session.fromJson(e as Map<String, dynamic>))
+            .toList();
+      },
+    );
+  }
+
+  Future<ApiResponse<List<MentorModel>>> getMentors() {
+    return _api.get<List<MentorModel>>(
+      ApiEndpoints.mentors,
+      fromJson: (json) {
+        final map = json as Map<String, dynamic>;
+        final list = map['data'] as List<dynamic>? ?? [];
+        return list
+            .map((e) => MentorModel.fromJson(e as Map<String, dynamic>))
             .toList();
       },
     );

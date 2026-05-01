@@ -34,7 +34,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // ===== MONTHLY CHART =====
+                  //MONTHLY CHART
                   CustomCard(
                     title: 'Monthly Active Students',
                     child: Row(
@@ -96,7 +96,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
                   const SizedBox(height: 16),
 
-                  // ===== PLACEMENT CHART =====
+                  //PLACEMENT CHART
                   CustomCard(
                     title: 'Placement Rate by Year',
                     child: Row(
@@ -156,7 +156,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
                   const SizedBox(height: 16),
 
-                  // ===== INFO CARDS =====
+                  //INFO CARDS
                   Column(
                     children: [
                       InfoCard(

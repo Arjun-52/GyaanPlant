@@ -55,7 +55,9 @@ class JobViewModel extends ChangeNotifier {
         print("📊 RESPONSE DATA: ${result.data}");
 
         if (result.data != null) {
-          jobs = result.data!.drives;
+          jobs = (result.data as List)
+              .map((e) => DriveModel.fromJson(e))
+              .toList();
           isLoaded = true;
           print("✅ JOBS STORED: ${jobs.length} jobs loaded");
 
@@ -63,7 +65,7 @@ class JobViewModel extends ChangeNotifier {
           if (jobs.isNotEmpty) {
             final firstJob = jobs.first;
             print(
-              "🔍 FIRST JOB: id=${firstJob.id}, title=${firstJob.title}, company=${firstJob.company}",
+              "🔍 FIRST JOB: id=${firstJob.id}, role=${firstJob.role}, companyName=${firstJob.companyName}",
             );
           }
         } else {
@@ -75,8 +77,9 @@ class JobViewModel extends ChangeNotifier {
         errorMessage = result.error?.message ?? 'Failed to fetch jobs';
       }
     } catch (e, st) {
-      print("💥 EXCEPTION: $e");
-      print("📍 STACK TRACE: $st");
+      print("💥 ERROR TYPE: ${e.runtimeType}");
+      print("💥 ERROR: $e");
+      print("📍 STACK: $st");
       errorMessage = e.toString();
     } finally {
       isLoading = false;
