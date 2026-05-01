@@ -144,79 +144,13 @@ class _TPODashboardState extends State<TPODashboard> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Debug info panel
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.black26,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white24),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "DEBUG INFO",
-                            style: TextStyle(
-                              color: Colors.yellow,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            "Loading: ${viewModel.isLoading}",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          Text(
-                            "Has Data: ${viewModel.hasData}",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          Text(
-                            "Has Error: ${viewModel.hasError}",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          if (viewModel.hasError)
-                            Text(
-                              "Error: ${viewModel.errorMessage}",
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          if (viewModel.hasData) ...[
-                            Text(
-                              "Active Drives: ${viewModel.activeDrives}",
-                              style: TextStyle(color: Colors.green),
-                            ),
-                            Text(
-                              "Total Students: ${viewModel.totalStudents}",
-                              style: TextStyle(color: Colors.green),
-                            ),
-                            Text(
-                              "Placement Rate: ${viewModel.placementRate}%",
-                              style: TextStyle(color: Colors.green),
-                            ),
-                            Text(
-                              "Weekly Offers: ${viewModel.weeklyOffers}",
-                              style: TextStyle(color: Colors.green),
-                            ),
-                          ],
-                          SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: () => viewModel.debugApiCall(),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
-                              foregroundColor: Colors.white,
-                            ),
-                            child: Text("DEBUG API CALL"),
-                          ),
-                        ],
-                      ),
-                    ),
                     const SizedBox(height: 20),
 
                     if (viewModel.isLoading)
                       _loading()
                     else if (viewModel.hasError)
                       _error(viewModel)
-                    else if (viewModel.hasData)
+                    else if (!viewModel.isLoading)
                       _success(viewModel)
                     else
                       _empty(),

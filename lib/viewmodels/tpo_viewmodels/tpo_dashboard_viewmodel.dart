@@ -29,13 +29,18 @@ class TpoDashboardViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   // Convenience getters for UI
-  bool get hasData => drives.isNotEmpty || activeDrives != 0;
+  bool get hasData =>
+      totalStudents > 0 ||
+      activeDrives > 0 ||
+      weeklyOffers > 0 ||
+      studentsPlaced > 0 ||
+      drives.isNotEmpty;
   bool get hasError => _errorMessage != null;
 
-  /// Fetch dashboard data from API with direct JSON parsing
+  /// Fetch dashboard data from API with safe JSON parsing
   /// Shows loading state during initial load
   Future<void> fetchDashboardData() async {
-    print("🚀 CALLING TPO DASHBOARD API");
+    print("🚀 API CALL STARTED");
 
     // Log current token for debugging
     final token = AuthService.token;
@@ -59,47 +64,100 @@ class TpoDashboardViewModel extends ChangeNotifier {
       print("📦 RESPONSE STATUS: ${result.isSuccess ? 'SUCCESS' : 'FAILED'}");
 
       if (result.isSuccess) {
-        print("📊 RAW RESPONSE DATA: ${result.data}");
+        print("� RAW result.data: ${result.data}");
+        print("📦 TYPE of result.data: ${result.data.runtimeType}");
+
+        if (result.data is Map<String, dynamic>) {
+          print("📦 KEYS: ${(result.data as Map<String, dynamic>).keys}");
+        }
 
         if (result.data != null) {
-          // Extract data using correct JSON path
-          final response = result.data as Map<String, dynamic>;
-          final data = response['data'] as Map<String, dynamic>? ?? {};
-          final summary = data['summary'] as Map<String, dynamic>? ?? {};
-          final upcomingDrives = data['upcomingDrives'] as List<dynamic>? ?? [];
+          // SAFE PARSING - Handle both nested and direct response structures
+          Map<String, dynamic> data = {};
+          Map<String, dynamic> summary = {};
+          List<dynamic> upcomingDrives = [];
 
-          print("✅ CORRECT DATA PATH EXTRACTION:");
-          print("   - DATA: $data");
-          print("   - SUMMARY: $summary");
-          print("   - UPCOMING DRIVES: $upcomingDrives");
-          print("   - UPCOMING DRIVES COUNT: ${upcomingDrives.length}");
+          // Check if response is nested or direct
+          if (result.data is Map<String, dynamic>) {
+            final response = result.data as Map<String, dynamic>;
 
-          // Store data in ViewModel fields
-          activeDrives = summary['activeDrives'] ?? 0;
-          closingSoon = summary['closingSoon'] ?? 0;
-          totalStudents = summary['totalStudents'] ?? 0;
-          placementRate = (summary['placementRate'] ?? 0).toDouble();
-          offersExtended = summary['offersExtended'] ?? 0;
-          weeklyOffers = summary['weeklyOffers'] ?? 0;
-          studentsPlaced = summary['studentsPlaced'] ?? 0;
+            // Handle nested structure: { success, data }
+            if (response.containsKey('data') &&
+                response['data'] is Map<String, dynamic>) {
+              print("📦 DETECTED NESTED STRUCTURE: { data: {...} }");
+              data = response['data'] as Map<String, dynamic>;
+            }
+            // Handle direct structure: { success, summary, upcomingDrives }
+            else if (response.containsKey('summary') ||
+                response.containsKey('upcomingDrives')) {
+              print(
+                "📦 DETECTED DIRECT STRUCTURE: { summary, upcomingDrives }",
+              );
+              data = response;
+            }
+            // Fallback - use response as data
+            else {
+              print("📦 FALLBACK - USING RESPONSE AS DATA");
+              data = response;
+            }
+          } else {
+            print("❌ ERROR: result.data is not a Map<String, dynamic>");
+            _errorMessage = "Invalid API structure - expected JSON object";
+            return;
+          }
 
-          // Fix drives parsing with safe casting
+          // Extract summary safely
+          if (data.containsKey('summary') &&
+              data['summary'] is Map<String, dynamic>) {
+            summary = data['summary'] as Map<String, dynamic>;
+          } else {
+            print("⚠️ WARNING: No valid 'summary' key found in data");
+          }
+
+          // Extract upcomingDrives safely
+          if (data.containsKey('upcomingDrives') &&
+              data['upcomingDrives'] is List) {
+            upcomingDrives = data['upcomingDrives'] as List<dynamic>;
+          } else {
+            print("⚠️ WARNING: No valid 'upcomingDrives' key found in data");
+          }
+
+          print("📊 FINAL PARSED DATA: $data");
+          print("📊 SUMMARY: $summary");
+          print("📊 UPCOMING DRIVES: $upcomingDrives");
+          print("📊 DRIVES COUNT: ${upcomingDrives.length}");
+
+          // SAFE DATA EXTRACTION - Use null-aware operators and type checking
+          activeDrives = summary['activeDrives'] is int
+              ? summary['activeDrives']
+              : 0;
+          closingSoon = summary['closingSoon'] is int
+              ? summary['closingSoon']
+              : 0;
+          totalStudents = summary['totalStudents'] is int
+              ? summary['totalStudents']
+              : 0;
+          placementRate = summary['placementRate'] is num
+              ? (summary['placementRate'] as num).toDouble()
+              : 0.0;
+          offersExtended = summary['offersExtended'] is int
+              ? summary['offersExtended']
+              : 0;
+          weeklyOffers = summary['weeklyOffers'] is int
+              ? summary['weeklyOffers']
+              : 0;
+
+          // SAFE DRIVES PARSING - Type-safe list mapping
           drives = upcomingDrives
-              .map((e) => e as Map<String, dynamic>)
+              .where((e) => e is Map<String, dynamic>)
+              .map((e) => Map<String, dynamic>.from(e))
               .toList();
 
-          print("✅ DATA STORED IN VIEWMODEL:");
-          print("   - Active Drives: $activeDrives");
-          print("   - Closing Soon: $closingSoon");
-          print("   - Total Students: $totalStudents");
-          print("   - Placement Rate: $placementRate");
-          print("   - Weekly Offers: $weeklyOffers");
-          print("   - Students Placed: $studentsPlaced");
-          print("   - Drives Count: ${drives.length}");
-
-          if (drives.isNotEmpty) {
-            print("   - FIRST DRIVE: ${drives.first}");
-          }
+          print("✅ STORED VALUES:");
+          print("ActiveDrives: $activeDrives");
+          print("TotalStudents: $totalStudents");
+          print("PlacementRate: $placementRate");
+          print("Drives Length: ${drives.length}");
 
           print("✅ DASHBOARD DATA STORED SUCCESSFULLY");
           _errorMessage = null;
@@ -114,10 +172,11 @@ class TpoDashboardViewModel extends ChangeNotifier {
     } catch (e) {
       print("💥 EXCEPTION: $e");
       print("📍 STACK TRACE: ${StackTrace.current}");
-      _errorMessage = e.toString();
+      _errorMessage = "Parsing error: ${e.toString()}";
 
-      // Don't reset fields immediately on error - only if API fails consistently
-      print("⚠️ Error occurred but keeping existing data for retry");
+      // Reset fields on parsing error to prevent stale data
+      print("⚠️ Parsing error - resetting data fields");
+      _resetData();
     } finally {
       _isLoading = false;
       print(
@@ -238,6 +297,7 @@ class TpoDashboardViewModel extends ChangeNotifier {
 
   /// Initialize ViewModel - called when screen is first created
   void initialize() {
+    print("🧠 ViewModel initialize() called");
     // Auto-fetch data when ViewModel is created
     fetchDashboardData();
   }
