@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/models/HOD_models/settings_model.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
 
 class SettingsViewModel extends ChangeNotifier {
   static const _tag = 'HODSettingsViewModel';
@@ -30,17 +31,31 @@ class SettingsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // TODO: replace with real API call
-      await Future.delayed(const Duration(seconds: 1));
+      final apiService = ApiService();
+      final response = await apiService.auth.getCurrentUser();
 
-      user = SettingsModel(
-        name: 'Dr. V. Prakash',
-        role: 'Principal',
-        college: 'GRIET Hyderabad',
-        initials: 'VP',
-      );
-      isLoaded = true;
-      AppLogger.info(_tag, 'Settings user loaded');
+      if (response.success && response.data != null) {
+        final authUser = response.data!;
+
+        // Generate initials from name
+        final nameParts = authUser.name.split(' ');
+        final initials = nameParts.length >= 2
+            ? '${nameParts[0][0]}${nameParts[1][0]}'.toUpperCase()
+            : nameParts.isNotEmpty
+            ? nameParts[0][0].toUpperCase()
+            : 'U';
+
+        user = SettingsModel(
+          name: authUser.name,
+          role: authUser.role,
+          college: authUser.college?.name ?? 'Unknown College',
+          initials: initials,
+        );
+        isLoaded = true;
+        AppLogger.info(_tag, 'Settings user loaded: ${authUser.name}');
+      } else {
+        throw Exception(response.error?.message ?? 'Failed to load user data');
+      }
     } catch (e, st) {
       errorMessage = e.toString();
       AppLogger.error(_tag, 'Failed to load settings user', e, st);
