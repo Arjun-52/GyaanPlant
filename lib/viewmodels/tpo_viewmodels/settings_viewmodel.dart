@@ -5,6 +5,9 @@ import 'package:gyaanplant/data/services/api_service.dart';
 class SettingsViewModel extends ChangeNotifier {
   bool _disposed = false;
 
+  // User information
+  String userName = "Loading...";
+
   // College information
   String collegeName = "Loading...";
 
@@ -59,6 +62,11 @@ class SettingsViewModel extends ChangeNotifier {
 
       if (userResult.isSuccess && userResult.data != null) {
         final user = userResult.data!;
+
+        // Extract and store user name
+        userName = user.name;
+        print("👤 Settings: User name extracted: $userName");
+
         final college = user.college;
 
         print("🏫 Settings: College object: $college");

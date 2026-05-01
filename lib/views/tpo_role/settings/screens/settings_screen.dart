@@ -73,13 +73,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Ramesh Prasad',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 19,
-                                  ),
+                                Consumer<SettingsViewModel>(
+                                  builder: (context, vm, _) {
+                                    return Text(
+                                      vm.userName,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 19,
+                                      ),
+                                    );
+                                  },
                                 ),
                                 const SizedBox(height: 4),
                                 Consumer<SettingsViewModel>(
