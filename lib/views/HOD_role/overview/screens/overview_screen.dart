@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
-import 'package:gyaanplant/views/HOD_role/overview/widgets/dept_progress_card.dart';
 import 'package:gyaanplant/views/HOD_role/overview/widgets/stat_card.dart';
 import 'package:gyaanplant/views/HOD_role/overview/widgets/syllabus_card.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 
 class OverViewScreen extends StatefulWidget {
   const OverViewScreen({super.key});
@@ -196,84 +194,6 @@ class _OverViewScreenState extends State<OverViewScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 20),
-                        // Only show Dept-wise Skill Readiness if there's real data
-                        if (vm.departmentsData.isNotEmpty) ...[
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Dept-wise Skill Readiness',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () => context.push('/depts'),
-                                child: const Text(
-                                  'Detail',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Builder(
-                            builder: (context) {
-                              final deptList = vm.departmentsData;
-                              print(
-                                "🔥 DEPT DATA: ${deptList.map((d) => {'name': d.name, 'percent': d.value}).toList()}",
-                              );
-                              return DeptProgressCard(
-                                departments: deptList
-                                    .map(
-                                      (dept) => {
-                                        'name': dept.name,
-                                        'percent': dept.value,
-                                      },
-                                    )
-                                    .toList(),
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                        ] else ...[
-                          const SizedBox(height: 20),
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.grey.withOpacity(0.3),
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              color: const Color(0xFF0F3D34).withOpacity(0.5),
-                            ),
-                            child: const Row(
-                              children: [
-                                Icon(
-                                  Icons.info_outline,
-                                  color: Colors.grey,
-                                  size: 20,
-                                ),
-                                SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    'Department skill readiness data not available from backend',
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                        ],
                         const SizedBox(height: 20),
                         const Text(
                           'Syllabus Mapping Status',

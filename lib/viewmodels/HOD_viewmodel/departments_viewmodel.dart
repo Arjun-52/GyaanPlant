@@ -55,12 +55,12 @@ class DepartmentsViewModel extends ChangeNotifier {
 
         departments = departmentsList;
         print("✅ DEPARTMENTS STORED: ${departments.length} departments");
+        print("📊 Department Count: ${departments.length}");
 
         // Log each department details
-        for (int i = 0; i < departments.length; i++) {
-          final dept = departments[i];
+        for (var dept in departments) {
           print(
-            "   Dept $i: ${dept.name} - ${dept.students} students - HOD: ${dept.hod}",
+            "📊 Dept: ${dept.name}, Code: ${dept.code}, HOD: ${dept.head?.name}",
           );
         }
       } else {

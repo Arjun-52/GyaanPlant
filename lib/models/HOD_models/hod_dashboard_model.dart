@@ -27,18 +27,46 @@ class HodDashboardModel {
   }
 
   static List<DeptModel> _parseDepartments(Map<String, dynamic> json) {
-    print("🔍 PARSING DEPARTMENTS");
+    print("🔍 PARSING DEPARTMENTS FROM JSON KEYS: ${json.keys.toList()}");
 
-    final departmentStats = json["departmentStats"] as List? ?? [];
+    final departmentStats = json["departmentStats"];
     print("🔍 DEPARTMENT STATS RAW: $departmentStats");
+    print("🔍 DEPARTMENT STATS TYPE: ${departmentStats.runtimeType}");
 
-    if (departmentStats.isEmpty) {
-      print("❌ NO DEPARTMENT DATA FROM BACKEND - RETURNING EMPTY LIST");
+    if (departmentStats == null) {
+      print("❌ DEPARTMENT STATS IS NULL - RETURNING EMPTY LIST");
       return [];
     }
 
-    final parsed = departmentStats.map((e) => DeptModel.fromJson(e)).toList();
-    print("✅ REAL DEPARTMENT DATA PARSED: ${parsed.length} departments");
+    if (departmentStats is! List) {
+      print(
+        "❌ DEPARTMENT STATS IS NOT A LIST - TYPE: ${departmentStats.runtimeType}",
+      );
+      return [];
+    }
+
+    if (departmentStats.isEmpty) {
+      print("❌ DEPARTMENT STATS LIST IS EMPTY - RETURNING EMPTY LIST");
+      return [];
+    }
+
+    print("✅ DEPARTMENT STATS LIST HAS ${departmentStats.length} ITEMS");
+
+    final parsed = <DeptModel>[];
+    for (int i = 0; i < departmentStats.length; i++) {
+      final deptJson = departmentStats[i];
+      print("🔍 PARSING DEPARTMENT $i: $deptJson");
+
+      try {
+        final dept = DeptModel.fromJson(deptJson);
+        print("✅ DEPARTMENT $i PARSED: ${dept.name} = ${dept.value}%");
+        parsed.add(dept);
+      } catch (e) {
+        print("❌ ERROR PARSING DEPARTMENT $i: $e");
+      }
+    }
+
+    print("✅ FINAL RESULT: ${parsed.length} DEPARTMENTS PARSED");
     return parsed;
   }
 }
@@ -51,9 +79,23 @@ class DeptModel {
 
   factory DeptModel.fromJson(Map<String, dynamic> json) {
     print("🔍 DEPT MODEL PARSING: $json");
-    return DeptModel(
-      name: json["departmentName"]?.toString().trim() ?? "Unknown",
-      value: ((json["avgPoints"] ?? 0) as num).toDouble() * 20,
-    );
+    print("🔍 DEPT JSON KEYS: ${json.keys.toList()}");
+
+    final departmentName = json["departmentName"]?.toString().trim();
+    print("🔍 DEPARTMENT NAME: $departmentName");
+
+    final avgPoints = json["avgPoints"];
+    print("🔍 AVG POINTS: $avgPoints (TYPE: ${avgPoints.runtimeType})");
+
+    final name = departmentName?.isNotEmpty == true
+        ? departmentName!
+        : "Unknown Department";
+    final value = avgPoints != null
+        ? ((avgPoints as num).toDouble() * 20)
+        : 0.0;
+
+    print("✅ DEPT MODEL CREATED: $name = ${value.toStringAsFixed(1)}%");
+
+    return DeptModel(name: name, value: value);
   }
 }

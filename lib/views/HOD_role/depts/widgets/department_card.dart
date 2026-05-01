@@ -6,16 +6,8 @@ class DepartmentCard extends StatelessWidget {
 
   const DepartmentCard({super.key, required this.dept});
 
-  Color getColor() {
-    if (dept.readiness >= 70) return const Color(0xFF00C853);
-    if (dept.readiness >= 55) return const Color(0xFFFFA726);
-    return const Color(0xFFFF5252);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final color = getColor();
-
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -36,11 +28,31 @@ class DepartmentCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      dept.name,
-                      style: const TextStyle(color: Colors.white),
+                      dept.name.toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
-                      "HOD: ${dept.hod}",
+                      dept.code?.toUpperCase() ?? "-",
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 11,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      "HOD: ${dept.head?.name ?? "No HOD Assigned"}",
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 11,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      "Institution: ${dept.college?.name ?? "Unknown College"}",
                       style: const TextStyle(
                         color: Colors.white54,
                         fontSize: 11,
@@ -50,35 +62,46 @@ class DepartmentCard extends StatelessWidget {
                 ),
               ),
 
-              const Text("📊"),
+              const Text("🏢"),
             ],
           ),
 
           const SizedBox(height: 10),
 
-          Row(
+          const Row(
             children: [
+              Icon(Icons.info_outline, color: Colors.white54, size: 12),
+              SizedBox(width: 4),
               Text(
-                "Students: ${dept.students}",
-                style: const TextStyle(color: Colors.white54, fontSize: 11),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                "Ready: ${dept.readiness}%",
-                style: TextStyle(color: color, fontSize: 11),
+                "Department Information",
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 11,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ],
           ),
 
           const SizedBox(height: 8),
 
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(
-              value: dept.readiness / 100,
-              minHeight: 6,
-              color: color,
-              backgroundColor: Colors.white.withValues(alpha: 0.08),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.business, color: Colors.white38, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    "Department details available in admin panel",
+                    style: const TextStyle(color: Colors.white38, fontSize: 10),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
