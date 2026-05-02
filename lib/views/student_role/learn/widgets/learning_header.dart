@@ -1,43 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
 import '../../../../data/services/local_storage_service.dart';
 
 class LearningHeader extends StatelessWidget {
   const LearningHeader({super.key});
-
-  void _logout(BuildContext context) async {
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF031B15),
-        title: const Text('Logout', style: TextStyle(color: Colors.white)),
-        content: const Text(
-          'Are you sure you want to logout?',
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldLogout == true) {
-      context.read<AuthViewModel>().logout(context);
-    }
-  }
 
   void _resetAndGoToSignup(BuildContext context) async {
     final shouldReset = await showDialog<bool>(
@@ -125,24 +91,6 @@ class LearningHeader extends StatelessWidget {
                         child: const Icon(
                           Icons.refresh,
                           color: Colors.orange,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => _logout(context),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.red.withOpacity(0.3),
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.logout,
-                          color: Colors.red,
                           size: 18,
                         ),
                       ),

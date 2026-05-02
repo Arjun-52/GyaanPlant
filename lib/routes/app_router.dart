@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:gyaanplant/views/student_role/student/widgets/student_notification_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'package:gyaanplant/viewmodels/tpo_viewmodels/tpo_dashboard_viewmodel.dart';
@@ -88,7 +89,6 @@ class AppRouter {
         name: 'forgotPassword',
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
-
       GoRoute(
         path: '/role',
         name: 'role',
@@ -99,6 +99,12 @@ class AppRouter {
       GoRoute(
         path: '/student-dashboard',
         builder: (context, state) => const StudentShell(),
+      ),
+
+      GoRoute(
+        path: '/notifications',
+        name: 'notifications',
+        builder: (context, state) => const StudentNotificationScreen(),
       ),
 
       ///  HOD
