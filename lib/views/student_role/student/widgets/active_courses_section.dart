@@ -105,14 +105,25 @@ class ActiveCoursesSection extends StatelessWidget {
 }
 
 class CourseItem extends StatelessWidget {
-  final Map<String, dynamic> enrollment;
+  final dynamic
+  enrollment; // Can be Enrollment or Map for backward compatibility
 
   const CourseItem({super.key, required this.enrollment});
 
   String getCourseIcon() {
-    final course = enrollment['course'] as Map<String, dynamic>? ?? {};
-    final title = (course['title'] as String? ?? '').toLowerCase();
-    final category = (course['category'] as String? ?? '').toLowerCase();
+    // Handle both Enrollment object and Map format
+    String title;
+    String category;
+
+    if (enrollment is Map<String, dynamic>) {
+      final course = enrollment['course'] as Map<String, dynamic>? ?? {};
+      title = (course['title'] as String? ?? '').toLowerCase();
+      category = (course['category'] as String? ?? '').toLowerCase();
+    } else {
+      // Enrollment object
+      title = enrollment.course.title.toLowerCase();
+      category = (enrollment.course.category ?? '').toLowerCase();
+    }
 
     if (category.contains('data') ||
         title.contains('data') ||
@@ -149,7 +160,13 @@ class CourseItem extends StatelessWidget {
   }
 
   double getProgress() {
-    final progress = enrollment['progress'] as int? ?? 0;
+    int progress;
+    if (enrollment is Map<String, dynamic>) {
+      progress = enrollment['progress'] as int? ?? 0;
+    } else {
+      // Enrollment object
+      progress = enrollment.progress ?? 0;
+    }
     return (progress / 100.0).clamp(0.0, 1.0);
   }
 
@@ -157,10 +174,23 @@ class CourseItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final iconBg = getIconBgColor();
     final icon = getCourseIcon();
-    final course = enrollment['course'] as Map<String, dynamic>? ?? {};
-    final title = course['title'] as String? ?? 'Unknown Course';
-    final totalModules = course['totalModules'] as int? ?? 0;
-    final completedModules = enrollment['completedModules'] as int? ?? 0;
+
+    String title;
+    int totalModules;
+    int completedModules;
+
+    if (enrollment is Map<String, dynamic>) {
+      final course = enrollment['course'] as Map<String, dynamic>? ?? {};
+      title = course['title'] as String? ?? 'Unknown Course';
+      totalModules = course['totalModules'] as int? ?? 0;
+      completedModules = enrollment['completedModules'] as int? ?? 0;
+    } else {
+      // Enrollment object
+      title = enrollment.course.title;
+      totalModules = enrollment.course.totalModules;
+      completedModules = enrollment.completedModules ?? 0;
+    }
+
     final subtitle = completedModules > 0
         ? '$completedModules/$totalModules modules'
         : '$totalModules modules';

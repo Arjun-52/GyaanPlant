@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
-import 'package:gyaanplant/views/student_role/learn/widgets/course_details_screen.dart';
+import 'package:gyaanplant/views/student_role/learn/screens/course_details_screen.dart';
+import 'package:gyaanplant/views/student_role/learn/screens/my_courses_screen.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/student_notification_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -100,6 +101,10 @@ class AppRouter {
       GoRoute(
         path: '/student-dashboard',
         builder: (context, state) => const StudentShell(),
+      ),
+      GoRoute(
+        path: '/my-courses',
+        builder: (context, state) => const MyCoursesScreen(),
       ),
       GoRoute(
         path: '/course-details/:id',

@@ -116,4 +116,9 @@ class ApiEndpoints {
 
   // ── Notifications ────────────────────────────────────────────────────────
   static const String notifications = '/api/v1/notification';
+
+  // ── Payments ─────────────────────────────────────────────────────────────
+  static const String createOrder = '/api/v1/payments/create-order';
+  static const String verifyPayment = '/api/v1/payments/verify';
+  static const String paymentHistory = '/api/v1/payments/history';
 }

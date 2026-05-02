@@ -16,12 +16,30 @@ class SignInScreen extends StatefulWidget {
 
 class _SignInScreenState extends State<SignInScreen> {
   bool _isPasswordVisible = false;
+
+  /// 🎨 THEME COLORS
+  static const bgColor = Color(0xFF020B08);
+  static const cardColor = Color(0xFF0D1F1A);
+  static const primaryGreen = Color(0xFF00C853);
+  static const accentGreen = Color(0xFF00E676);
+
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<AuthViewModel>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F6),
+      backgroundColor: bgColor,
+
+      /// 🔙 APPBAR
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.push('/role'),
+        ),
+      ),
+
       body: SafeArea(
         child: SingleChildScrollView(
           child: ConstrainedBox(
@@ -35,45 +53,61 @@ class _SignInScreenState extends State<SignInScreen> {
                   children: [
                     const SizedBox(height: 20),
 
-                    //  Top Section (logo + title)
-                    const Icon(Icons.auto_awesome, size: 28),
+                    /// 🔥 LOGO
+                    const Icon(
+                      Icons.auto_awesome,
+                      size: 28,
+                      color: accentGreen,
+                    ),
 
                     const SizedBox(height: 10),
 
+                    /// 🔥 TITLE
                     const Text(
                       "GyaanPlant",
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
 
                     const SizedBox(height: 6),
 
+                    /// 🔥 SUBTITLE
                     const Text(
                       "EMPOWERING STUDENTS TO LEARN, ENABLING STAFF TO LEAD.",
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                      style: TextStyle(fontSize: 11, color: Colors.white70),
                     ),
+
                     const SizedBox(height: 140),
-                    // Card (centered)
+
+                    /// 🔥 CARD
                     Container(
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: cardColor,
                         borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: primaryGreen.withOpacity(0.2),
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+                            color: primaryGreen.withOpacity(0.1),
+                            blurRadius: 20,
+                            spreadRadius: 1,
                           ),
                         ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("EMAIL"),
+                          /// EMAIL
+                          const Text(
+                            "EMAIL",
+                            style: TextStyle(color: Colors.white70),
+                          ),
                           const SizedBox(height: 6),
 
                           CustomTextField(
@@ -83,10 +117,14 @@ class _SignInScreenState extends State<SignInScreen> {
 
                           const SizedBox(height: 16),
 
+                          /// PASSWORD LABEL
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text("PASSWORD"),
+                              const Text(
+                                "PASSWORD",
+                                style: TextStyle(color: Colors.white70),
+                              ),
                               GestureDetector(
                                 onTap: () {
                                   context.go('/forgot-password');
@@ -94,7 +132,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                 child: const Text(
                                   "Forgot?",
                                   style: TextStyle(
-                                    color: Colors.blue,
+                                    color: accentGreen,
                                     decoration: TextDecoration.underline,
                                   ),
                                 ),
@@ -104,6 +142,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
                           const SizedBox(height: 6),
 
+                          /// PASSWORD FIELD
                           CustomTextField(
                             hint: "********",
                             isPassword: !_isPasswordVisible,
@@ -114,6 +153,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                     ? Icons.visibility
                                     : Icons.visibility_off,
                                 size: 18,
+                                color: Colors.white70,
                               ),
                               onPressed: () {
                                 setState(() {
@@ -125,6 +165,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
                           const SizedBox(height: 20),
 
+                          /// 🔥 BUTTON
                           PrimaryButton(
                             text: vm.isLoading
                                 ? "Loading..."
@@ -138,11 +179,15 @@ class _SignInScreenState extends State<SignInScreen> {
 
                           const SizedBox(height: 18),
 
+                          /// SIGNUP
                           Center(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Text("New here? "),
+                                const Text(
+                                  "New here? ",
+                                  style: TextStyle(color: Colors.white70),
+                                ),
                                 InkWell(
                                   onTap: () {
                                     context.go('/signup');
@@ -151,7 +196,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                     "Create account",
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.black,
+                                      color: accentGreen,
                                     ),
                                   ),
                                 ),

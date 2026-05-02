@@ -147,7 +147,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                             );
                           }
                           return ActiveCoursesSection(
-                            enrollments: lvm.activeCourses,
+                            enrollments: lvm.enrollments,
                           );
                         },
                       ),

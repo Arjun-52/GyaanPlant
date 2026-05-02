@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 
 class ExpertiseSection extends StatelessWidget {
   final List<String> expertise;
+  final Function(String skill) onToggle;
 
-  const ExpertiseSection({super.key, required this.expertise});
+  ExpertiseSection({
+    super.key,
+    required this.expertise,
+    required this.onToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -31,13 +36,16 @@ class ExpertiseSection extends StatelessWidget {
   }
 
   Widget chip(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.green),
+    return GestureDetector(
+      onTap: () => onToggle(text),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.green),
+        ),
+        child: Text(text, style: TextStyle(color: Colors.green)),
       ),
-      child: Text(text, style: TextStyle(color: Colors.green)),
     );
   }
 

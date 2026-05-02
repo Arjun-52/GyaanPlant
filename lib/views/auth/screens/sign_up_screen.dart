@@ -20,47 +20,49 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   bool _isPasswordVisible = false;
 
+  ///  THEME COLORS
+  static const bgColor = Color(0xFF020B08);
+  static const cardColor = Color(0xFF0D1F1A);
+  static const primaryGreen = Color(0xFF00C853);
+  static const accentGreen = Color(0xFF00E676);
+
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<AuthViewModel>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F6),
+      backgroundColor: bgColor,
+
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              //  HEADER WITH BACK BUTTON
+              ///  HEADER
               Row(
                 children: [
                   IconButton(
-                    onPressed: () {
-                      print(
-                        "🔙 SIGNUP: Back button tapped - navigating to role screen",
-                      );
-                      context.go('/role');
-                    },
-                    icon: const Icon(Icons.arrow_back),
-                    tooltip: 'Back to Role Selection',
+                    onPressed: () => context.go('/role'),
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
                   ),
                   const Expanded(
                     child: Column(
                       children: [
                         SizedBox(height: 10),
-                        Icon(Icons.auto_awesome, size: 28),
+                        Icon(Icons.auto_awesome, size: 28, color: accentGreen),
                         SizedBox(height: 10),
                         Text(
                           "Join GyaanPlant",
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
                         SizedBox(height: 6),
                         Text(
                           "PROFESSIONAL DEVELOPMENT, UNIFIED.",
-                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                          style: TextStyle(fontSize: 11, color: Colors.white70),
                         ),
                       ],
                     ),
@@ -70,29 +72,36 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
               const SizedBox(height: 20),
 
+              /// STEP INDICATOR (assumes internal styling ok)
               StepIndicator(currentStep: vm.currentStep),
 
               const SizedBox(height: 20),
 
-              //  CARD
+              /// CARD
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cardColor,
                   borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: primaryGreen.withOpacity(0.2)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryGreen.withOpacity(0.08),
+                      blurRadius: 20,
+                      spreadRadius: 1,
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    //  STEP CONTENT
                     _buildStepContent(vm),
 
                     const SizedBox(height: 20),
 
-                    //  BUTTON
+                    /// BUTTONS
                     Row(
                       children: [
-                        // BACK BUTTON
                         if (vm.currentStep > 1)
                           Expanded(
                             child: OutlinedButton(
@@ -101,14 +110,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 14,
                                 ),
+                                side: BorderSide(
+                                  color: primaryGreen.withOpacity(0.5),
+                                ),
                               ),
-                              child: const Text("Back"),
+                              child: const Text(
+                                "Back",
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           ),
 
                         if (vm.currentStep > 1) const SizedBox(width: 10),
 
-                        // CONTINUE BUTTON
                         Expanded(
                           child: PrimaryButton(
                             text: vm.currentStep == 3
@@ -137,20 +151,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  //  STEP SWITCH UI
+  ///  STEP CONTENT
   Widget _buildStepContent(AuthViewModel vm) {
     switch (vm.currentStep) {
       case 1:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const FormLabel(text: "FULL NAME"),
+            const FormLabel(text: "FULL NAME", color: Colors.white70),
             const SizedBox(height: 6),
             CustomTextField(hint: "e.g. Alan Turing", onChanged: vm.setName),
 
             const SizedBox(height: 16),
 
-            const FormLabel(text: "EMAIL"),
+            const FormLabel(text: "EMAIL", color: Colors.white70),
             const SizedBox(height: 6),
             CustomTextField(
               hint: "name@institution.edu",
@@ -159,7 +173,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
             const SizedBox(height: 16),
 
-            const FormLabel(text: "PASSWORD"),
+            const FormLabel(text: "PASSWORD", color: Colors.white70),
             const SizedBox(height: 6),
             CustomTextField(
               hint: "Min. 8 chars",
@@ -169,6 +183,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 icon: Icon(
                   _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
                   size: 18,
+                  color: Colors.white70,
                 ),
                 onPressed: () {
                   setState(() {
@@ -184,7 +199,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const FormLabel(text: "ROLE"),
+            const FormLabel(text: "ROLE", color: Colors.white70),
             const SizedBox(height: 6),
 
             CustomDropdown(
@@ -206,7 +221,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
             const SizedBox(height: 16),
 
-            const FormLabel(text: "COLLEGE"),
+            const FormLabel(text: "COLLEGE", color: Colors.white70),
             const SizedBox(height: 6),
 
             CustomDropdown(
@@ -221,7 +236,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const FormLabel(text: "BRANCH/STREAM"),
+            const FormLabel(text: "BRANCH/STREAM", color: Colors.white70),
             const SizedBox(height: 6),
 
             CustomDropdown(
@@ -239,7 +254,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
             const SizedBox(height: 16),
 
-            const FormLabel(text: "CAREER PATH / INTEREST"),
+            const FormLabel(
+              text: "CAREER PATH / INTEREST",
+              color: Colors.white70,
+            ),
             const SizedBox(height: 6),
 
             CustomDropdown(
@@ -259,7 +277,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             const Center(
               child: Text(
                 "Review your details before registration",
-                style: TextStyle(color: Colors.grey, fontSize: 12),
+                style: TextStyle(color: Colors.white60, fontSize: 12),
               ),
             ),
           ],

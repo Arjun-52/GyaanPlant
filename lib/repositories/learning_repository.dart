@@ -48,9 +48,11 @@ class LearningRepository {
     );
   }
 
+  /// Get Enrolled Courses (matches Postman: /api/v1/learning/my-courses)
+  /// 🔥 GET ENROLLMENTS (CORRECT)
   Future<ApiResponse<List<Enrollment>>> getMyEnrollments() {
     return _api.get<List<Enrollment>>(
-      ApiEndpoints.myEnrollments,
+      ApiEndpoints.myEnrollments, // /learning/my-courses
       fromJson: (json) {
         final map = json as Map<String, dynamic>;
         final list = map['data'] as List<dynamic>;
@@ -58,24 +60,6 @@ class LearningRepository {
         return list
             .map((e) => Enrollment.fromJson(e as Map<String, dynamic>))
             .toList();
-      },
-    );
-  }
-
-  /// ✅ Get Enrolled Courses (matches Postman: /api/v1/learning/my-courses)
-  Future<ApiResponse<List<CourseModel>>> getMyEnrolledCourses() {
-    return _api.get<List<CourseModel>>(
-      ApiEndpoints.myEnrollments,
-      fromJson: (json) {
-        final map = json as Map<String, dynamic>;
-        final list = map['data'] as List<dynamic>;
-
-        return list.map((e) {
-          // Handle nested course object: e['course']['_id']
-          final courseData = e['course'] as Map<String, dynamic>;
-          print("🔧 MAPPING ENROLLED COURSE: $courseData");
-          return CourseModel.fromJson(courseData);
-        }).toList();
       },
     );
   }

@@ -111,6 +111,13 @@ class Enrollment {
     }
     return '${course.totalModules} modules';
   }
+
+  /// Create an empty Enrollment instance
+  factory Enrollment.empty() {
+    return Enrollment(
+      course: Course(id: '', title: '', totalModules: 0),
+    );
+  }
 }
 
 class Course {

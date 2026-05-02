@@ -3,6 +3,7 @@ import '../../repositories/auth_repository.dart';
 import '../../repositories/drive_repository.dart';
 import '../../repositories/gamification_repository.dart';
 import '../../repositories/learning_repository.dart';
+import '../../repositories/payment_repository.dart';
 import '../../repositories/student_repository.dart';
 import '../../repositories/tpo_repository.dart';
 import '../../repositories/hod_repository.dart';
@@ -22,6 +23,7 @@ class ApiService {
   late final StudentRepository _student = StudentRepository(_api);
   late final DriveRepository _drive = DriveRepository(_api);
   late final LearningRepository _learning = LearningRepository(_api);
+  late final PaymentRepository _payment = PaymentRepository(_api);
   late final GamificationRepository _gamification = GamificationRepository(
     _api,
   );
@@ -34,6 +36,7 @@ class ApiService {
   StudentRepository get student => _student;
   DriveRepository get drive => _drive;
   LearningRepository get learning => _learning;
+  PaymentRepository get payment => _payment;
   GamificationRepository get gamification => _gamification;
   TpoRepository get tpo => _tpo;
   HodRepository get hod => _hod;

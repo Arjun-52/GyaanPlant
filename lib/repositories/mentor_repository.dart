@@ -94,4 +94,17 @@ class MentorRepository {
       },
     );
   }
+
+  Future<ApiResponse<Map<String, dynamic>>> updateProfile(
+    Map<String, dynamic> profileData,
+  ) {
+    return _api.put<Map<String, dynamic>>(
+      ApiEndpoints.updateMyProfile,
+      data: profileData,
+      fromJson: (json) {
+        final map = json as Map<String, dynamic>;
+        return map['data'] as Map<String, dynamic>? ?? map;
+      },
+    );
+  }
 }

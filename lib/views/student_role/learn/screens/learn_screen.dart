@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:gyaanplant/viewmodels/student_viewmodel/learning_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -54,7 +55,12 @@ class _LearnScreenState extends State<LearnScreen> {
             return Center(child: Text("Error: ${vm.errorMessage}"));
           }
 
-          print("🎯 BUILDING UI WITH ${vm.courses.length} COURSES");
+          final availableCourses = vm.courses
+              .where((course) => !vm.isCourseEnrolled(course.id))
+              .toList();
+          print(
+            "🎯 BUILDING UI WITH ${availableCourses.length} AVAILABLE COURSES (filtered from ${vm.courses.length} total)",
+          );
 
           return SingleChildScrollView(
             child: Column(
@@ -72,7 +78,7 @@ class _LearnScreenState extends State<LearnScreen> {
                 const SprintBannerCard(),
                 const SizedBox(height: 16),
 
-                if (vm.courses.isEmpty)
+                if (availableCourses.isEmpty)
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.all(20),
@@ -120,38 +126,55 @@ class _LearnScreenState extends State<LearnScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
-                      children: vm.courses.map((course) {
-                        // Extract enrolled course IDs for comparison
-                        final enrolledIds = vm.enrolledCourses
-                            .map((e) => e.id)
-                            .toSet();
+                      children: [
+                        ...availableCourses.map((course) {
+                          return CourseProgressCard(
+                            courseId: course.id,
+                            title: course.title,
+                            subtitle: 'Modules: ${course.totalModules}',
+                            percentText: '0%',
+                            progressCount: '0/${course.totalModules}',
+                            progress: 0.0,
+                            progressColor: Colors.green,
+                            tag: 'New',
+                            tagColor: Colors.green,
+                            isEnrolled: false,
+                          );
+                        }).toList(),
 
-                        print("🎯 BUILDING COURSE CARD: ${course.title}");
-                        print("ENROLLED IDS: $enrolledIds");
-                        print("COURSE ID: ${course.id}");
-                        print(
-                          "IS ENROLLED: ${enrolledIds.contains(course.id)}",
-                        );
+                        const SizedBox(height: 20),
 
-                        return CourseProgressCard(
-                          courseId: course.id,
-                          title: course.title,
-                          subtitle: 'Modules: ${course.totalModules}',
-                          percentText: '0%',
-                          progressCount: '0/${course.totalModules}',
-                          progress: 0.0,
-                          progressColor: Colors.green,
-                          tag: 'New',
-                          tagColor: Colors.green,
+                        ///  MY COURSES BUTTON
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              context.push('/my-courses');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF00C853),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: const Text(
+                              "My Courses",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
 
-                          // ✅ FIXED LOGIC
-                          isEnrolled: enrolledIds.contains(course.id),
-                        );
-                      }).toList(),
+                        const SizedBox(height: 40),
+                      ],
                     ),
                   ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 100),
               ],
             ),
           );

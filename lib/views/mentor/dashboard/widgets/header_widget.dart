@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:gyaanplant/models/mentor_models/mentor_dashboard_model.dart';
 import 'package:gyaanplant/views/mentor/dashboard/widgets/stat_card.dart';
-import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
 
 class HeaderWidget extends StatelessWidget {
   final MentorDashboardModel data;
@@ -59,52 +56,23 @@ class HeaderWidget extends StatelessWidget {
                 ],
               ),
 
-              ///  AVATAR AND LOGOUT
-              Row(
-                children: [
-                  Container(
-                    height: 48,
-                    width: 48,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.greenAccent,
-                    ),
-                    child: const Center(
-                      child: Text(
-                        "M",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+              ///  AVATAR
+              Container(
+                height: 48,
+                width: 48,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.greenAccent,
+                ),
+                child: const Center(
+                  child: Text(
+                    "M",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Tooltip(
-                    message: 'Logout',
-                    child: GestureDetector(
-                      onTap: () {
-                        print("🔥 LOGOUT: Logout button tapped");
-                        _showLogoutDialog(context);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: Colors.red.withOpacity(0.5),
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.logout,
-                          color: Colors.red,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
@@ -139,48 +107,6 @@ class HeaderWidget extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  void _showLogoutDialog(BuildContext context) {
-    print("🔥 LOGOUT: Showing logout dialog");
-
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF1A0033),
-          title: const Text('Logout', style: TextStyle(color: Colors.white)),
-          content: const Text(
-            'Are you sure you want to logout?',
-            style: TextStyle(color: Colors.white70),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                print("🔥 LOGOUT: Cancel pressed");
-                Navigator.of(dialogContext).pop();
-              },
-              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-            ),
-
-            TextButton(
-              onPressed: () async {
-                print("🔥 LOGOUT: Confirmed");
-
-                Navigator.of(dialogContext).pop();
-
-                await context.read<AuthViewModel>().logout(context);
-
-                if (!context.mounted) return;
-
-                context.go('/role');
-              },
-              child: const Text('Logout', style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        );
-      },
     );
   }
 }

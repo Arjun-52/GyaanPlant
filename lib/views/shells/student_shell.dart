@@ -25,10 +25,7 @@ class StudentShell extends StatelessWidget {
 
     return Scaffold(
       extendBody: true,
-      body: IndexedStack(
-        index: tabController.currentIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: tabController.currentIndex, children: _pages),
       bottomNavigationBar: CommonBottomNav(
         currentIndex: tabController.currentIndex,
         onTabSelected: (index) =>

@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 
 class AvailabilitySection extends StatelessWidget {
   final Map<String, List<String>> availability;
+  final Function(String day, String time) onToggle;
 
-  const AvailabilitySection({super.key, required this.availability});
+  AvailabilitySection({
+    super.key,
+    required this.availability,
+    required this.onToggle,
+  });
 
   /// All possible time slots (shown every day)
-  final List<String> allSlots = const ["3 PM", "4 PM", "5 PM", "6 PM"];
+  final List<String> allSlots = ["3 PM", "4 PM", "5 PM", "6 PM"];
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +61,10 @@ class AvailabilitySection extends StatelessWidget {
                         children: allSlots.map((slot) {
                           final isActive = availableSlots.contains(slot);
 
-                          return timeChip(slot, isActive);
+                          return GestureDetector(
+                            onTap: () => onToggle(day, slot),
+                            child: timeChip(slot, isActive),
+                          );
                         }).toList(),
                       ),
                     ),

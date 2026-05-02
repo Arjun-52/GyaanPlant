@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
 import 'package:gyaanplant/models/learning/learning_model.dart';
+import 'package:gyaanplant/models/student_role_models/dashboard_model.dart';
 import 'package:gyaanplant/network/auth_cache.dart';
 
 class LearningViewModel extends ChangeNotifier {
   final _learning = ApiService().learning;
 
+  /// All available courses
   List<CourseModel> courses = [];
-  List<CourseModel> enrolledCourses = [];
-  List activeCourses = [];
+
+  /// Enrollments (contains course + progress)
+  List<Enrollment> enrollments = [];
 
   bool isLoading = false;
   String? errorMessage;
@@ -26,68 +29,87 @@ class LearningViewModel extends ChangeNotifier {
     if (!_disposed) super.notifyListeners();
   }
 
+  /// Fetch everything (courses + enrollments)
   Future<void> fetchCourses() async {
     print("🚀 FETCH COURSES STARTED");
 
     final token = AuthCache.token;
     if (token == null) {
-      errorMessage = 'Please login to access courses';
+      errorMessage = 'Please login';
       notifyListeners();
       return;
     }
 
     isLoading = true;
-    errorMessage = null;
     notifyListeners();
 
     try {
-      // Fetch all available courses
       final coursesResult = await _learning.getCourses();
+      final enrollmentsResult = await _learning.getMyEnrollments();
 
-      // Fetch enrolled courses
-      final enrolledResult = await _learning.getMyEnrolledCourses();
-
-      print("📦 RAW COURSES RESPONSE: ${coursesResult.data}");
-      print("📦 RAW ENROLLED RESPONSE: ${enrolledResult.data}");
-
+      /// ALL COURSES
       if (coursesResult.isSuccess) {
-        // Repository already returns List<CourseModel>, no parsing needed
         courses = coursesResult.data ?? [];
-
-        print("📦 COURSES DATA TYPE: ${coursesResult.data.runtimeType}");
-        if (courses.isNotEmpty) {
-          print("📦 FIRST COURSE TYPE: ${courses.first.runtimeType}");
-        }
-        print("✅ TOTAL COURSES: ${courses.length}");
-        print("✅ COURSES: ${courses.map((c) => c.title).toList()}");
+        print("✅ COURSES: ${courses.length}");
       } else {
         courses = [];
-        errorMessage =
-            coursesResult.error?.message ?? 'Failed to fetch courses';
-        print("⚠️ COURSES API ERROR: ${errorMessage}");
       }
 
-      if (enrolledResult.isSuccess) {
-        enrolledCourses = enrolledResult.data ?? [];
-
-        final enrolledIds = enrolledCourses.map((e) => e.id).toSet();
-        print("✅ ENROLLED COURSES: ${enrolledCourses.length}");
-        print("✅ ENROLLED IDS: $enrolledIds");
-        print(
-          "✅ ENROLLED TITLES: ${enrolledCourses.map((c) => c.title).toList()}",
-        );
+      /// ENROLLMENTS
+      if (enrollmentsResult.isSuccess) {
+        enrollments = enrollmentsResult.data ?? [];
+        print("✅ ENROLLMENTS: ${enrollments.length}");
       } else {
-        enrolledCourses = [];
-        print("⚠️ ENROLLED API ERROR: ${enrolledResult.error?.message}");
+        enrollments = [];
       }
     } catch (e) {
       errorMessage = e.toString();
-      courses = [];
-      enrolledCourses = [];
       print("💥 ERROR: $e");
-    } finally {
-      isLoading = false;
-      notifyListeners();
     }
+
+    isLoading = false;
+    notifyListeners();
   }
+
+  /// Only enrolled courses (for My Courses screen)
+  Future<void> fetchMyCourses() async {
+    print("🚀 FETCH MY COURSES");
+
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      final result = await _learning.getMyEnrollments();
+
+      if (result.isSuccess) {
+        enrollments = result.data ?? [];
+        print("📚 MY COURSES: ${enrollments.length}");
+      } else {
+        enrollments = [];
+      }
+    } catch (e) {
+      print("💥 ERROR: $e");
+      enrollments = [];
+    }
+
+    isLoading = false;
+    notifyListeners();
+  }
+
+  /// Check enrollment
+  bool isCourseEnrolled(String courseId) {
+    return enrollments.any((e) => e.course.id == courseId);
+  }
+
+  /// Get progress
+  int getProgress(String courseId) {
+    final e = enrollments.firstWhere(
+      (e) => e.course.id == courseId,
+      orElse: () => Enrollment.empty(),
+    );
+    return e.progress ?? 0;
+  }
+
+  /// Get enrolled courses list (for UI)
+  List<Enrollment> get myCourses => enrollments;
 }
