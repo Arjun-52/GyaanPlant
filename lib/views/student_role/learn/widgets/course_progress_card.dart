@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CourseProgressCard extends StatelessWidget {
   final String title;
@@ -9,17 +10,20 @@ class CourseProgressCard extends StatelessWidget {
   final Color progressColor;
   final String? tag;
   final Color? tagColor;
-
+  final bool isEnrolled;
+  final String courseId;
   const CourseProgressCard({
     super.key,
     required this.title,
-    required this.tagColor,
     required this.subtitle,
     required this.percentText,
     required this.progressCount,
     required this.progress,
     required this.progressColor,
+    required this.courseId,
+    required this.isEnrolled,
     this.tag,
+    this.tagColor,
   });
 
   @override
@@ -34,11 +38,12 @@ class CourseProgressCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: Color(0xFF1F5A4A)),
+        border: Border.all(color: const Color(0xFF1F5A4A)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          ///  Top Row
           Row(
             children: [
               Container(
@@ -49,11 +54,12 @@ class CourseProgressCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Center(
-                  child: Icon(Icons.bar_chart, color: Colors.white),
+                  child: Icon(Icons.menu_book, color: Colors.white),
                 ),
               ),
               const SizedBox(width: 12),
 
+              /// Title + subtitle
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,20 +75,26 @@ class CourseProgressCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: const TextStyle(color: Colors.white54, fontSize: 13),
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 13,
+                      ),
                     ),
                   ],
                 ),
               ),
 
+              /// Tag
               if (tag != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.transparent,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: (tagColor ?? Colors.white).withValues(alpha: 0.6),
+                      color: (tagColor ?? Colors.white).withOpacity(0.6),
                       width: 1,
                     ),
                   ),
@@ -97,11 +109,13 @@ class CourseProgressCard extends StatelessWidget {
                 ),
             ],
           ),
+
           const SizedBox(height: 16),
 
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              /// Progress Bar
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
@@ -113,8 +127,10 @@ class CourseProgressCard extends StatelessWidget {
                   ),
                 ),
               ),
+
               const SizedBox(width: 10),
 
+              /// Percentage
               Row(
                 children: [
                   Text(
@@ -132,20 +148,38 @@ class CourseProgressCard extends StatelessWidget {
                   ),
                 ],
               ),
+
               const SizedBox(width: 10),
 
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00C853),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'Resume →',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
+              GestureDetector(
+                onTap: () {
+                  if (isEnrolled) {
+                    // resume logic
+                  } else {
+                    context.push('/course-details/${courseId}');
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isEnrolled
+                        ? const Color(0xFF00C853)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    border: isEnrolled
+                        ? null
+                        : Border.all(color: Colors.white24),
+                  ),
+                  child: Text(
+                    isEnrolled ? 'Resume →' : 'Details →',
+                    style: TextStyle(
+                      color: isEnrolled ? Colors.black : Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),

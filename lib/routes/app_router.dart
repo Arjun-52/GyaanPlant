@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/course_details_screen.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/student_notification_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -100,7 +101,13 @@ class AppRouter {
         path: '/student-dashboard',
         builder: (context, state) => const StudentShell(),
       ),
-
+      GoRoute(
+        path: '/course-details/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return CourseDetailsScreen(courseId: id);
+        },
+      ),
       GoRoute(
         path: '/notifications',
         name: 'notifications',

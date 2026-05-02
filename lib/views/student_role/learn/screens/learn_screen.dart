@@ -21,7 +21,6 @@ class _LearnScreenState extends State<LearnScreen> {
   void initState() {
     super.initState();
 
-    // Wrap API call in addPostFrameCallback to prevent setState during build error
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _loadCourses();
@@ -41,7 +40,6 @@ class _LearnScreenState extends State<LearnScreen> {
       backgroundColor: const Color(0xFF020B08),
       body: Consumer<LearningViewModel>(
         builder: (context, vm, child) {
-          // 8. Verify UI is listening
           print(
             "🎯 UI REBUILDING - isLoading: ${vm.isLoading}, courses: ${vm.courses.length}",
           );
@@ -56,7 +54,6 @@ class _LearnScreenState extends State<LearnScreen> {
             return Center(child: Text("Error: ${vm.errorMessage}"));
           }
 
-          // 8. Add temporary UI debug
           print("🎯 BUILDING UI WITH ${vm.courses.length} COURSES");
 
           return SingleChildScrollView(
@@ -75,7 +72,6 @@ class _LearnScreenState extends State<LearnScreen> {
                 const SprintBannerCard(),
                 const SizedBox(height: 16),
 
-                // 9. Handle empty data case
                 if (vm.courses.isEmpty)
                   Center(
                     child: Padding(
@@ -99,7 +95,6 @@ class _LearnScreenState extends State<LearnScreen> {
                           ),
                           const SizedBox(height: 14),
 
-                          // 8. Add temporary UI debug
                           const SizedBox(height: 8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -126,8 +121,20 @@ class _LearnScreenState extends State<LearnScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       children: vm.courses.map((course) {
+                        // Extract enrolled course IDs for comparison
+                        final enrolledIds = vm.enrolledCourses
+                            .map((e) => e.id)
+                            .toSet();
+
                         print("🎯 BUILDING COURSE CARD: ${course.title}");
+                        print("ENROLLED IDS: $enrolledIds");
+                        print("COURSE ID: ${course.id}");
+                        print(
+                          "IS ENROLLED: ${enrolledIds.contains(course.id)}",
+                        );
+
                         return CourseProgressCard(
+                          courseId: course.id,
                           title: course.title,
                           subtitle: 'Modules: ${course.totalModules}',
                           percentText: '0%',
@@ -136,6 +143,9 @@ class _LearnScreenState extends State<LearnScreen> {
                           progressColor: Colors.green,
                           tag: 'New',
                           tagColor: Colors.green,
+
+                          // ✅ FIXED LOGIC
+                          isEnrolled: enrolledIds.contains(course.id),
                         );
                       }).toList(),
                     ),

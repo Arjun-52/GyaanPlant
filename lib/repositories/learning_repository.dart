@@ -29,17 +29,6 @@ class LearningRepository {
     );
   }
 
-  /// Optional: Get single course
-  Future<ApiResponse<CourseModel>> getCourseById(String id) {
-    return _api.get<CourseModel>(
-      '${ApiEndpoints.learning}/$id',
-      fromJson: (json) {
-        final map = json as Map<String, dynamic>;
-        return CourseModel.fromJson(map['data']);
-      },
-    );
-  }
-
   /// ✅ Get ALL Assessments (matches Postman: /api/v1/learning/assessments)
   Future<ApiResponse<List<AssessmentModel>>> getAssessments({
     int page = 1,
@@ -59,7 +48,6 @@ class LearningRepository {
     );
   }
 
-  /// ✅ Get My Enrollments (matches Postman: /api/v1/learning/my-courses)
   Future<ApiResponse<List<Enrollment>>> getMyEnrollments() {
     return _api.get<List<Enrollment>>(
       ApiEndpoints.myEnrollments,
@@ -72,6 +60,37 @@ class LearningRepository {
             .toList();
       },
     );
+  }
+
+  /// ✅ Get Enrolled Courses (matches Postman: /api/v1/learning/my-courses)
+  Future<ApiResponse<List<CourseModel>>> getMyEnrolledCourses() {
+    return _api.get<List<CourseModel>>(
+      ApiEndpoints.myEnrollments,
+      fromJson: (json) {
+        final map = json as Map<String, dynamic>;
+        final list = map['data'] as List<dynamic>;
+
+        return list.map((e) {
+          // Handle nested course object: e['course']['_id']
+          final courseData = e['course'] as Map<String, dynamic>;
+          print("🔧 MAPPING ENROLLED COURSE: $courseData");
+          return CourseModel.fromJson(courseData);
+        }).toList();
+      },
+    );
+  }
+
+  /// ✅ Get single course by ID (matches Postman: /api/v1/learning/{id})
+  Future<CourseModel> getCourseById(String id) async {
+    final response = await _api.get<Map<String, dynamic>>(
+      '${ApiEndpoints.learning}/$id',
+      fromJson: (json) => json as Map<String, dynamic>,
+    );
+
+    print("📦 COURSE DETAILS RESPONSE: ${response.data}");
+    print("📦 COURSE TITLE: ${response.data?['data']?['title']}");
+
+    return CourseModel.fromJson(response.data!['data']!);
   }
 
   /// Get Prep Packs (Test Packs)

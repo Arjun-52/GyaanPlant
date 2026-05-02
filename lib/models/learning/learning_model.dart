@@ -33,6 +33,7 @@ class CourseModel {
   final String? thumbnail;
   final String? category;
   final int totalModules;
+  final int durationMins;
   final String? level;
   final String? status;
   final String createdAt;
@@ -45,6 +46,7 @@ class CourseModel {
     this.thumbnail,
     this.category,
     required this.totalModules,
+    this.durationMins = 0,
     this.level,
     this.status,
     required this.createdAt,
@@ -52,17 +54,18 @@ class CourseModel {
   });
 
   factory CourseModel.fromJson(Map<String, dynamic> json) => CourseModel(
-        id: json['_id'] as String,
-        title: json['title'] as String,
-        description: json['description'] as String?,
-        thumbnail: json['thumbnail'] as String?,
-        category: json['category'] as String?,
-        totalModules: json['totalModules'] as int? ?? 0,
-        level: json['level'] as String?,
-        status: json['status'] as String?,
-        createdAt: json['createdAt'] as String,
-        updatedAt: json['updatedAt'] as String,
-      );
+    id: json['_id'] as String,
+    title: json['title'] as String,
+    description: json['description'] as String?,
+    thumbnail: json['thumbnail'] as String?,
+    category: json['category'] as String?,
+    totalModules: json['totalModules'] as int? ?? 0,
+    durationMins: json['durationMins'] as int? ?? 0,
+    level: json['level'] as String?,
+    status: json['status'] as String?,
+    createdAt: json['createdAt'] as String,
+    updatedAt: json['updatedAt'] as String,
+  );
 }
 
 class AssessmentModel {
@@ -91,7 +94,8 @@ class AssessmentModel {
   // View compatibility alias
   String get skill => type ?? '';
 
-  factory AssessmentModel.fromJson(Map<String, dynamic> json) => AssessmentModel(
+  factory AssessmentModel.fromJson(Map<String, dynamic> json) =>
+      AssessmentModel(
         id: json['_id'] as String,
         title: json['title'] as String,
         description: json['description'] as String?,

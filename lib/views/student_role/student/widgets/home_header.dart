@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../../../viewmodels/student_viewmodel/student_tab_controller.dart';
 
 class HomeHeader extends StatelessWidget {
   final String name;
@@ -83,16 +85,23 @@ class HomeHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: const Color(0xFF00C853),
-                child: Text(
-                  firstName.isNotEmpty
-                      ? firstName[0] + (lastName.isNotEmpty ? lastName[0] : "")
-                      : "U",
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
+              GestureDetector(
+                onTap: () {
+                  // Navigate to profile tab (index 4)
+                  context.read<StudentTabController>().switchTab(4);
+                },
+                child: CircleAvatar(
+                  radius: 18,
+                  backgroundColor: const Color(0xFF00C853),
+                  child: Text(
+                    firstName.isNotEmpty
+                        ? firstName[0] +
+                              (lastName.isNotEmpty ? lastName[0] : "")
+                        : "U",
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
