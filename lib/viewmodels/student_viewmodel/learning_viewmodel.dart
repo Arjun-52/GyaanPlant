@@ -13,6 +13,9 @@ class LearningViewModel extends ChangeNotifier {
   /// Enrollments (contains course + progress)
   List<Enrollment> enrollments = [];
 
+  /// Search query
+  String searchQuery = '';
+
   bool isLoading = false;
   String? errorMessage;
 
@@ -112,4 +115,31 @@ class LearningViewModel extends ChangeNotifier {
 
   /// Get enrolled courses list (for UI)
   List<Enrollment> get myCourses => enrollments;
+
+  /// Update search query
+  void updateSearchQuery(String query) {
+    searchQuery = query;
+    notifyListeners();
+  }
+
+  /// Get filtered courses based on search
+  List<CourseModel> get filteredCourses {
+    if (searchQuery.isEmpty) {
+      return courses;
+    }
+
+    return courses.where((course) {
+      final query = searchQuery.toLowerCase();
+      return course.title.toLowerCase().contains(query) ||
+          (course.description?.toLowerCase().contains(query) ?? false) ||
+          (course.category?.toLowerCase().contains(query) ?? false);
+    }).toList();
+  }
+
+  /// Get available courses (not enrolled) and filtered
+  List<CourseModel> get availableFilteredCourses {
+    return filteredCourses
+        .where((course) => !isCourseEnrolled(course.id))
+        .toList();
+  }
 }

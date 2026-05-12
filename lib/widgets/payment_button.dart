@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../models/payment/item_type.dart';
 import '../services/payment_service.dart';
+import '../viewmodels/student_viewmodel/auth_viewmodel.dart';
 
 class PaymentButton extends StatefulWidget {
   final String itemId;
@@ -196,6 +198,7 @@ class _PaymentButtonState extends State<PaymentButton> {
       itemType: widget.itemType,
       itemName: widget.itemName,
       itemDescription: widget.itemDescription,
+      user: context.read<AuthViewModel>().user,
     );
   }
 }

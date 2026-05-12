@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 class BadgeCard extends StatelessWidget {
   const BadgeCard({super.key});
@@ -42,27 +43,39 @@ class BadgeCard extends StatelessWidget {
           ),
 
           ///  Button
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF4DA3FF), Color(0xFF2F80ED)],
-              ),
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: const Row(
-              children: [
-                Text(
-                  "Share",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
+          InkWell(
+            onTap: () {
+              SharePlus.instance.share(
+                ShareParams(
+                  text:
+                      "Check out my GyaanPlant profile!\n\n"
+                      "https://gyaanplant.com/profile/arjun",
                 ),
-                SizedBox(width: 4),
-                Icon(Icons.arrow_forward, size: 14, color: Colors.white),
-              ],
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF4DA3FF), Color(0xFF2F80ED)],
+                ),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Share",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(Icons.arrow_forward, size: 14, color: Colors.white),
+                ],
+              ),
             ),
           ),
         ],

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'network/api_manager.dart';
 import 'network/interceptors/auth_interceptor.dart';
 import 'network/auth_cache.dart';
 import 'routes/app_router.dart';
 import 'data/services/local_storage_service.dart';
+import 'services/notification_service.dart';
 import 'viewmodels/student_viewmodel/auth_viewmodel.dart';
 import 'viewmodels/student_viewmodel/student_tab_controller.dart';
 import 'viewmodels/student_viewmodel/dashboard_viewmodel.dart';
@@ -15,10 +18,17 @@ import 'viewmodels/student_viewmodel/mentor_viewmodel.dart';
 import 'viewmodels/student_viewmodel/test_viewmodel.dart';
 import 'viewmodels/tpo_viewmodels/drives_viewmodel.dart';
 import 'viewmodels/tpo_viewmodels/tpo_dashboard_viewmodel.dart';
+import 'viewmodels/student_viewmodel/notification_viewmodel.dart';
 import 'viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Initialize notification service and request permissions
+  await NotificationService.initialize();
 
   NetworkAPIManager.initialize();
 
@@ -55,6 +65,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => HodDashboardViewModel()..loadDashboard(),
         ),
+        ChangeNotifierProvider(create: (_) => NotificationViewModel()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

@@ -1,0 +1,152 @@
+import 'package:flutter/material.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
+import '../config/payment_config.dart';
+
+class MentorBookingService {
+  late Razorpay _razorpay;
+  bool _isInitialized = false;
+
+  /// Initialize Razorpay with mentor-specific callbacks
+  void init({
+    required Function(PaymentSuccessResponse) onSuccess,
+    required Function(PaymentFailureResponse) onError,
+    required Function(ExternalWalletResponse) onExternal,
+  }) {
+    if (_isInitialized) return;
+
+    _razorpay = Razorpay();
+
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, onSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, onError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, onExternal);
+
+    _isInitialized = true;
+    print(
+      "🔧 MentorBookingService initialized with key: ${PaymentConfig.razorpayKey}",
+    );
+  }
+
+  /// Purchase mentor session booking
+  Future<void> purchaseMentorSession({
+    required BuildContext context,
+    required String mentorId,
+    required String mentorName,
+    required DateTime selectedDate,
+    required String selectedTime,
+    required String selectedDuration,
+    required double totalAmount,
+    Map<String, dynamic>? bookingDetails,
+  }) async {
+    if (!_isInitialized) {
+      throw Exception(
+        'MentorBookingService not initialized. Call init() first.',
+      );
+    }
+
+    try {
+      print("🚀 START MENTOR BOOKING for mentor: $mentorId");
+
+      // TEMPORARY: Mock order creation to bypass backend
+      final orderId = 'mentor_${DateTime.now().millisecondsSinceEpoch}';
+      final amount = (totalAmount * 100).toInt(); // Convert to paise
+
+      print("🧾 MOCK MENTOR BOOKING ORDER: orderId=$orderId, amount=$amount");
+
+      print("💳 OPENING RAZORPAY for mentor booking: $orderId");
+
+      // Open Razorpay checkout for mentor session
+      final options = {
+        'key': PaymentConfig.razorpayKey,
+        'amount': amount,
+        'order_id': orderId,
+        'name': 'Mentor Session with $mentorName',
+        'description':
+            '$selectedDuration session on ${_formatDate(selectedDate)} at $selectedTime',
+        'prefill': {
+          'contact': '', // Will be filled from user profile
+          'email': '', // Will be filled from user profile
+        },
+        'theme': {'color': '#00C853'},
+        'modal': {
+          'backdropclose': false,
+          'escape': false,
+          'handleback': false,
+          'confirm_close': true,
+          'animation': 'fade-in',
+        },
+        'retry': {'enabled': true, 'max_count': 3},
+        'timeout': PaymentConfig.paymentTimeout.inSeconds,
+      };
+
+      // Debug logging to verify all values are JSON-serializable
+      print("🔍 RAZORPAY OPTIONS DEBUG:");
+      options.forEach((key, value) {
+        print("  $key: $value (${value.runtimeType})");
+      });
+
+      _razorpay.open(options);
+    } catch (e) {
+      print("❌ MENTOR BOOKING PAYMENT FAILED: $e");
+      throw Exception('Failed to initiate mentor booking payment: $e');
+    }
+  }
+
+  /// Verify mentor booking payment
+  Future<Map<String, dynamic>> verifyMentorBookingPayment({
+    required String razorpayPaymentId,
+    required String razorpayOrderId,
+    required String mentorId,
+  }) async {
+    try {
+      print("🔍 VERIFYING MENTOR BOOKING PAYMENT: $razorpayPaymentId");
+
+      // TEMPORARY: Mock verification to bypass backend
+      final verification = {
+        'success': true,
+        'paymentId': razorpayPaymentId,
+        'orderId': razorpayOrderId,
+        'mentorId': mentorId,
+        'message': 'Mentor booking payment verified successfully',
+      };
+
+      print(
+        "✅ MOCK MENTOR BOOKING PAYMENT VERIFIED: ${verification['success']}",
+      );
+      return verification;
+    } catch (e) {
+      print("❌ MENTOR BOOKING PAYMENT VERIFICATION FAILED: $e");
+      throw Exception('Mentor booking payment verification failed: $e');
+    }
+  }
+
+  /// Dispose Razorpay instance and cleanup
+  void dispose() {
+    if (_isInitialized) {
+      _razorpay.clear();
+      _isInitialized = false;
+      print("🧹 MentorBookingService disposed");
+    }
+  }
+
+  /// Format date for display
+  String _formatDate(DateTime date) {
+    final List<String> months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+
+  /// Check if service is initialized
+  bool get isInitialized => _isInitialized;
+}

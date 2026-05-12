@@ -8,7 +8,6 @@ import 'package:gyaanplant/views/student_role/learn/widgets/course_progress_card
 import 'package:gyaanplant/views/student_role/learn/widgets/filter_chips.dart';
 import 'package:gyaanplant/views/student_role/learn/widgets/learning_header.dart';
 import 'package:gyaanplant/views/student_role/learn/widgets/search_input_field.dart';
-import 'package:gyaanplant/views/student_role/learn/widgets/sprint_banner_card.dart';
 
 class LearnScreen extends StatefulWidget {
   const LearnScreen({super.key});
@@ -55,11 +54,9 @@ class _LearnScreenState extends State<LearnScreen> {
             return Center(child: Text("Error: ${vm.errorMessage}"));
           }
 
-          final availableCourses = vm.courses
-              .where((course) => !vm.isCourseEnrolled(course.id))
-              .toList();
+          final availableCourses = vm.availableFilteredCourses;
           print(
-            "🎯 BUILDING UI WITH ${availableCourses.length} AVAILABLE COURSES (filtered from ${vm.courses.length} total)",
+            "🎯 BUILDING UI WITH ${availableCourses.length} AVAILABLE COURSES (filtered from ${vm.courses.length} total, search: '${vm.searchQuery}')",
           );
 
           return SingleChildScrollView(
@@ -68,14 +65,18 @@ class _LearnScreenState extends State<LearnScreen> {
               children: [
                 const LearningHeader(),
                 const SizedBox(height: 16),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: SearchInputField(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SearchInputField(
+                    onChanged: (query) {
+                      print("🔍 SEARCH QUERY: '$query'");
+                      vm.updateSearchQuery(query);
+                    },
+                  ),
                 ),
                 const SizedBox(height: 12),
                 FilterChips(),
-                const SizedBox(height: 16),
-                const SprintBannerCard(),
+
                 const SizedBox(height: 16),
 
                 if (availableCourses.isEmpty)

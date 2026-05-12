@@ -1,7 +1,22 @@
 import 'package:flutter/material.dart';
 
-class SearchInputField extends StatelessWidget {
-  const SearchInputField({super.key});
+class SearchInputField extends StatefulWidget {
+  final Function(String) onChanged;
+
+  const SearchInputField({super.key, required this.onChanged});
+
+  @override
+  State<SearchInputField> createState() => _SearchInputFieldState();
+}
+
+class _SearchInputFieldState extends State<SearchInputField> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +32,10 @@ class SearchInputField extends StatelessWidget {
         border: Border.all(color: const Color(0xFF1F5A4A), width: 1),
       ),
       child: TextField(
+        controller: _controller,
         style: const TextStyle(color: Colors.white),
         cursorColor: Colors.greenAccent,
+        onChanged: widget.onChanged,
         decoration: InputDecoration(
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 14),

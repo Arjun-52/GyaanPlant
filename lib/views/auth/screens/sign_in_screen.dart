@@ -17,7 +17,7 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   bool _isPasswordVisible = false;
 
-  /// 🎨 THEME COLORS
+  ///  THEME COLORS
   static const bgColor = Color(0xFF020B08);
   static const cardColor = Color(0xFF0D1F1A);
   static const primaryGreen = Color(0xFF00C853);
@@ -30,7 +30,7 @@ class _SignInScreenState extends State<SignInScreen> {
     return Scaffold(
       backgroundColor: bgColor,
 
-      /// 🔙 APPBAR
+      ///  APPBAR
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -53,7 +53,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   children: [
                     const SizedBox(height: 20),
 
-                    /// 🔥 LOGO
+                    ///  LOGO
                     const Icon(
                       Icons.auto_awesome,
                       size: 28,
@@ -62,7 +62,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
                     const SizedBox(height: 10),
 
-                    /// 🔥 TITLE
+                    ///  TITLE
                     const Text(
                       "GyaanPlant",
                       style: TextStyle(
@@ -74,7 +74,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
                     const SizedBox(height: 6),
 
-                    /// 🔥 SUBTITLE
+                    ///  SUBTITLE
                     const Text(
                       "EMPOWERING STUDENTS TO LEARN, ENABLING STAFF TO LEAD.",
                       textAlign: TextAlign.center,
@@ -83,7 +83,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
                     const SizedBox(height: 140),
 
-                    /// 🔥 CARD
+                    ///  CARD
                     Container(
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
@@ -153,7 +153,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                     ? Icons.visibility
                                     : Icons.visibility_off,
                                 size: 18,
-                                color: Colors.white70,
+                                color: Colors.black,
                               ),
                               onPressed: () {
                                 setState(() {
@@ -165,7 +165,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
                           const SizedBox(height: 20),
 
-                          /// 🔥 BUTTON
+                          /// BUTTON
                           PrimaryButton(
                             text: vm.isLoading
                                 ? "Loading..."
