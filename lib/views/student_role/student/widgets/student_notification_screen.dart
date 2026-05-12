@@ -71,7 +71,7 @@ class NotificationCard extends StatelessWidget {
         /// Glow effect
         boxShadow: [
           BoxShadow(
-            color: Colors.green.withOpacity(0.15),
+            color: Colors.green.withValues(alpha: 0.15),
             blurRadius: 20,
             spreadRadius: 2,
           ),
@@ -87,7 +87,7 @@ class NotificationCard extends StatelessWidget {
             width: 36,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF00E676).withOpacity(0.15),
+              color: const Color(0xFF00E676).withValues(alpha: 0.15),
             ),
             child: const Icon(
               Icons.celebration,

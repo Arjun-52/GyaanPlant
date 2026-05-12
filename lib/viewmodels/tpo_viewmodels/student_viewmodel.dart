@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/models/tpo_role_models/student_model.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
 
 class StudentViewModel extends ChangeNotifier {
+  static const _tag = 'StudentViewModel';
+
   final _tpo = ApiService().tpo;
 
   List<Student> _students = [];
@@ -32,78 +35,44 @@ class StudentViewModel extends ChangeNotifier {
     if (!_disposed) super.notifyListeners();
   }
 
-  Future<void> initialize() async {
-    print('🚀 StudentViewModel.initialize() called');
-    await fetchStudents();
-  }
+  Future<void> initialize() => fetchStudents();
 
   Future<void> fetchStudents() async {
-    print('📡 StudentViewModel.fetchStudents() called');
-
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      // STEP 1: FETCH COLLEGE ID FROM USER
-      print('🏫 Fetching current user to get collegeId...');
       final userRes = await ApiService().auth.getCurrentUser();
+      final collegeId = userRes.data?.college?.id;
 
-      print("👤 USER RESPONSE OBJECT: $userRes");
-      print("👤 USER DATA: ${userRes.data}");
-
-      final college = userRes.data?.college;
-      String? collegeId;
-
-      if (college == null) {
-        print('❌ College data is null');
-      } else {
-        collegeId = college.id;
-        print('🏫 College ID extracted: $collegeId');
-        print('🏫 College name: ${college.name}');
-      }
-
-      // STEP 2: SAFETY CHECKS
       if (collegeId == null) {
-        print('❌ No collegeId found, skipping API call');
         _errorMessage = 'No college assigned to user';
         _students = [];
+        AppLogger.warning(_tag, _errorMessage!);
         return;
       }
 
-      print('🏫 Using collegeId for filtering: $collegeId');
-      print('🏫 collegeId type: ${collegeId.runtimeType}');
-
-      // STEP 3: UPDATE VIEWMODEL CALL
-      print('�� Calling API: _tpo.getStudents(collegeId)');
       final result = await _tpo.getStudents(collegeId);
-      print(
-        '📦 API Response: isSuccess=${result.isSuccess}, data=${result.data}',
-      );
 
       if (result.isSuccess) {
         _students = result.data ?? [];
-        print('✅ Successfully loaded ${_students.length} students');
-        print('📊 FILTERED STUDENTS COUNT: ${_students.length}');
-
-        if (_students.isNotEmpty) {
-          print('📊 First student name: ${_students.first.name}');
-        }
+        AppLogger.info(_tag, 'Loaded ${_students.length} students');
       } else {
-        throw Exception(result.error?.message ?? 'Failed to load students');
+        _errorMessage = result.error?.message ?? 'Failed to load students';
+        AppLogger.error(_tag, _errorMessage!);
       }
-    } catch (e) {
-      print('❌ Error fetching students: $e');
+    } catch (e, st) {
       _errorMessage = e.toString();
       _students = [];
+      AppLogger.error(_tag, 'Failed to fetch students', e, st);
     } finally {
       _isLoading = false;
       notifyListeners();
-      print('🏁 fetchStudents() completed');
     }
   }
 
-  Future<void> refreshStudents() async => fetchStudents();
+  Future<void> refreshStudents() => fetchStudents();
 
   void setSearch(String value) {
     if (_searchQuery != value) {
@@ -138,13 +107,10 @@ class StudentViewModel extends ChangeNotifier {
       switch (_selectedFilter) {
         case 'MNC Ready':
           matchesFilter = student.status == 'MNC Ready';
-          break;
         case 'At Risk':
           matchesFilter = student.status == 'At Risk';
-          break;
         case 'Average':
           matchesFilter = student.status == 'Average';
-          break;
         default:
           matchesFilter =
               _selectedFilter == 'All' || student.branch == _selectedFilter;
@@ -157,9 +123,7 @@ class StudentViewModel extends ChangeNotifier {
   List<String> get availableFilters {
     final filters = <String>{'All'};
     filters.addAll(_students.map((s) => s.status).toSet());
-    filters.addAll(
-      _students.map((s) => s.branch).where((b) => b != 'N/A').toSet(),
-    );
+    filters.addAll(_students.map((s) => s.branch).where((b) => b != 'N/A').toSet());
     return filters.toList();
   }
 
@@ -174,13 +138,10 @@ class StudentViewModel extends ChangeNotifier {
       switch (student.status) {
         case 'MNC Ready':
           stats['mncReady'] = (stats['mncReady'] ?? 0) + 1;
-          break;
         case 'At Risk':
           stats['atRisk'] = (stats['atRisk'] ?? 0) + 1;
-          break;
         case 'Average':
           stats['average'] = (stats['average'] ?? 0) + 1;
-          break;
       }
     }
     return stats;

@@ -1,38 +1,30 @@
-
+import 'package:gyaanplant/core/utils/app_logger.dart';
 import '../data/services/local_storage_service.dart';
 
-/// Utility to clear stored token for debugging JWT issues
 class TokenReset {
-  /// Clear all stored authentication data
+  static const _tag = 'TokenReset';
+
   static Future<void> clearAllAuthData() async {
-    print("🧹 Clearing stored authentication data...");
-    
     try {
       await LocalStorageService.clearToken();
-      print("✅ Token cleared successfully");
+      AppLogger.info(_tag, 'Token cleared');
     } catch (e) {
-      print("❌ Error clearing token: $e");
+      AppLogger.error(_tag, 'Error clearing token: $e');
     }
   }
-  
-  /// Check current token status
+
   static Future<void> checkTokenStatus() async {
-    print("🔍 Checking current token status...");
-    
     try {
       final token = await LocalStorageService.getToken();
-      
       if (token == null) {
-        print("❌ No token found in storage");
+        AppLogger.info(_tag, 'No token in storage');
       } else if (token.isEmpty) {
-        print("⚠️ Token exists but is empty");
+        AppLogger.warning(_tag, 'Token exists but is empty');
       } else {
-        print("✅ Token found:");
-        print("   Length: ${token.length} characters");
-        print("   Preview: ${token.length > 20 ? token.substring(0, 20) + '...' : token}");
+        AppLogger.info(_tag, 'Token length: ${token.length}');
       }
     } catch (e) {
-      print("❌ Error checking token: $e");
+      AppLogger.error(_tag, 'Error checking token: $e');
     }
   }
 }

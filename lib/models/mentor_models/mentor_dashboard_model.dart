@@ -25,8 +25,6 @@ class MentorDashboardModel {
   });
 
   factory MentorDashboardModel.fromJson(Map<String, dynamic> json) {
-    print("🔍 MENTOR DASHBOARD MODEL PARSING: $json");
-
     final data = json;
     final mentor = data['mentor'] ?? {};
 

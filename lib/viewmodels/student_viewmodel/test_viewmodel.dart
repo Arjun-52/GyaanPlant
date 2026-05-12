@@ -66,10 +66,9 @@ class TestViewModel extends ChangeNotifier {
 
       final response = await _learning.getPrepPacks();
       packs = response.data ?? [];
-
-      print("📦 PACKS COUNT: ${packs.length}");
+      AppLogger.info(_tag, 'Loaded ${packs.length} packs');
     } catch (e) {
-      print("Error fetching packs: $e");
+      AppLogger.error(_tag, 'fetchPrepPacks failed: $e');
       packs = [];
     } finally {
       isLoading = false;
@@ -84,16 +83,13 @@ class TestViewModel extends ChangeNotifier {
 
       final response = await _learning.startAttempt(packId);
 
-      print("🚀 ATTEMPT STARTED: ${response.isSuccess}");
-
       if (response.isSuccess) {
-        // Navigate to test screen or handle success
-        print("✅ ATTEMPT SUCCESS: ${response.data}");
+        AppLogger.info(_tag, 'Attempt started: $packId');
       } else {
-        print("❌ ATTEMPT FAILED: ${response.error}");
+        AppLogger.warning(_tag, 'Attempt failed: ${response.error?.message}');
       }
     } catch (e) {
-      print("💥 ATTEMPT ERROR: $e");
+      AppLogger.error(_tag, 'startPackAttempt error: $e');
     } finally {
       isLoading = false;
       notifyListeners();

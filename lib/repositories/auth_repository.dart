@@ -37,69 +37,17 @@ class AuthRepository {
     return _api.post<void>(ApiEndpoints.logout);
   }
 
-  Future<ApiResponse<AuthUser>> getCurrentUser() async {
-    try {
-      print("🔥 GETTING CURRENT USER FROM /api/v1/auth/me");
-
-      final response = await _api.get<Map<String, dynamic>>(ApiEndpoints.me);
-
-      // 🔥 DEBUG RAW RESPONSE
-      print("🔥 RAW /me RESPONSE: ${response.data}");
-      print("🔥 RESPONSE SUCCESS: ${response.success}");
-      print("🔥 RESPONSE STATUS: ${response.statusCode}");
-
-      // Validate response
-      if (!response.success || response.data == null) {
-        print(
-          "❌ INVALID RESPONSE: success=${response.success}, data=${response.data}",
-        );
-        throw Exception(
-          "Failed to get user data: ${response.error?.message ?? 'Unknown error'}",
-        );
-      }
-
-      final json = response.data!;
-
-      // 🔥 DEBUG KEYS
-      print("🔍 RESPONSE KEYS: ${json.keys}");
-
-      // Extract user data from response
-      Map<String, dynamic> userData;
-
-      if (json.containsKey('data') && json['data'] is Map<String, dynamic>) {
-        userData = json['data'] as Map<String, dynamic>;
-        print("🔍 USING WRAPPED DATA: $userData");
-      } else {
-        userData = json;
-        print("🔍 USING DIRECT DATA: $userData");
-      }
-
-      print("🔍 PARSING USER DATA: $userData");
-
-      if (userData.isEmpty) {
-        throw Exception("User data is empty");
-      }
-
-      final authUser = AuthUser.fromJson(userData);
-      print("✅ SUCCESSFULLY PARSED AUTH USER: ${authUser.name}");
-
-      // Return successful response
-      return ApiResponse<AuthUser>(
-        success: true,
-        data: authUser,
-        statusCode: response.statusCode,
-      );
-    } catch (e, stack) {
-      print("💥 ERROR in getCurrentUser: $e");
-      print("📍 STACK TRACE: $stack");
-
-      // Return failure response instead of null
-      return ApiResponse<AuthUser>(
-        success: false,
-        error: ApiError(code: 'GET_USER_ERROR', message: e.toString()),
-        statusCode: 500,
-      );
-    }
+  Future<ApiResponse<AuthUser>> getCurrentUser() {
+    return _api.get<AuthUser>(
+      ApiEndpoints.me,
+      fromJson: (json) {
+        final map = json as Map<String, dynamic>;
+        final userData = map.containsKey('data') && map['data'] is Map<String, dynamic>
+            ? map['data'] as Map<String, dynamic>
+            : map;
+        return AuthUser.fromJson(userData);
+      },
+    );
   }
 
   Future<ApiResponse<void>> forgotPassword({required String email}) {

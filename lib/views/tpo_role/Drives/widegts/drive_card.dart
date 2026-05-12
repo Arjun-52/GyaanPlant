@@ -24,14 +24,8 @@ class DriveCard extends StatelessWidget {
       }
     }
 
-    print(
-      "DRIVE DEBUG: registered=${drive.registered}, eligible=${drive.eligible}, progress=$progress",
-    );
-
     return GestureDetector(
-      onTap: () {
-        print("DRIVE CARD TAPPED: ${drive.company}");
-      },
+      onTap: () {},
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

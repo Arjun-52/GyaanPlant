@@ -15,7 +15,7 @@ class _MentorSectionState extends State<MentorSection> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      context.read<MentorViewModel>().fetchMentors();
+      if (mounted) context.read<MentorViewModel>().fetchMentors();
     });
   }
 

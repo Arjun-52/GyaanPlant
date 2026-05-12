@@ -14,31 +14,19 @@ class _DrivesScreenState extends State<DrivesScreen> {
   @override
   void initState() {
     super.initState();
-    print('🎯 DrivesScreen.initState() called');
-
-    // Wrap API call in addPostFrameCallback to prevent setState during build error
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        print('🔔 Calling DrivesViewModel.fetchDrives() from initState');
-        context.read<DrivesViewModel>().fetchDrives();
-      }
+      if (mounted) context.read<DrivesViewModel>().fetchDrives();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<DrivesViewModel>();
-    print(
-      '📱 DrivesScreen.build() called - isLoading: ${vm.isLoading}, drives: ${vm.drives.length}',
-    );
 
     return Scaffold(
       backgroundColor: const Color(0xFF061A14),
       body: RefreshIndicator(
-        onRefresh: () {
-          print('🔄 Refresh triggered for drives');
-          return vm.refreshDrives();
-        },
+        onRefresh: vm.refreshDrives,
         color: Colors.green,
         child: SafeArea(
           child: Padding(

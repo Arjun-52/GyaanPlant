@@ -1,10 +1,13 @@
 import 'package:dio/dio.dart';
+import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/network/api_endpoints.dart';
 
 import '../auth_cache.dart';
 
 class AuthInterceptor extends Interceptor {
-  // Set this once at app startup (e.g. in main.dart) to handle forced logout
+  static const _tag = 'AuthInterceptor';
+
+  // Set once at app startup to handle forced logout.
   static void Function()? onUnauthorized;
 
   static const _skipList = [
@@ -16,60 +19,42 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    print("=== AUTH INTERCEPTOR DEBUG ===");
-    print("URL: ${options.uri}");
-    print("METHOD: ${options.method}");
-    print("PATH: ${options.path}");
-
     final shouldSkip = _skipList.any((e) => options.path.contains(e));
-    print("SHOULD SKIP AUTH: $shouldSkip");
 
     if (!shouldSkip) {
       final token = AuthCache.token;
-      print("TOKEN FROM CACHE: $token");
-      print("TOKEN IS NULL: ${token == null}");
-
       if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';
-        print(
-          "✅ AUTH HEADER ADDED: Bearer ${token.substring(0, token.length > 20 ? 20 : token.length)}...",
-        );
       } else {
-        print("❌ NO TOKEN FOUND - REQUEST WILL BE UNAUTHENTICATED");
+        AppLogger.warning(
+          _tag,
+          'No token — request will be unauthenticated: ${options.path}',
+        );
       }
-    } else {
-      print("⏭️ SKIPPING AUTH FOR THIS REQUEST");
     }
-
-    print("FINAL HEADERS: ${options.headers}");
-    print("=== END INTERCEPTOR DEBUG ===");
 
     super.onRequest(options, handler);
   }
 
+  // NOTE: validateStatus allows status < 500, so 401 arrives here — NOT in
+  // onError. We must handle session-expiry in onResponse.
+  @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    if (response.statusCode == 401) {
+      AppLogger.warning(_tag, '401 Unauthorized — clearing token');
+      AuthCache.token = null;
+      onUnauthorized?.call();
+    }
+    super.onResponse(response, handler);
+  }
+
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    print("=== AUTH INTERCEPTOR ERROR DEBUG ===");
-    print("ERROR TYPE: ${err.type}");
-    print("STATUS CODE: ${err.response?.statusCode}");
-    print("ERROR MESSAGE: ${err.message}");
-    print("ERROR URL: ${err.requestOptions.uri}");
-    print("RESPONSE DATA: ${err.response?.data}");
-
-    if (err.response?.statusCode == 401) {
-      print("🚨 401 UNAUTHORIZED - CLEARING TOKEN");
-      // Clear in-memory cache immediately
-      AuthCache.token = null;
-      // Trigger logout callback
-      onUnauthorized?.call();
-    } else if (err.response?.statusCode == 403) {
-      print("🚫 403 FORBIDDEN - PERMISSION ISSUE");
-    } else if (err.response?.statusCode == 500) {
-      print("💥 500 SERVER ERROR - BACKEND ISSUE");
+    // Fires only for status >= 500 (or network errors) due to validateStatus.
+    final status = err.response?.statusCode;
+    if (status != null && status >= 500) {
+      AppLogger.error(_tag, '$status Server error: ${err.requestOptions.path}');
     }
-
-    print("=== END INTERCEPTOR ERROR DEBUG ===");
-
     super.onError(err, handler);
   }
 }

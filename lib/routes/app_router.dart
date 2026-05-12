@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/views/student_role/learn/screens/course_details_screen.dart';
 import 'package:gyaanplant/views/student_role/learn/screens/my_courses_screen.dart';
@@ -23,38 +24,32 @@ import 'package:gyaanplant/views/mentor/sessions/screens/sessions_screen.dart';
 import 'package:gyaanplant/views/mentor/earnings/screens/earnings_screen.dart';
 import 'package:gyaanplant/views/mentor/profile/screens/mentor_profile_screen.dart';
 
+import '../network/auth_cache.dart';
 import '../data/services/local_storage_service.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: '/role',
-    debugLogDiagnostics: true,
+    debugLogDiagnostics: kDebugMode,
 
     redirect: (context, state) async {
-      final token = await LocalStorageService.getToken();
-      final role = await LocalStorageService.getRole();
+      // Use in-memory cache first (fast path); fall back to secure storage only
+      // when the cache is cold (e.g. immediately after a cold start).
+      final token =
+          AuthCache.token ?? await LocalStorageService.getToken();
       final location = state.uri.toString();
 
       final isLoggedIn = token != null && token.isNotEmpty;
 
-      print("🔄 ROUTER: token=$isLoggedIn role=$role location=$location");
-
-      // NOT LOGGED IN → allow only auth screens
       if (!isLoggedIn) {
-        if (location == '/role' ||
-            location == '/' ||
-            location == '/signup' ||
-            location == '/forgot-password') {
-          return null;
-        }
-        return '/role';
+        const authPaths = {'/role', '/', '/signup', '/forgot-password'};
+        return authPaths.contains(location) ? null : '/role';
       }
 
-      // LOGGED IN → prevent going to auth screens
-      if (location == '/' ||
-          location == '/signup' ||
-          location == '/forgot-password' ||
-          location == '/role') {
+      // Logged-in: keep role in cache too to avoid a second storage read.
+      const authPaths = {'/', '/signup', '/forgot-password', '/role'};
+      if (authPaths.contains(location)) {
+        final role = await LocalStorageService.getRole();
         switch (role) {
           case 'student':
             return '/student-dashboard';

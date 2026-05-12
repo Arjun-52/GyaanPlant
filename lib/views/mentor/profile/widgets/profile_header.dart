@@ -47,9 +47,9 @@ class ProfileHeader extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
 
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
 
-        border: Border.all(color: color.withOpacity(0.6), width: 1.2),
+        border: Border.all(color: color.withValues(alpha: 0.6), width: 1.2),
       ),
       child: Text(
         text,
