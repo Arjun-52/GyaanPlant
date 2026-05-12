@@ -12,6 +12,9 @@ class StudentTabController extends ChangeNotifier {
   }
 
   void reset() {
-    _currentIndex = 0;
+    if (_currentIndex != 0) {
+      _currentIndex = 0;
+      notifyListeners();
+    }
   }
 }

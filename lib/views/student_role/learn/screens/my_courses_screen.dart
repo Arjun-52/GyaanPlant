@@ -16,7 +16,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      context.read<LearningViewModel>().fetchMyCourses();
+      if (mounted) context.read<LearningViewModel>().fetchMyCourses();
     });
   }
 

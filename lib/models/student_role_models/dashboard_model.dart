@@ -70,18 +70,12 @@ class Enrollment {
   });
 
   factory Enrollment.fromJson(Map<String, dynamic> json) {
-    print("🔧 PARSING ENROLLMENT: $json");
-
     final courseData = json['course'];
-    print("🔧 COURSE DATA: $courseData");
-
     final course = courseData != null
         ? Course.fromJson(courseData)
         : Course(id: '', title: 'Unknown', totalModules: 0);
 
-    print("🔧 PARSED COURSE: ${course.title}");
-
-    final enrollment = Enrollment(
+    return Enrollment(
       id: json['_id'] ?? '',
       course: course,
       completedModules: DashboardModel._parseToInt(json['completedModules']),
@@ -90,9 +84,6 @@ class Enrollment {
           ? DateTime.parse(json['lastAccessed'])
           : null,
     );
-
-    print("🔧 CREATED ENROLLMENT: ${enrollment.course.title}");
-    return enrollment;
   }
 
   double get progressPercentage {
@@ -138,20 +129,13 @@ class Course {
   });
 
   factory Course.fromJson(Map<String, dynamic> json) {
-    print("🔧 PARSING COURSE: $json");
-
-    final course = Course(
-      id: json['id'] ?? '',
+    return Course(
+      id: json['id'] ?? json['_id'] ?? '',
       title: json['title'] ?? '',
       thumbnail: json['thumbnail'],
       description: json['description'],
       totalModules: DashboardModel._parseToInt(json['totalModules']),
       category: json['category'],
     );
-
-    print(
-      "🔧 CREATED COURSE: ${course.title} (${course.totalModules} modules)",
-    );
-    return course;
   }
 }

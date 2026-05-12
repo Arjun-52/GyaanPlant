@@ -38,8 +38,6 @@ class AuthUser {
   });
 
   factory AuthUser.fromJson(Map<String, dynamic> json) {
-    print("🏫 Parsing college field: ${json['college']}");
-
     return AuthUser(
       id: json['_id'] as String,
       name: json['name'] as String,

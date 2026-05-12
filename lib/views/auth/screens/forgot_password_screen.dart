@@ -85,10 +85,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 decoration: BoxDecoration(
                   color: cardColor,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: primaryGreen.withOpacity(0.2)),
+                  border: Border.all(color: primaryGreen.withValues(alpha: 0.2)),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryGreen.withOpacity(0.08),
+                      color: primaryGreen.withValues(alpha: 0.08),
                       blurRadius: 20,
                       spreadRadius: 1,
                     ),

@@ -13,7 +13,7 @@ class AuthViewModel extends ChangeNotifier {
 
   bool _disposed = false;
 
-  // FORM FIELDS
+  // Form fields
   String name = '';
   String email = '';
   String password = '';
@@ -22,7 +22,7 @@ class AuthViewModel extends ChangeNotifier {
   String branch = 'Select Branch';
   String careerPath = 'Select Career Path';
 
-  // STATE
+  // State
   int currentStep = 1;
   bool isLoading = false;
   String? errorMessage;
@@ -45,7 +45,7 @@ class AuthViewModel extends ChangeNotifier {
     if (!_disposed) super.notifyListeners();
   }
 
-  // SETTERS
+  // Setters
   void setName(String v) => name = v;
   void setEmail(String v) => email = v;
   void setPassword(String v) => password = v;
@@ -70,7 +70,6 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // LOGIN
   Future<void> login(BuildContext context) async {
     if (!_validateLoginFields(context)) return;
 
@@ -82,30 +81,32 @@ class AuthViewModel extends ChangeNotifier {
         final data = result.data!;
         user = data.user;
 
-        print("🔑 LOGIN SUCCESS - TOKEN: ${data.accessToken}");
-        print("🔑 TOKEN LENGTH: ${data.accessToken?.length}");
-
-        // Update in-memory cache first for immediate performance
         AuthCache.token = data.accessToken;
-        print("🔑 TOKEN SAVED TO AUTH CACHE: ${AuthCache.token}");
-
-        // Persist to storage (async, no blocking)
         await LocalStorageService.saveToken(data.accessToken);
-        print("🔑 TOKEN SAVED TO LOCAL STORAGE");
-
-        // Verify token was saved
-        final savedToken = await LocalStorageService.getToken();
-        print("🔑 VERIFICATION - TOKEN FROM STORAGE: $savedToken");
-
         await LocalStorageService.saveUser(data.user.toJson());
         if (data.user.role.isNotEmpty) {
           await LocalStorageService.saveRole(data.user.role.toLowerCase());
         }
+
         AppLogger.info(_tag, 'Login successful for ${data.user.email}');
+
         if (_disposed || !context.mounted) return;
-        context.go('/');
+
+        // Navigate directly to the role-specific home screen.
+        switch (data.user.role.toLowerCase()) {
+          case 'student':
+            context.go('/student-dashboard');
+          case 'tpo':
+            context.go('/tpo-dashboard');
+          case 'hod':
+            context.go('/overview');
+          case 'mentor':
+            context.go('/mentor-dashboard');
+          default:
+            context.go('/role');
+        }
       } else {
-        _showError(context, result.error?.message ?? 'Login failed');
+        if (context.mounted) _showError(context, result.error?.message ?? 'Login failed');
       }
     } catch (e, st) {
       AppLogger.error(_tag, 'Login error', e, st);
@@ -115,7 +116,6 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  // SIGNUP STEP NAVIGATION
   Future<void> nextStep(BuildContext context) async {
     if (currentStep == 1) {
       if (name.isEmpty || email.isEmpty || password.isEmpty) {
@@ -154,8 +154,6 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  // REGISTER
-
   Future<void> _register(BuildContext context) async {
     _setLoading(true);
     try {
@@ -172,7 +170,7 @@ class AuthViewModel extends ChangeNotifier {
         _showError(context, 'Account created! Please log in.');
         context.go('/');
       } else {
-        _showError(context, result.error?.message ?? 'Registration failed');
+        if (context.mounted) _showError(context, result.error?.message ?? 'Registration failed');
       }
     } catch (e, st) {
       AppLogger.error(_tag, 'Register error', e, st);
@@ -183,49 +181,39 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> logout(BuildContext context) async {
-    print("🔥 LOGOUT: Starting proper logout flow");
-
     try {
-      // ✅ STEP 1: Call API FIRST (token still exists)
       await _auth.logout();
-      print("✅ LOGOUT API SUCCESS");
     } catch (e) {
-      print("⚠️ LOGOUT API FAILED: $e");
-      // Don't block logout if API fails
+      AppLogger.warning(_tag, 'Logout API failed (continuing): $e');
     }
 
-    // ✅ STEP 2: Now clear local data
     await LocalStorageService.clearToken();
-    await LocalStorageService.removeRole();
-
-    print("🔥 LOGOUT: Local data cleared");
+    AuthCache.token = null;
 
     user = null;
     notifyListeners();
 
-    if (context.mounted) {
-      context.go('/role');
-    }
+    if (context.mounted) context.go('/role');
   }
 
   Future<void> forgotPassword(BuildContext context, String email) async {
     if (email.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Email is required")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email is required')),
+      );
       return;
     }
 
+    _setLoading(true);
     try {
-      _setLoading(true);
-
       final result = await _auth.forgotPassword(email: email);
 
+      if (!context.mounted) return;
       if (result.isSuccess) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              result.message ?? "If that email exists, a reset link was sent.",
+              result.message ?? 'If that email exists, a reset link was sent.',
             ),
             backgroundColor: Colors.green,
           ),
@@ -234,25 +222,26 @@ class AuthViewModel extends ChangeNotifier {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result.error?.message ?? "Failed to send reset link"),
+            content: Text(result.error?.message ?? 'Failed to send reset link'),
             backgroundColor: Colors.red,
           ),
         );
       }
     } catch (e, st) {
       AppLogger.error(_tag, 'Forgot password error', e, st);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Something went wrong. Please try again."),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Something went wrong. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       _setLoading(false);
     }
   }
 
-  // PRIVATE HELPERS
   Future<void> _loadUser() async {
     final raw = await LocalStorageService.getUser();
     if (raw != null) {
@@ -287,8 +276,6 @@ class AuthViewModel extends ChangeNotifier {
   void _showError(BuildContext context, String message) {
     errorMessage = message;
     notifyListeners();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 }

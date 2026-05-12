@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../config/payment_config.dart';
 import '../data/services/api_service.dart';
@@ -8,12 +9,13 @@ import '../models/payment/item_type.dart';
 import '../models/auth/auth_user_model.dart';
 
 class PaymentService {
+  static const _tag = 'PaymentService';
+
   late Razorpay _razorpay;
   final ApiService _apiService = ApiService();
   Timer? _paymentTimer;
   bool _isInitialized = false;
 
-  /// Initialize Razorpay with callbacks
   void init({
     required Function(PaymentSuccessResponse) onSuccess,
     required Function(PaymentFailureResponse) onError,
@@ -22,7 +24,6 @@ class PaymentService {
     if (_isInitialized) return;
 
     _razorpay = Razorpay();
-
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, onSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, onError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, onExternal);
@@ -31,7 +32,6 @@ class PaymentService {
     print("🔧 Razorpay initialized with key: ${PaymentConfig.razorpayKey}");
   }
 
-  /// Create order and open Razorpay checkout
   Future<void> purchaseItem({
     required BuildContext context,
     required String itemId,
@@ -45,7 +45,7 @@ class PaymentService {
     }
 
     try {
-      print("🚀 START PAYMENT for $itemType: $itemId");
+      AppLogger.info(_tag, 'Starting payment for $itemType: $itemId');
 
       // Start payment timeout timer
       _startPaymentTimeout();
@@ -56,17 +56,13 @@ class PaymentService {
         itemType: itemType,
       );
 
-      print("🧾 ORDER: $order");
-
-      // Check if this is a free course
       if (order['isFree'] == true) {
-        print("⚠️ FREE COURSE DETECTED → DIRECT ENROLL");
-        _cancelPaymentTimeout();
+        AppLogger.info(_tag, 'Free item — enrolling directly');
+        if (!context.mounted) return;
         await _enrollFreeItem(context, itemId, itemType);
         return;
       }
 
-      // Get order details with flexible field mapping
       final orderId = order['orderId'] ?? order['razorpayOrderId'];
       final amount = order['amount'] ?? order['amountInPaise'];
 
@@ -75,7 +71,7 @@ class PaymentService {
         throw Exception('Invalid order response: missing orderId or amount');
       }
 
-      print("💳 OPENING RAZORPAY with order: $orderId");
+      AppLogger.info(_tag, 'Opening Razorpay for order $orderId');
 
       // Get user data for prefill
       final userEmail = user?.email;
@@ -113,33 +109,27 @@ class PaymentService {
       _showErrorDialog(context, 'Payment request timed out. Please try again.');
     } catch (e) {
       _cancelPaymentTimeout();
-      print("❌ PAYMENT SETUP FAILED: $e");
-      _showErrorDialog(context, 'Failed to create payment order: $e');
+      AppLogger.error(_tag, 'purchaseItem failed: $e');
+      if (context.mounted) {
+        _showErrorDialog(context, 'Failed to create payment order: $e');
+      }
     }
   }
 
-  /// Verify payment after successful Razorpay transaction
   Future<Map<String, dynamic>> verifyPayment({
     required String razorpayPaymentId,
     required String razorpayOrderId,
     required String itemId,
     required ItemType itemType,
-  }) async {
-    try {
-      final verification = await _apiService.payment.verifyPayment(
-        razorpayPaymentId: razorpayPaymentId,
-        razorpayOrderId: razorpayOrderId,
-        itemId: itemId,
-        itemType: itemType,
-      );
-
-      return verification;
-    } catch (e) {
-      throw Exception('Payment verification failed: $e');
-    }
+  }) {
+    return _apiService.payment.verifyPayment(
+      razorpayPaymentId: razorpayPaymentId,
+      razorpayOrderId: razorpayOrderId,
+      itemId: itemId,
+      itemType: itemType,
+    );
   }
 
-  /// Enroll in free item directly
   Future<void> _enrollFreeItem(
     BuildContext context,
     String itemId,
@@ -150,21 +140,18 @@ class PaymentService {
         itemId: itemId,
         itemType: itemType,
       );
-
-      print("🎉 ENROLLED WITHOUT PAYMENT");
-
+      AppLogger.info(_tag, 'Free enrollment success: $itemId');
       if (context.mounted) {
         _showSuccessDialog(context, 'Free item enrolled successfully!');
       }
     } catch (e) {
-      print("❌ FREE ENROLLMENT FAILED: $e");
+      AppLogger.error(_tag, 'Free enrollment failed: $e');
       if (context.mounted) {
         _showErrorDialog(context, 'Failed to enroll in free item: $e');
       }
     }
   }
 
-  /// Show success dialog
   void _showSuccessDialog(BuildContext context, String message) {
     showDialog(
       context: context,
@@ -181,7 +168,6 @@ class PaymentService {
     );
   }
 
-  /// Show error dialog
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(
       context: context,

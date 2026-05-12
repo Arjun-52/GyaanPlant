@@ -58,60 +58,20 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    const Icon(Icons.domain_outlined, color: Colors.white38, size: 48),
+                    const SizedBox(height: 16),
                     const Text(
-                      'No Departments Found',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
+                      'No departments found',
+                      style: TextStyle(color: Colors.white54, fontSize: 16),
                     ),
-                    const SizedBox(height: 20),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.black26,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white24),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: vm.loadDepartments,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.black,
                       ),
-                      child: Column(
-                        children: [
-                          const Text(
-                            'DEBUG INFO',
-                            style: TextStyle(
-                              color: Colors.yellow,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Loading: ${vm.isLoading}',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          Text(
-                            'Error: ${vm.error ?? "None"}',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          Text(
-                            'Departments: ${vm.departments.length}',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          const SizedBox(height: 12),
-                          ElevatedButton(
-                            onPressed: () => vm.debugUserInfo(),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
-                              foregroundColor: Colors.white,
-                            ),
-                            child: const Text('DEBUG USER INFO'),
-                          ),
-                          const SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: () => vm.loadDepartments(),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
-                            ),
-                            child: const Text('RELOAD DEPARTMENTS'),
-                          ),
-                        ],
-                      ),
+                      child: const Text('Retry'),
                     ),
                   ],
                 ),

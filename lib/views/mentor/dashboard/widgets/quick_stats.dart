@@ -23,7 +23,7 @@ class StatBox extends StatelessWidget {
         ),
 
         /// 🔥 SOFT BORDER
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
 
       child: Column(

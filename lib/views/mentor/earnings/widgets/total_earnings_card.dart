@@ -12,7 +12,7 @@ class TotalEarningsCard extends StatelessWidget {
         gradient: const LinearGradient(
           colors: [Color(0xFF1A0033), Color(0xFF0D001F)],
         ),
-        border: Border.all(color: Colors.purple.withOpacity(0.3)),
+        border: Border.all(color: Colors.purple.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -51,7 +51,7 @@ class TotalEarningsCard extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF16C47F).withOpacity(0.15),
+                  color: const Color(0xFF16C47F).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text(
@@ -69,7 +69,7 @@ class TotalEarningsCard extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.15),
+                  color: Colors.purple.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text(

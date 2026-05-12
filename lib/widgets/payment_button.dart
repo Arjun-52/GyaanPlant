@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../models/payment/item_type.dart';
 import '../services/payment_service.dart';
@@ -30,6 +31,8 @@ class PaymentButton extends StatefulWidget {
 }
 
 class _PaymentButtonState extends State<PaymentButton> {
+  static const _tag = 'PaymentButton';
+
   late PaymentService _paymentService;
   bool _isProcessing = false;
 
@@ -51,10 +54,9 @@ class _PaymentButtonState extends State<PaymentButton> {
   }
 
   Future<void> _handlePaymentSuccess(PaymentSuccessResponse response) async {
-    print("💳 PAYMENT SUCCESS: ${response.paymentId}, ${response.orderId}");
+    AppLogger.info(_tag, 'Payment success: ${response.paymentId}');
 
     try {
-      // Verify payment with backend - NO setState during verification
       final verification = await _paymentService.verifyPayment(
         razorpayPaymentId: response.paymentId!,
         razorpayOrderId: response.orderId!,
@@ -62,31 +64,30 @@ class _PaymentButtonState extends State<PaymentButton> {
         itemType: widget.itemType,
       );
 
-      print("✅ PAYMENT VERIFIED: $verification");
+      AppLogger.info(_tag, 'Payment verified: ${verification.keys}');
 
-      // NOW safe to update UI - AFTER payment completes
       if (mounted) {
         setState(() => _isProcessing = false);
-
         _showSuccessDialog(
           'Payment successful! Your ${widget.itemType.value} has been activated.',
         );
-
-        // Call success callback
         widget.onPaymentSuccess?.call();
       }
     } catch (e) {
-      print("❌ PAYMENT VERIFICATION FAILED: $e");
-      setState(() => _isProcessing = false);
+      AppLogger.error(_tag, 'Verification failed: $e');
       if (mounted) {
+        setState(() => _isProcessing = false);
         _showErrorDialog('Payment verification failed: $e');
       }
     }
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
-    print("❌ PAYMENT ERROR: ${response.code} - ${response.message}");
-    setState(() => _isProcessing = false);
+    AppLogger.warning(
+      _tag,
+      'Payment error: ${response.code} - ${response.message}',
+    );
+    if (mounted) setState(() => _isProcessing = false);
     _showErrorDialog('Payment failed: ${response.message}');
   }
 
@@ -184,12 +185,8 @@ class _PaymentButtonState extends State<PaymentButton> {
   }
 
   void _startPayment() {
-    if (_isProcessing) {
-      print("⚠️ Payment already in progress");
-      return;
-    }
+    if (_isProcessing) return;
 
-    print("🚀 START PAYMENT");
     setState(() => _isProcessing = true);
 
     _paymentService.purchaseItem(

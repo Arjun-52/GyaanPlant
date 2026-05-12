@@ -10,6 +10,7 @@ class NetworkAPIManager {
   final NetworkConfig _config;
   bool _isInitialized = false;
 
+  // Only non-cancelled, in-flight tokens are kept here.
   static final List<CancelToken> _activeCancelTokens = [];
 
   NetworkAPIManager._(this._config) {
@@ -63,7 +64,6 @@ class NetworkAPIManager {
           responseBody: true,
           requestHeader: false,
           responseHeader: false,
-          logPrint: (obj) => debugLog('[API] $obj'),
         ),
       );
     }
@@ -81,16 +81,16 @@ class NetworkAPIManager {
     CancelToken? cancelToken,
   }) async {
     _ensureInitialized();
-    final token = cancelToken ?? CancelToken();
-    _activeCancelTokens.add(token);
+    final ct = _track(cancelToken);
     return _perform(
       () => _dio.get(
         endpoint,
         queryParameters: queryParameters,
         options: options,
-        cancelToken: token,
+        cancelToken: ct,
       ),
       fromJson: fromJson,
+      cancelToken: ct,
     );
   }
 
@@ -103,17 +103,17 @@ class NetworkAPIManager {
     CancelToken? cancelToken,
   }) async {
     _ensureInitialized();
-    final token = cancelToken ?? CancelToken();
-    _activeCancelTokens.add(token);
+    final ct = _track(cancelToken);
     return _perform(
       () => _dio.post(
         endpoint,
         data: data,
         queryParameters: queryParameters,
         options: options,
-        cancelToken: token,
+        cancelToken: ct,
       ),
       fromJson: fromJson,
+      cancelToken: ct,
     );
   }
 
@@ -126,17 +126,17 @@ class NetworkAPIManager {
     CancelToken? cancelToken,
   }) async {
     _ensureInitialized();
-    final token = cancelToken ?? CancelToken();
-    _activeCancelTokens.add(token);
+    final ct = _track(cancelToken);
     return _perform(
       () => _dio.put(
         endpoint,
         data: data,
         queryParameters: queryParameters,
         options: options,
-        cancelToken: token,
+        cancelToken: ct,
       ),
       fromJson: fromJson,
+      cancelToken: ct,
     );
   }
 
@@ -149,17 +149,17 @@ class NetworkAPIManager {
     CancelToken? cancelToken,
   }) async {
     _ensureInitialized();
-    final token = cancelToken ?? CancelToken();
-    _activeCancelTokens.add(token);
+    final ct = _track(cancelToken);
     return _perform(
       () => _dio.patch(
         endpoint,
         data: data,
         queryParameters: queryParameters,
         options: options,
-        cancelToken: token,
+        cancelToken: ct,
       ),
       fromJson: fromJson,
+      cancelToken: ct,
     );
   }
 
@@ -172,18 +172,25 @@ class NetworkAPIManager {
     CancelToken? cancelToken,
   }) async {
     _ensureInitialized();
-    final token = cancelToken ?? CancelToken();
-    _activeCancelTokens.add(token);
+    final ct = _track(cancelToken);
     return _perform(
       () => _dio.delete(
         endpoint,
         data: data,
         queryParameters: queryParameters,
         options: options,
-        cancelToken: token,
+        cancelToken: ct,
       ),
       fromJson: fromJson,
+      cancelToken: ct,
     );
+  }
+
+  /// Register a cancel token and return it (creates one if not supplied).
+  CancelToken _track(CancelToken? supplied) {
+    final ct = supplied ?? CancelToken();
+    _activeCancelTokens.add(ct);
+    return ct;
   }
 
   static void cancelAllRequests() {
@@ -200,17 +207,11 @@ class NetworkAPIManager {
   Future<ApiResponse<T>> _perform<T>(
     Future<Response> Function() request, {
     T Function(dynamic)? fromJson,
+    CancelToken? cancelToken,
     int retryCount = 0,
   }) async {
-    print("=== API MANAGER DEBUG ===");
-    print("PERFORMING REQUEST (RETRY: $retryCount)");
-
     try {
       final response = await request();
-      print("✅ REQUEST SUCCESSFUL");
-      print("STATUS CODE: ${response.statusCode}");
-      print("RESPONSE DATA: ${response.data}");
-
       return _handleResponse<T>(response, fromJson: fromJson);
     } on DioException catch (e) {
       if (retryCount < AppConstants.maxRetries && _shouldRetry(e)) {
@@ -218,6 +219,7 @@ class NetworkAPIManager {
         return _perform(
           request,
           fromJson: fromJson,
+          cancelToken: cancelToken,
           retryCount: retryCount + 1,
         );
       }
@@ -243,6 +245,9 @@ class NetworkAPIManager {
         ),
         statusCode: 500,
       );
+    } finally {
+      // Remove this token from the active list so the list doesn't grow forever.
+      if (cancelToken != null) _activeCancelTokens.remove(cancelToken);
     }
   }
 
@@ -325,7 +330,4 @@ class NetworkAPIManager {
       throw StateError('NetworkAPIManager is not properly initialized.');
     }
   }
-
-  // ignore: avoid_print
-  void debugLog(String msg) => print(msg);
 }

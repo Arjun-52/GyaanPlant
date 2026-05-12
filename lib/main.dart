@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/notification_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -18,7 +19,6 @@ import 'viewmodels/student_viewmodel/mentor_viewmodel.dart';
 import 'viewmodels/student_viewmodel/test_viewmodel.dart';
 import 'viewmodels/tpo_viewmodels/drives_viewmodel.dart';
 import 'viewmodels/tpo_viewmodels/tpo_dashboard_viewmodel.dart';
-import 'viewmodels/student_viewmodel/notification_viewmodel.dart';
 import 'viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
 
 void main() async {
@@ -32,11 +32,10 @@ void main() async {
 
   NetworkAPIManager.initialize();
 
-  // Load token from LocalStorageService and populate AuthCache
+  // Populate in-memory cache from secure storage so the router and interceptor
+  // have the token synchronously on the first frame.
   final token = await LocalStorageService.getToken();
   AuthCache.token = token;
-  print("🔑 TOKEN LOADED ON STARTUP: $token");
-  print("🔑 TOKEN IS NULL: ${token == null}");
 
   AuthInterceptor.onUnauthorized = () {
     AppRouter.router.go('/');
@@ -61,7 +60,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => LeaderboardViewModel()),
         ChangeNotifierProvider(create: (_) => StudentTabController()),
         ChangeNotifierProvider(create: (_) => DrivesViewModel()),
-        ChangeNotifierProvider(create: (_) => TpoDashboardViewModel()),
+        // TpoDashboardViewModel is scoped to the TPO route in app_router.dart.
         ChangeNotifierProvider(
           create: (_) => HodDashboardViewModel()..loadDashboard(),
         ),
