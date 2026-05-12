@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/viewmodels/tpo_viewmodels/drives_viewmodel.dart';
-import 'package:gyaanplant/views/tpo_role/Drives/widegts/drive_card.dart';
+import 'package:gyaanplant/views/tpo_role/Drives/widgets/drive_card.dart';
 import 'package:gyaanplant/views/tpo_role/Drives/screens/create_drive_screen.dart';
 
 class DrivesScreen extends StatefulWidget {
