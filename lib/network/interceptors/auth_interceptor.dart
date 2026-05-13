@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:gyaanplant/core/events/auth_event_bus.dart';
 import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/network/api_endpoints.dart';
 
@@ -6,9 +7,6 @@ import '../auth_cache.dart';
 
 class AuthInterceptor extends Interceptor {
   static const _tag = 'AuthInterceptor';
-
-  // Set once at app startup to handle forced logout.
-  static void Function()? onUnauthorized;
 
   static const _skipList = [
     ApiEndpoints.login,
@@ -49,7 +47,7 @@ class AuthInterceptor extends Interceptor {
         !_isSkipped(response.requestOptions.path)) {
       AppLogger.warning(_tag, '401 on authenticated request — clearing token');
       AuthCache.token = null;
-      onUnauthorized?.call();
+      AuthEventBus.emit(const SessionExpired());
     }
     super.onResponse(response, handler);
   }

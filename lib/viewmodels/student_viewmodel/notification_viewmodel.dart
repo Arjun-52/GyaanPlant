@@ -48,30 +48,45 @@ class NotificationViewModel extends ChangeNotifier {
     }
   }
 
+  // Both `markNotificationAsRead` and `markAllAsRead` flip local state BEFORE
+  // hitting the API so the UI feels instant. On failure, the snapshot is
+  // restored and the error surfaced.
+
   Future<void> markNotificationAsRead(String notificationId) async {
+    final index = _notifications.indexWhere((n) => n.id == notificationId);
+    if (index == -1) return;
+    final original = _notifications[index];
+    if (original.read) return; // already read — nothing to do
+
+    _updateNotificationReadStatus(notificationId, true);
+
     try {
       await NotificationApiService.markAsRead(notificationId);
-      _updateNotificationReadStatus(notificationId, true);
       AppLogger.info(_tag, 'Marked notification as read: $notificationId');
     } catch (e, st) {
-      AppLogger.error(_tag, 'markNotificationAsRead failed', e, st);
+      // Revert local state.
+      _notifications[index] = original;
+      _updateUnreadCount();
+      notifyListeners();
+      AppLogger.error(_tag, 'markNotificationAsRead failed — reverted', e, st);
       _setError('Failed to mark notification as read: $e');
     }
   }
 
   Future<void> markAllAsRead() async {
-    _setLoading(true);
     _clearError();
+    final snapshot = List<NotificationModel>.from(_notifications);
+    _updateAllNotificationsReadStatus(true);
 
     try {
       await NotificationApiService.markAllAsRead();
-      _updateAllNotificationsReadStatus(true);
       AppLogger.info(_tag, 'Marked all notifications as read');
     } catch (e, st) {
-      AppLogger.error(_tag, 'markAllAsRead failed', e, st);
+      _notifications = snapshot;
+      _updateUnreadCount();
+      notifyListeners();
+      AppLogger.error(_tag, 'markAllAsRead failed — reverted', e, st);
       _setError('Failed to mark all notifications as read: $e');
-    } finally {
-      _setLoading(false);
     }
   }
 

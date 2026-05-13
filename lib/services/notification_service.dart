@@ -1,31 +1,36 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:gyaanplant/core/utils/app_logger.dart';
 import '../network/api_endpoints.dart';
 import '../network/api_manager.dart';
 import '../network/auth_cache.dart';
 
-/// Service for handling Firebase Cloud Messaging permissions, listeners, and
-/// authenticated token registration.
+/// Firebase Cloud Messaging permissions, listeners, and authenticated token
+/// registration.
+///
+/// Singleton — access via `NotificationService.instance`.
 ///
 /// Lifecycle:
-///   1. `initialize()` — call from `main()`. Requests OS permission, wires up
-///      foreground/background/tap listeners, and starts the token-refresh
-///      stream. Does NOT contact the backend. Safe before login.
-///   2. `registerFCMTokenWithBackend()` — call AFTER login (and on cold start
-///      if a stored token exists). Fetches the FCM token and POSTs it to the
-///      backend. No-op when the user is not authenticated.
+///   1. `instance.initialize()` — called from `main()`. Requests OS
+///      permission, wires up foreground/background/tap listeners, and starts
+///      the token-refresh stream. Pre-auth safe — never contacts the backend.
+///   2. `instance.registerFCMTokenWithBackend()` — called AFTER login (and on
+///      cold start if a stored token exists). Fetches the FCM token and
+///      POSTs it to the backend if it has changed since the last successful
+///      save. No-op when the user is not authenticated.
+///   3. `instance.clearSavedTokenCache()` — called on logout so a subsequent
+///      login by a different user re-registers their device.
 class NotificationService {
   static const _tag = 'NotificationService';
 
-  static String? _currentFCMToken;
-  static bool _listenersInitialized = false;
+  static final NotificationService instance = NotificationService._();
+  NotificationService._();
 
-  static String? get currentFCMToken => _currentFCMToken;
+  String? _currentFCMToken;
+  String? _lastSavedToken;
+  bool _listenersInitialized = false;
 
-  /// Initialize notification listeners and request OS permissions.
-  ///
-  /// Pre-auth safe — never POSTs to the backend.
-  static Future<void> initialize() async {
+  Future<void> initialize() async {
     try {
       await _requestNotificationPermissions();
 
@@ -45,10 +50,10 @@ class NotificationService {
 
   /// Fetch the current FCM token and POST it to the backend.
   ///
-  /// No-op when `AuthCache.token` is null — prevents 401s on cold start.
-  /// Call after a successful login and once on app start if a saved auth token
-  /// is restored.
-  static Future<void> registerFCMTokenWithBackend() async {
+  /// No-op when `AuthCache.token` is null. De-duplicates against
+  /// `_lastSavedToken` so repeated calls with the same token make at most
+  /// one backend POST.
+  Future<void> registerFCMTokenWithBackend() async {
     if (AuthCache.token == null) {
       AppLogger.debug(_tag, 'Skipping FCM registration — user not authenticated');
       return;
@@ -68,8 +73,13 @@ class NotificationService {
     }
   }
 
-  /// Check current notification permission status
-  static Future<bool> areNotificationsEnabled() async {
+  /// Drop the de-dup cache so the next `registerFCMTokenWithBackend` call
+  /// will POST regardless. Call on logout.
+  void clearSavedTokenCache() {
+    _lastSavedToken = null;
+  }
+
+  Future<bool> areNotificationsEnabled() async {
     try {
       final settings =
           await FirebaseMessaging.instance.getNotificationSettings();
@@ -81,9 +91,16 @@ class NotificationService {
     }
   }
 
+  @visibleForTesting
+  void reset() {
+    _currentFCMToken = null;
+    _lastSavedToken = null;
+    _listenersInitialized = false;
+  }
+
   // ── Private ────────────────────────────────────────────────────────────
 
-  static Future<bool> _requestNotificationPermissions() async {
+  Future<bool> _requestNotificationPermissions() async {
     try {
       final settings = await FirebaseMessaging.instance.requestPermission(
         alert: true,
@@ -115,13 +132,19 @@ class NotificationService {
     }
   }
 
-  static Future<void> _saveFCMTokenToDatabase(String token) async {
+  Future<void> _saveFCMTokenToDatabase(String token) async {
+    if (token == _lastSavedToken) {
+      AppLogger.debug(_tag, 'FCM token unchanged — skipping POST');
+      return;
+    }
+
     try {
       final response = await NetworkAPIManager.instance.post(
         ApiEndpoints.fcmToken,
         data: {'fcmToken': token},
       );
       if (response.success) {
+        _lastSavedToken = token;
         AppLogger.info(_tag, 'FCM token saved to backend');
       } else {
         AppLogger.warning(
@@ -134,18 +157,17 @@ class NotificationService {
     }
   }
 
-  static void _handleTokenRefresh(String token) {
+  void _handleTokenRefresh(String token) {
     if (token.isEmpty) return;
     _currentFCMToken = token;
     AppLogger.info(_tag, 'FCM token refreshed');
-    // Refresh is meaningful only when the user is logged in; the helper
-    // bails out otherwise.
+    // Refresh is meaningful only when the user is logged in.
     if (AuthCache.token != null) {
       _saveFCMTokenToDatabase(token);
     }
   }
 
-  static void _handleForegroundMessage(RemoteMessage message) {
+  void _handleForegroundMessage(RemoteMessage message) {
     AppLogger.info(
       _tag,
       'Foreground message: ${message.notification?.title ?? "(no title)"}',
@@ -153,12 +175,14 @@ class NotificationService {
     // TODO: surface in-app notification.
   }
 
-  static void _handleNotificationTap(RemoteMessage message) {
+  void _handleNotificationTap(RemoteMessage message) {
     AppLogger.info(_tag, 'Notification tapped: ${message.messageId}');
     // TODO: deep-link based on message.data.
   }
+}
 
-  static Future<void> _handleBackgroundMessage(RemoteMessage message) async {
-    AppLogger.info(_tag, 'Background message: ${message.messageId}');
-  }
+// Background isolate handler — must be a top-level function.
+@pragma('vm:entry-point')
+Future<void> _handleBackgroundMessage(RemoteMessage message) async {
+  AppLogger.info('NotificationService', 'Background message: ${message.messageId}');
 }

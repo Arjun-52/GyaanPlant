@@ -82,10 +82,49 @@ class NotificationApiService {
   static Future<void> markAllAsRead() => markAsRead('all');
 
   /// Get unread notifications count.
+  ///
+  /// Tries the dedicated `/unread-count` endpoint first. Falls back to
+  /// fetching the full list and counting locally when the endpoint isn't
+  /// available (404) — keeps the client working whether or not the backend
+  /// has shipped the new endpoint.
   static Future<int> getUnreadCount() async {
     try {
+      final response = await NetworkAPIManager.instance.get(
+        ApiEndpoints.notificationsUnreadCount,
+      );
+
+      if (response.success) {
+        final data = response.data;
+        final raw = data is Map<String, dynamic>
+            ? (data['data'] is Map<String, dynamic>
+                ? (data['data'] as Map<String, dynamic>)['count']
+                : data['count'])
+            : null;
+        if (raw is int) {
+          AppLogger.info(_tag, 'Unread count via endpoint: $raw');
+          return raw;
+        }
+        AppLogger.warning(
+          _tag,
+          'unread-count response missing count field — falling back',
+        );
+      } else if (response.statusCode != 404) {
+        AppLogger.warning(
+          _tag,
+          'unread-count failed (${response.statusCode}) — falling back',
+        );
+      }
+    } catch (e, st) {
+      AppLogger.warning(_tag, 'unread-count threw — falling back: $e');
+      AppLogger.debug(_tag, '$st');
+    }
+
+    // Fallback: count locally.
+    try {
       final notifications = await getNotifications();
-      return notifications.where((n) => !n.read).length;
+      final count = notifications.where((n) => !n.read).length;
+      AppLogger.info(_tag, 'Unread count via list-fallback: $count');
+      return count;
     } catch (e, st) {
       AppLogger.error(_tag, 'Error computing unread count', e, st);
       return 0;

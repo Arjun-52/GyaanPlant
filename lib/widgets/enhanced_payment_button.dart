@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:razorpay_flutter/razorpay_flutter.dart';
-import '../services/payment_service.dart';
-import '../models/payment/item_type.dart';
+import 'package:gyaanplant/core/utils/app_logger.dart';
+
 import '../models/auth/auth_user_model.dart';
+import '../models/payment/item_type.dart';
+import '../models/payment/payment_result.dart';
+import '../services/payment_service.dart';
 
 class EnhancedPaymentButton extends StatefulWidget {
   final String itemId;
@@ -30,23 +31,23 @@ class EnhancedPaymentButton extends StatefulWidget {
 }
 
 class _EnhancedPaymentButtonState extends State<EnhancedPaymentButton> {
-  final PaymentService _paymentService = PaymentService();
+  static const _tag = 'EnhancedPaymentButton';
+  static const int _maxRetries = 3;
+
+  late final PaymentService _paymentService;
   bool _isProcessing = false;
   int _retryCount = 0;
-  static const int _maxRetries = 3;
 
   @override
   void initState() {
     super.initState();
-    _initializePaymentService();
+    _paymentService = PaymentService()..init();
   }
 
-  void _initializePaymentService() {
-    _paymentService.init(
-      onSuccess: _handlePaymentSuccess,
-      onError: _handlePaymentError,
-      onExternal: _handleExternalWallet,
-    );
+  @override
+  void dispose() {
+    _paymentService.dispose();
+    super.dispose();
   }
 
   Future<void> _handlePayment() async {
@@ -57,76 +58,70 @@ class _EnhancedPaymentButtonState extends State<EnhancedPaymentButton> {
       _retryCount = 0;
     });
 
-    try {
-      await _paymentService.purchaseItem(
-        context: context,
-        itemId: widget.itemId,
-        itemType: widget.itemType,
-        itemName: widget.itemName,
-        itemDescription: widget.itemDescription,
-        user: widget.user,
-      );
-    } catch (e) {
-      setState(() {
-        _isProcessing = false;
-      });
+    await _runPayment();
+  }
 
-      _showRetryDialog(e.toString());
+  Future<void> _runPayment() async {
+    final result = await _paymentService.purchaseItem(
+      itemId: widget.itemId,
+      itemType: widget.itemType,
+      itemDescription: widget.itemDescription,
+      user: widget.user,
+    );
+
+    if (!mounted) return;
+    setState(() => _isProcessing = false);
+
+    switch (result) {
+      case FreeEnrollmentSucceeded():
+        _showSuccessSnackBar('Free item enrolled successfully!');
+        widget.onPaymentComplete?.call();
+      case PaymentSucceeded():
+        _showSuccessSnackBar('Payment successful!');
+        widget.onPaymentComplete?.call();
+      case ExternalWalletSelected(walletName: final wallet):
+        _showInfoSnackBar('External wallet selected: ${wallet ?? "unknown"}');
+      case PaymentFailed(reason: final reason, message: final msg):
+        AppLogger.warning(_tag, 'Payment failed ($reason): $msg');
+        if (reason == PaymentFailureReason.ssl && _retryCount < _maxRetries) {
+          _showRetryDialog('SSL Certificate Error: $msg');
+        } else {
+          _showErrorDialog(msg);
+        }
     }
   }
 
-  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+  Future<void> _retryPayment() async {
     setState(() {
-      _isProcessing = false;
-      _retryCount = 0;
+      _retryCount++;
+      _isProcessing = true;
     });
+    // Small delay before retry — SSL flakes can resolve on a fresh handshake.
+    await Future<void>.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+    await _runPayment();
+  }
 
+  void _showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
             const Icon(Icons.check_circle, color: Colors.white),
             const SizedBox(width: 8),
-            const Text(
-              'Payment successful!',
-              style: TextStyle(color: Colors.white),
-            ),
+            Text(message, style: const TextStyle(color: Colors.white)),
           ],
         ),
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 3),
       ),
     );
-
-    widget.onPaymentComplete?.call();
   }
 
-  void _handlePaymentError(PaymentFailureResponse response) {
-    setState(() {
-      _isProcessing = false;
-    });
-
-    // Check if this is an SSL-related error
-    final isSSLError =
-        response.message?.toLowerCase().contains('certificate') == true ||
-        response.message?.toLowerCase().contains('ssl') == true ||
-        response.message?.toLowerCase().contains('handshake') == true;
-
-    if (isSSLError && _retryCount < _maxRetries) {
-      _showRetryDialog('SSL Certificate Error: ${response.message}');
-    } else {
-      _showErrorDialog(response.message ?? 'Payment failed');
-    }
-  }
-
-  void _handleExternalWallet(ExternalWalletResponse response) {
-    setState(() {
-      _isProcessing = false;
-    });
-
+  void _showInfoSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('External wallet selected: ${response.walletName}'),
+        content: Text(message),
         backgroundColor: Colors.blue,
         duration: const Duration(seconds: 3),
       ),
@@ -134,10 +129,10 @@ class _EnhancedPaymentButtonState extends State<EnhancedPaymentButton> {
   }
 
   void _showRetryDialog(String errorMessage) {
-    showDialog(
+    showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: const Row(
           children: [
             Icon(Icons.refresh, color: Colors.orange),
@@ -164,12 +159,12 @@ class _EnhancedPaymentButtonState extends State<EnhancedPaymentButton> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(ctx).pop(),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(ctx).pop();
               _retryPayment();
             },
             style: ElevatedButton.styleFrom(
@@ -183,42 +178,10 @@ class _EnhancedPaymentButtonState extends State<EnhancedPaymentButton> {
     );
   }
 
-  void _retryPayment() async {
-    setState(() {
-      _retryCount++;
-    });
-
-    // Add a small delay before retry
-    await Future.delayed(const Duration(seconds: 2));
-
-    try {
-      await _paymentService.purchaseItem(
-        context: context,
-        itemId: widget.itemId,
-        itemType: widget.itemType,
-        itemName: widget.itemName,
-        itemDescription: widget.itemDescription,
-        user: widget.user,
-      );
-    } catch (e) {
-      setState(() {
-        _isProcessing = false;
-      });
-
-      if (_retryCount >= _maxRetries) {
-        _showErrorDialog(
-          'Maximum retry attempts reached. Please try again later.',
-        );
-      } else {
-        _showRetryDialog(e.toString());
-      }
-    }
-  }
-
   void _showErrorDialog(String message) {
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: const Row(
           children: [
             Icon(Icons.error, color: Colors.red),
@@ -240,7 +203,7 @@ class _EnhancedPaymentButtonState extends State<EnhancedPaymentButton> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(ctx).pop(),
             child: const Text('OK'),
           ),
         ],
@@ -249,31 +212,24 @@ class _EnhancedPaymentButtonState extends State<EnhancedPaymentButton> {
   }
 
   @override
-  void dispose() {
-    _paymentService.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final disabled = _isProcessing || widget.isLoading;
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _isProcessing || widget.isLoading ? null : _handlePayment,
+        onPressed: disabled ? null : _handlePayment,
         style: ElevatedButton.styleFrom(
-          backgroundColor: _isProcessing || widget.isLoading
-              ? Colors.grey
-              : Colors.green,
+          backgroundColor: disabled ? Colors.grey : Colors.green,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: _isProcessing || widget.isLoading
+        child: disabled
             ? Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [
+                children: const [
                   SizedBox(
                     width: 16,
                     height: 16,
@@ -282,8 +238,8 @@ class _EnhancedPaymentButtonState extends State<EnhancedPaymentButton> {
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  const Text('Processing...'),
+                  SizedBox(width: 12),
+                  Text('Processing...'),
                 ],
               )
             : const Text(
