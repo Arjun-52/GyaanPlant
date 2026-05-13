@@ -23,11 +23,7 @@ class RoleViewModel {
       subtitle: "Department analytics, syllabus mapping, accreditation",
       icon: "📐",
     ),
-    RoleModel(
-      title: "Admin / CEO",
-      subtitle: "Platform KPIs, MOU pipeline, revenue & growth",
-      icon: "⚡",
-    ),
+
     RoleModel(
       title: "Alumni Mentor",
       subtitle: "Manage bookings, sessions, earnings dashboard",

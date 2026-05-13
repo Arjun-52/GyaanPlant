@@ -1,10 +1,15 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/core/events/auth_event_bus.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/notification_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'network/api_manager.dart';
-import 'network/interceptors/auth_interceptor.dart';
 import 'network/auth_cache.dart';
 import 'routes/app_router.dart';
 import 'data/services/local_storage_service.dart';
+import 'services/notification_service.dart';
 import 'viewmodels/student_viewmodel/auth_viewmodel.dart';
 import 'viewmodels/student_viewmodel/student_tab_controller.dart';
 import 'viewmodels/student_viewmodel/dashboard_viewmodel.dart';
@@ -19,6 +24,11 @@ import 'viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Register permission prompts + message listeners. Does NOT contact backend.
+  await NotificationService.instance.initialize();
+
   NetworkAPIManager.initialize();
 
   // Populate in-memory cache from secure storage so the router and interceptor
@@ -26,9 +36,21 @@ void main() async {
   final token = await LocalStorageService.getToken();
   AuthCache.token = token;
 
-  AuthInterceptor.onUnauthorized = () {
-    AppRouter.router.go('/');
-  };
+  // Only register the FCM token with the backend once we know we're logged in.
+  if (token != null) {
+    unawaited(NotificationService.instance.registerFCMTokenWithBackend());
+  }
+
+  // Auth lifecycle: route to sign-in on session expiry; clear the FCM token
+  // de-dup cache on logout so the next user re-registers.
+  AuthEventBus.stream.listen((event) {
+    switch (event) {
+      case SessionExpired():
+        AppRouter.router.go('/');
+      case LoggedOut():
+        NotificationService.instance.clearSavedTokenCache();
+    }
+  });
 
   runApp(const MyApp());
 }
@@ -53,6 +75,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => HodDashboardViewModel()..loadDashboard(),
         ),
+        ChangeNotifierProvider(create: (_) => NotificationViewModel()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

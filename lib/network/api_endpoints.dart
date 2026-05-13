@@ -16,6 +16,7 @@ class ApiEndpoints {
   static const String forgotPassword = '/api/v1/auth/forgot-password';
   static const String resetPassword = '/api/v1/auth/reset-password';
   static const String changePassword = '/api/v1/auth/change-password';
+  static const String fcmToken = '/api/v1/auth/fcm-token';
 
   // ── Users ────────────────────────────────────────────────────────────────
   static const String users = '/api/v1/users';
@@ -116,6 +117,8 @@ class ApiEndpoints {
 
   // ── Notifications ────────────────────────────────────────────────────────
   static const String notifications = '/api/v1/notification';
+  static const String notificationsUnreadCount =
+      '/api/v1/notification/unread-count';
 
   // ── Payments ─────────────────────────────────────────────────────────────
   static const String createOrder = '/api/v1/payments/create-order';

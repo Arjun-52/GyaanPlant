@@ -79,4 +79,23 @@ class DrivesViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> addDrive(Drive drive) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      // For now, just add the drive to the list locally
+      // TODO: Implement actual API call when backend is ready
+      _drives.insert(0, drive); // Add new drive at the beginning
+      AppLogger.info(_tag, 'Added new drive: ${drive.company}');
+    } catch (e, st) {
+      _error = e.toString();
+      AppLogger.error(_tag, 'Failed to add drive', e, st);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

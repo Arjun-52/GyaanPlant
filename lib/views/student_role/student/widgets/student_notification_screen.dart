@@ -1,7 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../../viewmodels/student_viewmodel/notification_viewmodel.dart';
+import '../../../../models/notification/notification_model.dart';
 
-class StudentNotificationScreen extends StatelessWidget {
+class StudentNotificationScreen extends StatefulWidget {
   const StudentNotificationScreen({super.key});
+
+  @override
+  State<StudentNotificationScreen> createState() =>
+      _StudentNotificationScreenState();
+}
+
+class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
+  late NotificationViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = Provider.of<NotificationViewModel>(context, listen: false);
+    _viewModel.initialize();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,34 +33,128 @@ class StudentNotificationScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         actions: [
-          TextButton(
-            onPressed: () {},
-            child: const Text(
-              "MARK ALL",
-              style: TextStyle(
-                color: Color(0xFF00E676), // neon green
-              ),
-            ),
+          Consumer<NotificationViewModel>(
+            builder: (context, viewModel, child) {
+              return TextButton(
+                onPressed: viewModel.unreadCount > 0 && !viewModel.isLoading
+                    ? () => viewModel.markAllAsRead()
+                    : null,
+                child: Text(
+                  "MARK ALL",
+                  style: TextStyle(
+                    color: viewModel.unreadCount > 0 && !viewModel.isLoading
+                        ? const Color(0xFF00E676)
+                        : Colors.white24,
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// Subtitle
-            const Text(
-              "0 new alerts require your attention",
-              style: TextStyle(color: Colors.white54),
-            ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await _viewModel.refreshNotifications();
+        },
+        color: const Color(0xFF00E676),
+        child: Consumer<NotificationViewModel>(
+          builder: (context, viewModel, child) {
+            if (viewModel.isLoading && viewModel.notifications.isEmpty) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00E676)),
+                ),
+              );
+            }
 
-            const SizedBox(height: 20),
+            if (viewModel.hasError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
+                    const SizedBox(height: 16),
+                    Text(
+                      viewModel.errorMessage!,
+                      style: const TextStyle(color: Colors.white70),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => viewModel.retry(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00E676),
+                        foregroundColor: Colors.black,
+                      ),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              );
+            }
 
-            /// Notifications list
-            Expanded(child: ListView(children: const [NotificationCard()])),
-          ],
+            if (!viewModel.hasNotifications) {
+              return const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.notifications_none_outlined,
+                      size: 64,
+                      color: Colors.white24,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'No notifications yet',
+                      style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'We\'ll notify you when something important happens',
+                      style: TextStyle(color: Colors.white38, fontSize: 14),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// Subtitle
+                  Text(
+                    "${viewModel.unreadCount} new alerts require your attention",
+                    style: const TextStyle(color: Colors.white54),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// Notifications list
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: viewModel.notifications.length,
+                      itemBuilder: (context, index) {
+                        final notification = viewModel.notifications[index];
+                        return NotificationCard(
+                          notification: notification,
+                          onTap: () =>
+                              viewModel.markNotificationAsRead(notification.id),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
@@ -50,99 +162,159 @@ class StudentNotificationScreen extends StatelessWidget {
 }
 
 class NotificationCard extends StatelessWidget {
-  const NotificationCard({super.key});
+  final NotificationModel notification;
+  final VoidCallback onTap;
+
+  const NotificationCard({
+    super.key,
+    required this.notification,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
 
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
 
-        /// 🔥 Gradient like your design
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0B2A1E), Color(0xFF0F3D2E)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          ///  Gradient like your design
+          gradient: LinearGradient(
+            colors: notification.read
+                ? [const Color(0xFF0B2A1E), const Color(0xFF0F3D2E)]
+                : [const Color(0xFF0D3A2A), const Color(0xFF114A3A)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+
+          /// Glow effect
+          boxShadow: [
+            BoxShadow(
+              color: notification.read
+                  ? Colors.green.withOpacity(0.05)
+                  : Colors.green.withOpacity(0.15),
+              blurRadius: 20,
+              spreadRadius: 2,
+            ),
+          ],
         ),
 
-        /// Glow effect
-        boxShadow: [
-          BoxShadow(
-            color: Colors.green.withValues(alpha: 0.15),
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// Icon with glow
-          Container(
-            height: 36,
-            width: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF00E676).withValues(alpha: 0.15),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// Icon with glow
+            Container(
+              height: 36,
+              width: 36,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: notification.read
+                    ? const Color(0xFF00E676).withOpacity(0.1)
+                    : const Color(0xFF00E676).withOpacity(0.15),
+              ),
+              child: Icon(
+                _getIconForType(notification.type),
+                color: notification.read
+                    ? const Color(0xFF00E676).withOpacity(0.6)
+                    : const Color(0xFF00E676),
+                size: 18,
+              ),
             ),
-            child: const Icon(
-              Icons.celebration,
-              color: Color(0xFF00E676),
-              size: 18,
-            ),
-          ),
 
-          const SizedBox(width: 12),
+            const SizedBox(width: 12),
 
-          /// Content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "🎉 Level Up! You are now Explorer",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
+            /// Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    notification.title,
+                    style: TextStyle(
+                      color: notification.read ? Colors.white70 : Colors.white,
+                      fontWeight: notification.read
+                          ? FontWeight.normal
+                          : FontWeight.bold,
+                      fontSize: 15,
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 6),
+                  const SizedBox(height: 6),
 
-                const Text(
-                  "Congratulations! You reached Level 2. Keep going!",
-                  style: TextStyle(color: Colors.white70),
-                ),
-
-                const SizedBox(height: 10),
-
-                Row(
-                  children: const [
-                    Text(
-                      "APR 27, 2026",
-                      style: TextStyle(fontSize: 12, color: Colors.white54),
+                  Text(
+                    notification.message,
+                    style: TextStyle(
+                      color: notification.read
+                          ? Colors.white54
+                          : Colors.white70,
+                      fontSize: 14,
                     ),
-                    SizedBox(width: 10),
-                    Text(
-                      "ACKNOWLEDGED",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF00E676),
-                        fontWeight: FontWeight.w600,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Row(
+                    children: [
+                      Text(
+                        notification.formattedDate,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white54,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 10),
+                      Text(
+                        notification.readStatusText,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: notification.read
+                              ? const Color(0xFF00E676).withOpacity(0.7)
+                              : const Color(0xFF00E676),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  /// Get appropriate icon based on notification type
+  IconData _getIconForType(String type) {
+    switch (type.toLowerCase()) {
+      case 'achievement':
+      case 'level_up':
+        return Icons.celebration;
+      case 'course':
+      case 'learning':
+        return Icons.school;
+      case 'job':
+      case 'career':
+        return Icons.work;
+      case 'mentor':
+        return Icons.person;
+      case 'payment':
+        return Icons.payment;
+      case 'system':
+      case 'info':
+        return Icons.info;
+      case 'warning':
+        return Icons.warning;
+      case 'error':
+        return Icons.error;
+      default:
+        return Icons.notifications;
+    }
   }
 }
