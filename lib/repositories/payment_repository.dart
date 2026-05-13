@@ -42,8 +42,8 @@ class PaymentRepository {
       throw Exception('No order data received from server');
     }
 
-    final orderId = (data['orderId'] ?? data['razorpayOrderId']) as String?;
-    final amount = (data['amount'] ?? data['amountInPaise']) as int?;
+    final orderId = (data['razorpayOrderId'] ?? data['orderId']) as String?;
+    final amount = (data['amountInPaise'] ?? data['amount']) as int?;
     if (orderId == null || amount == null) {
       throw Exception('Invalid order response: missing orderId or amount');
     }
