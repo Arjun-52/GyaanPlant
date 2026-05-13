@@ -51,6 +51,6 @@ class ExpertiseSection extends StatelessWidget {
 
   BoxDecoration boxStyle() => BoxDecoration(
     borderRadius: BorderRadius.circular(16),
-    color: Colors.green.withOpacity(0.1),
+    color: Colors.green.withValues(alpha: 0.1),
   );
 }

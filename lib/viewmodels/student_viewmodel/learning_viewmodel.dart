@@ -1,24 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
 import 'package:gyaanplant/models/learning/learning_model.dart';
 import 'package:gyaanplant/models/student_role_models/dashboard_model.dart';
-import 'package:gyaanplant/network/auth_cache.dart';
 
 class LearningViewModel extends ChangeNotifier {
+  static const _tag = 'LearningViewModel';
+
   final _learning = ApiService().learning;
 
-  /// All available courses
   List<CourseModel> courses = [];
-
-  /// Enrollments (contains course + progress)
   List<Enrollment> enrollments = [];
 
   /// Search query
   String searchQuery = '';
 
   bool isLoading = false;
+  bool isLoaded = false;
   String? errorMessage;
-
   bool _disposed = false;
 
   @override
@@ -32,79 +31,59 @@ class LearningViewModel extends ChangeNotifier {
     if (!_disposed) super.notifyListeners();
   }
 
-  /// Fetch everything (courses + enrollments)
+  /// Fetch courses and enrollments in parallel. No-ops if already loaded.
   Future<void> fetchCourses() async {
-    print("🚀 FETCH COURSES STARTED");
-
-    final token = AuthCache.token;
-    if (token == null) {
-      errorMessage = 'Please login';
-      notifyListeners();
-      return;
-    }
+    if (isLoaded) return;
 
     isLoading = true;
+    errorMessage = null;
     notifyListeners();
 
     try {
-      final coursesResult = await _learning.getCourses();
-      final enrollmentsResult = await _learning.getMyEnrollments();
+      final (coursesResult, enrollmentsResult) = await (
+        _learning.getCourses(),
+        _learning.getMyEnrollments(),
+      ).wait;
 
-      /// ALL COURSES
-      if (coursesResult.isSuccess) {
-        courses = coursesResult.data ?? [];
-        print("✅ COURSES: ${courses.length}");
-      } else {
-        courses = [];
-      }
+      courses = coursesResult.isSuccess ? (coursesResult.data ?? []) : [];
+      enrollments = enrollmentsResult.isSuccess
+          ? (enrollmentsResult.data ?? [])
+          : [];
+      isLoaded = true;
 
-      /// ENROLLMENTS
-      if (enrollmentsResult.isSuccess) {
-        enrollments = enrollmentsResult.data ?? [];
-        print("✅ ENROLLMENTS: ${enrollments.length}");
-      } else {
-        enrollments = [];
-      }
-    } catch (e) {
+      AppLogger.info(
+        _tag,
+        'Loaded ${courses.length} courses, ${enrollments.length} enrollments',
+      );
+    } catch (e, st) {
       errorMessage = e.toString();
-      print("💥 ERROR: $e");
+      AppLogger.error(_tag, 'Failed to fetch courses', e, st);
+    } finally {
+      isLoading = false;
+      if (!_disposed) notifyListeners();
     }
-
-    isLoading = false;
-    notifyListeners();
   }
 
-  /// Only enrolled courses (for My Courses screen)
   Future<void> fetchMyCourses() async {
-    print("🚀 FETCH MY COURSES");
-
     isLoading = true;
     notifyListeners();
 
     try {
       final result = await _learning.getMyEnrollments();
-
-      if (result.isSuccess) {
-        enrollments = result.data ?? [];
-        print("📚 MY COURSES: ${enrollments.length}");
-      } else {
-        enrollments = [];
-      }
-    } catch (e) {
-      print("💥 ERROR: $e");
+      enrollments = result.isSuccess ? (result.data ?? []) : [];
+      AppLogger.info(_tag, 'Loaded ${enrollments.length} enrolled courses');
+    } catch (e, st) {
       enrollments = [];
+      AppLogger.error(_tag, 'Failed to fetch my courses', e, st);
+    } finally {
+      isLoading = false;
+      if (!_disposed) notifyListeners();
     }
-
-    isLoading = false;
-    notifyListeners();
   }
 
-  /// Check enrollment
-  bool isCourseEnrolled(String courseId) {
-    return enrollments.any((e) => e.course.id == courseId);
-  }
+  bool isCourseEnrolled(String courseId) =>
+      enrollments.any((e) => e.course.id == courseId);
 
-  /// Get progress
   int getProgress(String courseId) {
     final e = enrollments.firstWhere(
       (e) => e.course.id == courseId,
@@ -113,7 +92,6 @@ class LearningViewModel extends ChangeNotifier {
     return e.progress ?? 0;
   }
 
-  /// Get enrolled courses list (for UI)
   List<Enrollment> get myCourses => enrollments;
 
   /// Update search query

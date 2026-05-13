@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class AiAdvisorSheet extends StatelessWidget {
   const AiAdvisorSheet({super.key});
@@ -250,7 +251,9 @@ class AiAdvisorSheet extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  context.push('/ai-career-roadmap');
+                },
                 child: const Text(
                   "Start My Roadmap →",
                   style: TextStyle(

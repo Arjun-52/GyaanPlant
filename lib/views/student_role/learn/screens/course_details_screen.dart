@@ -1,9 +1,14 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../../../../data/services/api_service.dart';
 import '../../../../models/learning/learning_model.dart';
 import '../../../../models/payment/item_type.dart';
+import '../../../../models/payment/order_result.dart';
 import '../../../../viewmodels/student_viewmodel/learning_viewmodel.dart';
+import '../../../../config/payment_config.dart';
 import 'package:provider/provider.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
@@ -16,6 +21,8 @@ class CourseDetailsScreen extends StatefulWidget {
 }
 
 class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
+  static const _tag = 'CourseDetailsScreen';
+
   final _learning = ApiService().learning;
   final _apiService = ApiService();
   late Razorpay _razorpay;
@@ -58,48 +65,72 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     });
 
     try {
-      course = await _learning.getCourseById(widget.courseId);
-      print(" COURSE TITLE: ${course?.title}");
-
-      // Check if user is already enrolled using ViewModel
-      final learningViewModel = context.read<LearningViewModel>();
-      isEnrolled = learningViewModel.isCourseEnrolled(widget.courseId);
-      print(" COURSE ENROLLED STATUS: $isEnrolled");
+      final result = await _learning.getCourseById(widget.courseId);
+      if (result.isSuccess && result.data != null) {
+        course = result.data;
+        if (mounted) {
+          isEnrolled = context.read<LearningViewModel>().isCourseEnrolled(
+            widget.courseId,
+          );
+        }
+      } else {
+        error = result.error?.message ?? 'Failed to load course';
+      }
     } catch (e) {
       error = e.toString();
-      print(" ERROR FETCHING COURSE: $error");
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
   Future<void> _handlePaymentSuccess(PaymentSuccessResponse response) async {
-    print("💳 PAYMENT SUCCESS: ${response.paymentId}, ${response.orderId}");
+    AppLogger.info(
+      _tag,
+      'Payment success: paymentId=${response.paymentId} orderId=${response.orderId} itemId=$currentItemId itemType=$currentItemType',
+    );
+
+    if (response.paymentId == null) {
+      AppLogger.error(_tag, 'Payment ID is null');
+      if (mounted) setState(() => isPaymentProcessing = false);
+      return;
+    }
+
+    if (response.orderId == null) {
+      AppLogger.error(_tag, 'Order ID is null');
+      if (mounted) setState(() => isPaymentProcessing = false);
+      return;
+    }
+
+    if (currentItemId == null || currentItemType == null) {
+      AppLogger.error(
+        _tag,
+        'Current item details are null: itemId=$currentItemId itemType=$currentItemType',
+      );
+      if (mounted) setState(() => isPaymentProcessing = false);
+      return;
+    }
 
     try {
-      // Verify payment with backend
-      final verification = await _apiService.payment.verifyPayment(
+      AppLogger.info(_tag, 'Verifying payment...');
+
+      await _apiService.payment.verifyPayment(
         razorpayPaymentId: response.paymentId!,
         razorpayOrderId: response.orderId!,
         itemId: currentItemId!,
         itemType: currentItemType!,
       );
 
-      print("✅ PAYMENT VERIFIED: $verification");
+      AppLogger.info(_tag, 'Payment verified; refreshing course list');
 
-      // NOW safe to refresh - AFTER payment completes
       if (mounted) {
         await context.read<LearningViewModel>().fetchCourses();
+        if (!mounted) return;
 
-        // Update UI state
         setState(() {
           isPaymentProcessing = false;
           isEnrolled = true;
         });
 
-        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Course enrolled successfully!'),
@@ -107,9 +138,10 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           ),
         );
       }
-    } catch (e) {
-      print("❌ VERIFY FAILED: $e");
-      setState(() => isPaymentProcessing = false);
+    } catch (e, st) {
+      AppLogger.error(_tag, 'Payment verification failed', e, st);
+
+      if (mounted) setState(() => isPaymentProcessing = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -122,89 +154,163 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
-    print("❌ PAYMENT FAILED: ${response.code} - ${response.message}");
-    setState(() => isPaymentProcessing = false);
+    final analysis = switch (response.code?.toString()) {
+      'BAD_REQUEST_ERROR' => 'Invalid payment request parameters',
+      'NETWORK_ERROR' => 'Network connectivity issue',
+      'INTERNAL_SERVER_ERROR' => 'Razorpay server error',
+      'INVALID_SIGNATURE' => 'Payment signature verification failed',
+      'PAYMENT_CANCELLED' => 'User cancelled the payment',
+      'PAYMENT_FAILED' => 'Payment processing failed',
+      'INVALID_ORDER' => 'Invalid or expired order',
+      _ => 'Unknown error (code: ${response.code})',
+    };
+
+    AppLogger.error(
+      _tag,
+      'Payment error: code=${response.code} message=${response.message} ($analysis)',
+    );
+
     if (mounted) {
+      setState(() => isPaymentProcessing = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Payment failed: ${response.message}'),
+          content: Text('Payment failed: ${response.message ?? analysis}'),
           backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
         ),
       );
+    } else {
+      AppLogger.warning(_tag, 'Widget not mounted; suppressed error snackbar');
     }
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
-    print("🏦 EXTERNAL WALLET: ${response.walletName}");
+    AppLogger.info(_tag, 'External wallet selected: ${response.walletName}');
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('External wallet selected: ${response.walletName}'),
           backgroundColor: Colors.blue,
+          duration: const Duration(seconds: 3),
         ),
       );
+    } else {
+      AppLogger.warning(_tag, 'Widget not mounted; suppressed wallet snackbar');
     }
   }
 
   Future<void> _startPayment() async {
-    if (course == null) return;
+    AppLogger.info(_tag, 'Starting payment process');
 
-    // Payment processing guard
-    if (isPaymentProcessing) {
-      print("⚠️ Payment already in progress");
+    if (course == null) {
+      AppLogger.error(_tag, 'Course is null');
       return;
     }
 
-    print("🚀 START PAYMENT");
+    if (isPaymentProcessing) {
+      AppLogger.warning(_tag, 'Payment already in progress');
+      return;
+    }
 
-    // Store current payment state
     currentItemId = widget.courseId;
     currentItemType = ItemType.course;
-    isPaymentProcessing = true;
+    setState(() => isPaymentProcessing = true);
+
+    AppLogger.info(
+      _tag,
+      'Payment state: course=${course!.title} itemType=$currentItemType itemId=$currentItemId',
+    );
 
     try {
-      // Create order ONLY
+      AppLogger.info(_tag, 'Creating order via API...');
+
       final order = await _apiService.payment.createOrder(
         itemId: currentItemId!,
         itemType: currentItemType!,
       );
 
-      print("🧾 ORDER: $order");
+      AppLogger.info(_tag, 'Order response: ${order.runtimeType}');
 
-      // Check if this is a free course
-      if (order['isFree'] == true) {
-        print("⚠️ FREE COURSE DETECTED → DIRECT ENROLL");
-        await _enrollFreeItem();
-        return;
+      final int amount;
+      final String orderId;
+      switch (order) {
+        case FreeItemOrder():
+          AppLogger.info(_tag, 'Course is FREE — direct enrollment');
+          await _enrollFreeItem();
+          return;
+        case PaidOrder(orderId: final id, amount: final amt):
+          orderId = id;
+          amount = amt;
       }
 
-      // Get order details with flexible field mapping
-      final orderId = order['orderId'] ?? order['razorpayOrderId'];
-      final amount = order['amount'] ?? order['amountInPaise'];
-
-      if (orderId == null || amount == null) {
-        throw Exception('Invalid order response: missing orderId or amount');
+      if (amount <= 0) {
+        AppLogger.error(_tag, 'Invalid amount: $amount (must be > 0)');
+        throw Exception('Invalid amount: $amount');
       }
 
-      print("💳 OPENING RAZORPAY");
-
-      // Open Razorpay checkout ONLY - no other work
-      _razorpay.open({
-        'key': 'rzp_test_SgTgIrRTm5fJjb',
+      final options = {
+        'key': PaymentConfig.razorpayKey,
         'order_id': orderId,
         'amount': amount,
         'name': 'GyaanPlant',
         'description': 'Enroll in ${course!.title} course',
         'prefill': {'contact': '9999999999', 'email': 'test@example.com'},
         'theme': {'color': '#00C853'},
-      });
-    } catch (e) {
-      print("❌ PAYMENT SETUP FAILED: $e");
-      setState(() => isPaymentProcessing = false);
+      };
+
+      AppLogger.info(
+        _tag,
+        'Opening Razorpay: orderId=$orderId amount=₹${(amount / 100).toStringAsFixed(2)} testMode=${PaymentConfig.isTestMode}',
+      );
+
+      _razorpay.open(options);
+
+      AppLogger.info(_tag, 'Razorpay checkout opened');
+    } on SocketException catch (e, st) {
+      AppLogger.error(_tag, 'Network error: ${e.message}', e, st);
+
+      if (mounted) setState(() => isPaymentProcessing = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to create payment order: $e'),
+            content: Text('Network error: ${e.message}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } on TimeoutException catch (e, st) {
+      AppLogger.error(_tag, 'Timeout: ${e.message}', e, st);
+
+      if (mounted) setState(() => isPaymentProcessing = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment timeout: ${e.message}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } on FormatException catch (e, st) {
+      AppLogger.error(_tag, 'Format error: ${e.message}', e, st);
+
+      if (mounted) setState(() => isPaymentProcessing = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Data format error: ${e.message}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e, st) {
+      AppLogger.error(_tag, 'Unexpected payment error', e, st);
+
+      if (mounted) setState(() => isPaymentProcessing = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment failed: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -213,26 +319,34 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   }
 
   Future<void> _enrollFreeItem() async {
+    AppLogger.info(
+      _tag,
+      'Free enrollment: itemId=$currentItemId itemType=$currentItemType',
+    );
+
+    if (currentItemId == null || currentItemType == null) {
+      AppLogger.error(_tag, 'Item details null for free enrollment');
+      if (mounted) setState(() => isPaymentProcessing = false);
+      return;
+    }
+
     try {
-      // Call the direct enrollment API
       await _apiService.payment.enrollFreeItem(
         itemId: currentItemId!,
         itemType: currentItemType!,
       );
 
-      print("🎉 ENROLLED WITHOUT PAYMENT");
+      AppLogger.info(_tag, 'Free enrollment success; refreshing course list');
 
-      // Update UI state
-      setState(() {
-        isEnrolled = true;
-        isPaymentProcessing = false;
-      });
-
-      // Refresh enrolled courses to update Learn screen
       if (mounted) {
         await context.read<LearningViewModel>().fetchCourses();
+        if (!mounted) return;
 
-        // Show success message
+        setState(() {
+          isEnrolled = true;
+          isPaymentProcessing = false;
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Free course enrolled successfully!'),
@@ -240,55 +354,14 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           ),
         );
       }
-    } catch (e) {
-      print("❌ FREE ENROLLMENT FAILED: $e");
-      setState(() => isPaymentProcessing = false);
+    } catch (e, st) {
+      AppLogger.error(_tag, 'Free enrollment failed', e, st);
+
+      if (mounted) setState(() => isPaymentProcessing = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to enroll in free course: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _enrollPaidCourse() async {
-    try {
-      // Call the direct enrollment API for paid courses
-      await _apiService.payment.enrollCourse(
-        itemId: currentItemId!,
-        itemType: currentItemType!,
-      );
-
-      print("🎉 PAID COURSE ENROLLED SUCCESSFULLY");
-
-      // Update UI state
-      setState(() {
-        isEnrolled = true;
-        isPaymentProcessing = false;
-      });
-
-      // Refresh enrolled courses to update Learn screen
-      if (mounted) {
-        await context.read<LearningViewModel>().fetchCourses();
-
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Course enrolled successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      print("❌ PAID ENROLLMENT FAILED: $e");
-      setState(() => isPaymentProcessing = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to enroll in course: $e'),
             backgroundColor: Colors.red,
           ),
         );

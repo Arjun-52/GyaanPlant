@@ -16,7 +16,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Widget build(BuildContext context) {
     return Consumer<HodDashboardViewModel>(
       builder: (context, vm, _) {
-        final overview = vm.data;
         return Scaffold(
           backgroundColor: const Color(0xFF061A14),
           body: SafeArea(

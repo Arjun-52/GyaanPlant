@@ -34,7 +34,7 @@ class BookingCard extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
 
-        border: Border.all(color: Colors.greenAccent.withOpacity(0.2)),
+        border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.2)),
       ),
 
       child: Column(

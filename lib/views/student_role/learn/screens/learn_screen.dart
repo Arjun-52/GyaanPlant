@@ -40,24 +40,15 @@ class _LearnScreenState extends State<LearnScreen> {
       backgroundColor: const Color(0xFF020B08),
       body: Consumer<LearningViewModel>(
         builder: (context, vm, child) {
-          print(
-            "🎯 UI REBUILDING - isLoading: ${vm.isLoading}, courses: ${vm.courses.length}",
-          );
-
           if (vm.isLoading) {
-            print("⏳ SHOWING LOADING INDICATOR");
             return const Center(child: CircularProgressIndicator());
           }
 
           if (vm.errorMessage != null) {
-            print("❌ SHOWING ERROR: ${vm.errorMessage}");
             return Center(child: Text("Error: ${vm.errorMessage}"));
           }
 
           final availableCourses = vm.availableFilteredCourses;
-          print(
-            "🎯 BUILDING UI WITH ${availableCourses.length} AVAILABLE COURSES (filtered from ${vm.courses.length} total, search: '${vm.searchQuery}')",
-          );
 
           return SingleChildScrollView(
             child: Column(

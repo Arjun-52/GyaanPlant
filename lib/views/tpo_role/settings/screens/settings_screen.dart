@@ -100,10 +100,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.1),
+                              color: Colors.red.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: Colors.red.withOpacity(0.3),
+                                color: Colors.red.withValues(alpha: 0.3),
                               ),
                             ),
                             child: const Row(
@@ -162,15 +162,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   },
                                 ),
                                 const SizedBox(height: 4),
-                                Consumer<SettingsViewModel>(
-                                  builder: (context, vm, _) {
-                                    return Text(
-                                      'TPO · ${vm.collegeName}',
-                                      style: const TextStyle(
-                                        color: Colors.white54,
-                                      ),
-                                    );
-                                  },
+                                const Text(
+                                  'TPO Administrator',
+                                  style: TextStyle(color: Colors.white54),
                                 ),
                               ],
                             ),

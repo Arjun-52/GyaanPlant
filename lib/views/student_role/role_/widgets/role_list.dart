@@ -11,25 +11,12 @@ class RoleList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
-        // First row: Student and TPO
-        Row(
-          children: [
-            Expanded(child: RoleCard(role: roles[0])),
-            const SizedBox(width: 16),
-            Expanded(child: RoleCard(role: roles[1])),
-          ],
-        ),
-        const SizedBox(height: 16),
-        // Second row: HOD/Principal and Alumni Mentor
-        Row(
-          children: [
-            Expanded(child: RoleCard(role: roles[2])),
-            const SizedBox(width: 16),
-            Expanded(child: RoleCard(role: roles[3])),
-          ],
-        ),
-      ],
+      children: roles.map((role) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: RoleCard(role: role),
+        );
+      }).toList(),
     );
   }
 }

@@ -18,7 +18,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  /// 🎨 THEME COLORS
+  ///  THEME COLORS
   static const bgColor = Color(0xFF020B08);
   static const cardColor = Color(0xFF0D1F1A);
   static const primaryGreen = Color(0xFF00C853);
@@ -85,10 +85,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 decoration: BoxDecoration(
                   color: cardColor,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: primaryGreen.withOpacity(0.2)),
+                  border: Border.all(
+                    color: primaryGreen.withValues(alpha: 0.2),
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryGreen.withOpacity(0.08),
+                      color: primaryGreen.withValues(alpha: 0.08),
                       blurRadius: 20,
                       spreadRadius: 1,
                     ),

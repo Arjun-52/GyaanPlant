@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/views/auth/widgets/custom_text_field.dart';
@@ -90,11 +89,11 @@ class _SignInScreenState extends State<SignInScreen> {
                         color: cardColor,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color: primaryGreen.withOpacity(0.2),
+                          color: primaryGreen.withValues(alpha: 0.2),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: primaryGreen.withOpacity(0.1),
+                            color: primaryGreen.withValues(alpha: 0.1),
                             blurRadius: 20,
                             spreadRadius: 1,
                           ),

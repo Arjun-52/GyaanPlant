@@ -1,52 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/models/HOD_models/hod_dashboard_model.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
-import 'package:gyaanplant/services/auth_service.dart';
+import 'package:gyaanplant/network/auth_cache.dart';
 
 class HodDashboardViewModel extends ChangeNotifier {
+  static const _tag = 'HodDashboardViewModel';
+
   final _hod = ApiService().hod;
 
   HodDashboardModel? data;
   bool isLoading = false;
   String? error;
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
+  }
 
   Future<void> loadDashboard() async {
-    print("🚀 LOADING HOD DASHBOARD");
-
-    final token = AuthService.token;
-    print(
-      "🔑 TOKEN: ${token != null ? 'Present (${token.length} chars)' : 'MISSING'}",
-    );
-    if (token == null) throw Exception("User not logged in");
+    if (AuthCache.token == null) {
+      error = 'Not logged in';
+      notifyListeners();
+      return;
+    }
 
     isLoading = true;
     error = null;
     notifyListeners();
 
     try {
-      print("🌐 API CALL: GET /api/v1/dashboard/hod");
       final result = await _hod.getDashboard();
-      print("📦 RESPONSE STATUS: ${result.isSuccess ? 'SUCCESS' : 'FAILED'}");
 
       if (result.isSuccess) {
         data = result.data;
-        print("✅ HOD DASHBOARD DATA LOADED:");
-        print("   - Total Students: ${data?.totalStudents}");
-        print("   - Departments: ${data?.departments}");
-        print("   - LMS Adoption: ${data?.lmsAdoption}");
-        print("🔍 PARSED DATA: ${data?.departmentsData}");
+        AppLogger.info(_tag, 'Dashboard loaded — ${data?.totalStudents} students');
       } else {
-        print("❌ API ERROR: ${result.error?.message}");
-        throw Exception(result.error?.message ?? 'Failed to load dashboard');
+        error = result.error?.message ?? 'Failed to load dashboard';
+        AppLogger.error(_tag, error!);
       }
-    } catch (e) {
-      print("💥 EXCEPTION: $e");
+    } catch (e, st) {
       error = e.toString();
+      AppLogger.error(_tag, 'Failed to load dashboard', e, st);
     } finally {
       isLoading = false;
-      print(
-        "� HOD Dashboard notifyListeners() called - isLoading=$isLoading, hasData=${data != null}",
-      );
       notifyListeners();
     }
   }
@@ -55,6 +59,6 @@ class HodDashboardViewModel extends ChangeNotifier {
   int get totalStudents => data?.totalStudents ?? 0;
   int get departments => data?.departments ?? 0;
   int get lmsAdoption => data?.lmsAdoption ?? 0;
-  String get naacGrade => data?.naacGrade ?? "N/A";
+  String get naacGrade => data?.naacGrade ?? 'N/A';
   List<DeptModel> get departmentsData => data?.departmentsData ?? [];
 }

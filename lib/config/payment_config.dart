@@ -1,28 +1,37 @@
-/// Payment configuration for Razorpay integration
-/// Supports environment-based configuration for production deployment
+/// Payment configuration for Razorpay integration.
+///
+/// The Razorpay key MUST be supplied at build time via:
+///   flutter run --dart-define=RAZORPAY_KEY=rzp_test_xxx
+///   flutter build apk --dart-define=RAZORPAY_KEY=rzp_live_xxx
+///
+/// No default is provided so that a missing build flag cannot silently leak
+/// a test key into a release build.
 class PaymentConfig {
-  // Private constructor to prevent instantiation
   PaymentConfig._();
 
-  /// Razorpay API key from environment or test key as fallback
-  /// Usage: flutter run --dart-define=RAZORPAY_KEY=your_live_key
-  static const String razorpayKey = String.fromEnvironment(
-    'RAZORPAY_KEY',
-    defaultValue: 'rzp_test_SgTgIrRTm5fJjb',
-  );
+  static const String razorpayKey = String.fromEnvironment('RAZORPAY_KEY');
 
-  /// Payment timeout duration (2 minutes)
   static const Duration paymentTimeout = Duration(minutes: 2);
-
-  /// Default payment theme color
   static const String themeColor = '#00C853';
-
-  /// Default payment description
   static const String defaultDescription = 'Purchase on GyaanPlant';
 
-  /// Check if running in production mode
-  static bool get isProduction => razorpayKey.contains('rzp_live_');
+  static bool get isProduction => razorpayKey.startsWith('rzp_live_');
+  static bool get isTestMode => razorpayKey.startsWith('rzp_test_');
 
-  /// Check if running in test mode
-  static bool get isTestMode => razorpayKey.contains('rzp_test_');
+  /// Throws a [StateError] when the key is missing or malformed.
+  /// Call this once during PaymentService.init() to fail loudly.
+  static void ensureConfigured() {
+    if (razorpayKey.isEmpty) {
+      throw StateError(
+        'RAZORPAY_KEY is not set. Pass it at build time: '
+        '--dart-define=RAZORPAY_KEY=rzp_<test|live>_xxx',
+      );
+    }
+    if (!isProduction && !isTestMode) {
+      throw StateError(
+        'RAZORPAY_KEY must start with "rzp_test_" or "rzp_live_". '
+        'Got: "$razorpayKey"',
+      );
+    }
+  }
 }
