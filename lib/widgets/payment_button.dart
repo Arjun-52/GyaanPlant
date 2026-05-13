@@ -150,10 +150,7 @@ class _PaymentButtonState extends State<PaymentButton> {
               )
             : Text(
                 widget.buttonText,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
       ),
     );
