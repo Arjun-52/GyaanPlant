@@ -9,6 +9,8 @@ import 'package:gyaanplant/views/student_role/career_roadmap/widgets/job_readine
 import 'package:gyaanplant/views/student_role/career_roadmap/widgets/mini_projects_section.dart';
 import 'package:gyaanplant/views/student_role/career_roadmap/widgets/mock_interview_section.dart';
 import 'package:gyaanplant/views/student_role/career_roadmap/widgets/floating_ai_chat.dart';
+import 'package:gyaanplant/views/student_role/career_roadmap/widgets/stat_card.dart';
+import 'package:gyaanplant/views/student_role/career_roadmap/widgets/progress_ring_painter.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/career_roadmap_viewmodel.dart';
 
 class AICareerRoadmapScreen extends StatefulWidget {
@@ -87,7 +89,7 @@ class _AICareerRoadmapScreenState extends State<AICareerRoadmapScreen>
             slivers: [
               // Header Section
               SliverAppBar(
-                expandedHeight: 280,
+                expandedHeight: 380,
                 floating: false,
                 pinned: true,
                 backgroundColor: const Color(0xFF061A14),
@@ -128,26 +130,32 @@ class _AICareerRoadmapScreenState extends State<AICareerRoadmapScreen>
                               Row(
                                 children: [
                                   // Match Percentage
-                                  _buildStatCard(
-                                    'Match',
-                                    '${viewModel.matchPercentage}%',
-                                    const Color(0xFF00C853),
+                                  Expanded(
+                                    child: StatCard(
+                                      label: 'Match',
+                                      value: '${viewModel.matchPercentage}%',
+                                      color: const Color(0xFF00C853),
+                                    ),
                                   ),
                                   const SizedBox(width: 12),
                                   
                                   // Completion Time
-                                  _buildStatCard(
-                                    'Duration',
-                                    viewModel.estimatedDuration,
-                                    const Color(0xFF00E5FF),
+                                  Expanded(
+                                    child: StatCard(
+                                      label: 'Duration',
+                                      value: viewModel.estimatedDuration,
+                                      color: const Color(0xFF00E5FF),
+                                    ),
                                   ),
                                   const SizedBox(width: 12),
                                   
                                   // Job Readiness
-                                  _buildStatCard(
-                                    'Readiness',
-                                    '${viewModel.jobReadinessScore}%',
-                                    const Color(0xFFFF6B35),
+                                  Expanded(
+                                    child: StatCard(
+                                      label: 'Readiness',
+                                      value: '${viewModel.jobReadinessScore}%',
+                                      color: const Color(0xFFFF6B35),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -303,84 +311,4 @@ class _AICareerRoadmapScreenState extends State<AICareerRoadmapScreen>
     );
   }
 
-  Widget _buildStatCard(String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: color.withOpacity(0.8),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Custom Progress Ring Painter
-class ProgressRingPainter extends CustomPainter {
-  final double progress;
-  final double strokeWidth;
-
-  ProgressRingPainter({
-    required this.progress,
-    this.strokeWidth = 6.0,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - strokeWidth) / 2;
-
-    // Background ring
-    final backgroundPaint = Paint()
-      ..color = Colors.white.withOpacity(0.1)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
-
-    canvas.drawCircle(center, radius, backgroundPaint);
-
-    // Progress ring
-    final progressPaint = Paint()
-      ..color = const Color(0xFF00C853)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-
-    final sweepAngle = 2 * 3.141592653589793 * progress;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -3.141592653589793 / 2, // Start from top
-      sweepAngle,
-      false,
-      progressPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
-  }
 }

@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/notification_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -18,11 +20,13 @@ import 'viewmodels/student_viewmodel/learning_viewmodel.dart';
 import 'viewmodels/student_viewmodel/mentor_viewmodel.dart';
 import 'viewmodels/student_viewmodel/test_viewmodel.dart';
 import 'viewmodels/tpo_viewmodels/drives_viewmodel.dart';
-import 'viewmodels/tpo_viewmodels/tpo_dashboard_viewmodel.dart';
 import 'viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize global SSL bypass for development (helps with Razorpay WebView)
+  _initializeGlobalSSLBypass();
 
   // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -71,5 +75,25 @@ class MyApp extends StatelessWidget {
         routerConfig: AppRouter.router,
       ),
     );
+  }
+}
+
+/// Initialize global SSL bypass for development
+/// This helps with Razorpay WebView and other HTTPS requests
+void _initializeGlobalSSLBypass() {
+  try {
+    HttpOverrides.global = _DevelopmentHttpOverrides();
+    AppLogger.info('SSL', '🔒 Global SSL bypass initialized for development');
+  } catch (e) {
+    AppLogger.error('SSL', '⚠️ Failed to initialize SSL bypass: $e');
+  }
+}
+
+/// Custom HttpOverrides for development SSL bypass
+class _DevelopmentHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (cert, host, port) => true;
   }
 }

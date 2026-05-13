@@ -4,6 +4,7 @@ import 'package:gyaanplant/views/mentor/earnings/widgets/earnings_stat_box.dart'
 import 'package:gyaanplant/views/mentor/earnings/widgets/payout_card.dart';
 import 'package:gyaanplant/views/mentor/earnings/widgets/total_earnings_card.dart';
 import 'package:gyaanplant/core/common_widgets/mentor_bottom_nav.dart';
+import 'package:gyaanplant/views/mentor/earnings/screens/withdraw_screen.dart';
 
 class EarningsScreen extends StatelessWidget {
   const EarningsScreen({super.key});
@@ -117,7 +118,14 @@ class EarningsScreen extends StatelessWidget {
                             ),
                           ),
                           onPressed: () {
-                            // TODO: Withdraw logic
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const WithdrawScreen(
+                                  availableBalance: 5680.0,
+                                ),
+                              ),
+                            );
                           },
                           child: const Text(
                             "Withdraw ₹5,680",

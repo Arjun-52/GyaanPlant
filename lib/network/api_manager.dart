@@ -45,6 +45,9 @@ class NetworkAPIManager {
   void _initialize() {
     if (_isInitialized) return;
 
+    // Add SSL certificate bypass for development
+    HttpOverrides.global = _MyHttpOverrides();
+
     _dio = Dio(
       BaseOptions(
         baseUrl: _config.baseUrl,
@@ -329,5 +332,14 @@ class NetworkAPIManager {
     if (!_isInitialized) {
       throw StateError('NetworkAPIManager is not properly initialized.');
     }
+  }
+}
+
+// Custom HttpOverrides to bypass SSL certificate verification for development
+class _MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (cert, host, port) => true;
   }
 }

@@ -12,6 +12,8 @@ import 'package:gyaanplant/viewmodels/mentor_viewmodel/mentor_dashboard_viewmode
 import 'package:gyaanplant/views/auth/screens/sign_in_screen.dart';
 import 'package:gyaanplant/views/auth/screens/sign_up_screen.dart';
 import 'package:gyaanplant/views/auth/screens/forgot_password_screen.dart';
+import 'package:gyaanplant/views/student_role/career_roadmap/screens/ai_career_roadmap_screen.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/career_roadmap_viewmodel.dart';
 import 'package:gyaanplant/views/student_role/role_/screens/role_screen.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/leaderboard_view.dart';
 import 'package:gyaanplant/views/shells/student_shell.dart';
@@ -117,6 +119,13 @@ class AppRouter {
         path: '/notifications',
         name: 'notifications',
         builder: (context, state) => const StudentNotificationScreen(),
+      ),
+      GoRoute(
+        path: '/ai-career-roadmap',
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => CareerRoadmapViewModel(),
+          child: const AICareerRoadmapScreen(),
+        ),
       ),
 
       ///  HOD
