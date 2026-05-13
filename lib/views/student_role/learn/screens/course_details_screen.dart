@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../../../../data/services/api_service.dart';
 import '../../../../models/learning/learning_model.dart';
 import '../../../../models/payment/item_type.dart';
+import '../../../../models/payment/order_result.dart';
 import '../../../../viewmodels/student_viewmodel/learning_viewmodel.dart';
 import '../../../../config/payment_config.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +21,8 @@ class CourseDetailsScreen extends StatefulWidget {
 }
 
 class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
+  static const _tag = 'CourseDetailsScreen';
+
   final _learning = ApiService().learning;
   final _apiService = ApiService();
   late Razorpay _razorpay;
@@ -80,35 +84,34 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   }
 
   Future<void> _handlePaymentSuccess(PaymentSuccessResponse response) async {
-    print("💰 [RAZORPAY DEBUG] PAYMENT SUCCESS CALLBACK TRIGGERED!");
-    print("   - Payment ID: ${response.paymentId}");
-    print("   - Order ID: ${response.orderId}");
-    print("   - Signature: ${response.signature}");
-    print("   - Current Item ID: $currentItemId");
-    print("   - Current Item Type: $currentItemType");
+    AppLogger.info(
+      _tag,
+      'Payment success: paymentId=${response.paymentId} orderId=${response.orderId} itemId=$currentItemId itemType=$currentItemType',
+    );
 
     if (response.paymentId == null) {
-      print("❌ [RAZORPAY DEBUG] ERROR: Payment ID is null");
+      AppLogger.error(_tag, 'Payment ID is null');
       if (mounted) setState(() => isPaymentProcessing = false);
       return;
     }
 
     if (response.orderId == null) {
-      print("❌ [RAZORPAY DEBUG] ERROR: Order ID is null");
+      AppLogger.error(_tag, 'Order ID is null');
       if (mounted) setState(() => isPaymentProcessing = false);
       return;
     }
 
     if (currentItemId == null || currentItemType == null) {
-      print("❌ [RAZORPAY DEBUG] ERROR: Current item details are null");
-      print("   - Item ID: $currentItemId");
-      print("   - Item Type: $currentItemType");
+      AppLogger.error(
+        _tag,
+        'Current item details are null: itemId=$currentItemId itemType=$currentItemType',
+      );
       if (mounted) setState(() => isPaymentProcessing = false);
       return;
     }
 
     try {
-      print("🔍 [RAZORPAY DEBUG] Starting payment verification...");
+      AppLogger.info(_tag, 'Verifying payment...');
 
       await _apiService.payment.verifyPayment(
         razorpayPaymentId: response.paymentId!,
@@ -117,20 +120,17 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         itemType: currentItemType!,
       );
 
-      print("✅ [RAZORPAY DEBUG] Payment verification successful!");
-      print("📚 [RAZORPAY DEBUG] Fetching updated courses...");
+      AppLogger.info(_tag, 'Payment verified; refreshing course list');
 
       if (mounted) {
         await context.read<LearningViewModel>().fetchCourses();
         if (!mounted) return;
 
-        print("🎉 [RAZORPAY DEBUG] Updating UI state...");
         setState(() {
           isPaymentProcessing = false;
           isEnrolled = true;
         });
 
-        print("✅ [RAZORPAY DEBUG] Showing success message...");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Course enrolled successfully!'),
@@ -138,10 +138,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           ),
         );
       }
-    } catch (e) {
-      print("❌ [RAZORPAY DEBUG] PAYMENT VERIFICATION ERROR:");
-      print("   - Error: $e");
-      print("   - Type: ${e.runtimeType}");
+    } catch (e, st) {
+      AppLogger.error(_tag, 'Payment verification failed', e, st);
 
       if (mounted) setState(() => isPaymentProcessing = false);
       if (mounted) {
@@ -156,65 +154,40 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
-    print("💔 [RAZORPAY DEBUG] PAYMENT ERROR CALLBACK TRIGGERED!");
-    print("   - Error Code: ${response.code}");
-    print("   - Error Message: ${response.message}");
-    print("   - Response Type: ${response.runtimeType}");
+    final analysis = switch (response.code?.toString()) {
+      'BAD_REQUEST_ERROR' => 'Invalid payment request parameters',
+      'NETWORK_ERROR' => 'Network connectivity issue',
+      'INTERNAL_SERVER_ERROR' => 'Razorpay server error',
+      'INVALID_SIGNATURE' => 'Payment signature verification failed',
+      'PAYMENT_CANCELLED' => 'User cancelled the payment',
+      'PAYMENT_FAILED' => 'Payment processing failed',
+      'INVALID_ORDER' => 'Invalid or expired order',
+      _ => 'Unknown error (code: ${response.code})',
+    };
 
-    // Analyze specific error codes
-    String errorAnalysis = "";
-    switch (response.code?.toString()) {
-      case 'BAD_REQUEST_ERROR':
-        errorAnalysis = "Invalid payment request parameters";
-        break;
-      case 'NETWORK_ERROR':
-        errorAnalysis = "Network connectivity issue";
-        break;
-      case 'INTERNAL_SERVER_ERROR':
-        errorAnalysis = "Razorpay server error";
-        break;
-      case 'INVALID_SIGNATURE':
-        errorAnalysis = "Payment signature verification failed";
-        break;
-      case 'PAYMENT_CANCELLED':
-        errorAnalysis = "User cancelled the payment";
-        break;
-      case 'PAYMENT_FAILED':
-        errorAnalysis = "Payment processing failed";
-        break;
-      case 'INVALID_ORDER':
-        errorAnalysis = "Invalid or expired order";
-        break;
-      default:
-        errorAnalysis = "Unknown error occurred (Code: ${response.code})";
-    }
-
-    print("🔍 [RAZORPAY DEBUG] Error Analysis: $errorAnalysis");
+    AppLogger.error(
+      _tag,
+      'Payment error: code=${response.code} message=${response.message} ($analysis)',
+    );
 
     if (mounted) {
-      print("🔄 [RAZORPAY DEBUG] Updating UI state...");
       setState(() => isPaymentProcessing = false);
-
-      print("📱 [RAZORPAY DEBUG] Showing error message to user...");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Payment failed: ${response.message ?? errorAnalysis}'),
+          content: Text('Payment failed: ${response.message ?? analysis}'),
           backgroundColor: Colors.red,
           duration: const Duration(seconds: 5),
         ),
       );
     } else {
-      print("⚠️ [RAZORPAY DEBUG] Widget not mounted, cannot show UI error");
+      AppLogger.warning(_tag, 'Widget not mounted; suppressed error snackbar');
     }
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
-    print("👛 [RAZORPAY DEBUG] EXTERNAL WALLET CALLBACK TRIGGERED!");
-    print("   - Wallet Name: ${response.walletName}");
-    print("   - Response Type: ${response.runtimeType}");
+    AppLogger.info(_tag, 'External wallet selected: ${response.walletName}');
 
     if (mounted) {
-      print("📱 [RAZORPAY DEBUG] Showing wallet selection message...");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('External wallet selected: ${response.walletName}'),
@@ -223,22 +196,20 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         ),
       );
     } else {
-      print(
-        "⚠️ [RAZORPAY DEBUG] Widget not mounted, cannot show wallet message",
-      );
+      AppLogger.warning(_tag, 'Widget not mounted; suppressed wallet snackbar');
     }
   }
 
   Future<void> _startPayment() async {
-    print("🚀 [RAZORPAY DEBUG] Starting payment process...");
+    AppLogger.info(_tag, 'Starting payment process');
 
     if (course == null) {
-      print("❌ [RAZORPAY DEBUG] ERROR: Course is null");
+      AppLogger.error(_tag, 'Course is null');
       return;
     }
 
     if (isPaymentProcessing) {
-      print("⚠️ [RAZORPAY DEBUG] WARNING: Payment already in progress");
+      AppLogger.warning(_tag, 'Payment already in progress');
       return;
     }
 
@@ -246,61 +217,35 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     currentItemType = ItemType.course;
     setState(() => isPaymentProcessing = true);
 
-    print("✅ [RAZORPAY DEBUG] Payment state initialized:");
-    print("   - Course ID: ${widget.courseId}");
-    print("   - Course Title: ${course!.title}");
-    print("   - Item Type: ${currentItemType}");
-    print("   - Item ID: $currentItemId");
+    AppLogger.info(
+      _tag,
+      'Payment state: course=${course!.title} itemType=$currentItemType itemId=$currentItemId',
+    );
 
     try {
-      print("📡 [RAZORPAY DEBUG] Creating order via API...");
+      AppLogger.info(_tag, 'Creating order via API...');
 
       final order = await _apiService.payment.createOrder(
         itemId: currentItemId!,
         itemType: currentItemType!,
       );
 
-      print("📦 [RAZORPAY DEBUG] Order response received:");
-      print("   - Full Response: $order");
-      print("   - Response Type: ${order.runtimeType}");
-      print("   - Keys: ${order.keys.toList()}");
+      AppLogger.info(_tag, 'Order response: ${order.runtimeType}');
 
-      if (order['isFree'] == true) {
-        print(
-          "🆓 [RAZORPAY DEBUG] Course is FREE, proceeding with direct enrollment",
-        );
-        await _enrollFreeItem();
-        return;
-      }
-
-      final orderId = order['orderId'] ?? order['razorpayOrderId'];
-      final amount = order['amount'] ?? order['amountInPaise'];
-
-      print("🔍 [RAZORPAY DEBUG] Extracting payment details:");
-      print("   - Order ID: $orderId");
-      print("   - Amount: $amount");
-      print("   - Amount Type: ${amount.runtimeType}");
-
-      if (orderId == null) {
-        print("❌ [RAZORPAY DEBUG] ERROR: Order ID is null");
-        print("   - Available keys: ${order.keys.toList()}");
-        print("   - orderId value: ${order['orderId']}");
-        print("   - razorpayOrderId value: ${order['razorpayOrderId']}");
-        throw Exception('Invalid order response: missing orderId');
-      }
-
-      if (amount == null) {
-        print("❌ [RAZORPAY DEBUG] ERROR: Amount is null");
-        print("   - Available keys: ${order.keys.toList()}");
-        print("   - amount value: ${order['amount']}");
-        print("   - amountInPaise value: ${order['amountInPaise']}");
-        throw Exception('Invalid order response: missing amount');
+      final int amount;
+      final String orderId;
+      switch (order) {
+        case FreeItemOrder():
+          AppLogger.info(_tag, 'Course is FREE — direct enrollment');
+          await _enrollFreeItem();
+          return;
+        case PaidOrder(orderId: final id, amount: final amt):
+          orderId = id;
+          amount = amt;
       }
 
       if (amount <= 0) {
-        print(
-          "❌ [RAZORPAY DEBUG] ERROR: Invalid amount: $amount (must be > 0)",
-        );
+        AppLogger.error(_tag, 'Invalid amount: $amount (must be > 0)');
         throw Exception('Invalid amount: $amount');
       }
 
@@ -314,24 +259,16 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         'theme': {'color': '#00C853'},
       };
 
-      print("💳 [RAZORPAY DEBUG] Opening Razorpay checkout with options:");
-      print("   - Key: ${PaymentConfig.razorpayKey}");
-      print("   - Order ID: $orderId");
-      print("   - Amount: ₹${(amount / 100).toStringAsFixed(2)}");
-      print("   - Description: ${options['description']}");
-      print("   - Theme Color: ${options['theme']['color']}");
-      print("   - Is Test Mode: ${PaymentConfig.isTestMode}");
+      AppLogger.info(
+        _tag,
+        'Opening Razorpay: orderId=$orderId amount=₹${(amount / 100).toStringAsFixed(2)} testMode=${PaymentConfig.isTestMode}',
+      );
 
       _razorpay.open(options);
 
-      print("✅ [RAZORPAY DEBUG] Razorpay checkout opened successfully");
-    } on SocketException catch (e) {
-      print("🌐 [RAZORPAY DEBUG] NETWORK ERROR:");
-      print("   - Error: $e");
-      print("   - Type: ${e.runtimeType}");
-      print("   - Message: ${e.message}");
-      print("   - Address: ${e.address}");
-      print("   - Port: ${e.port}");
+      AppLogger.info(_tag, 'Razorpay checkout opened');
+    } on SocketException catch (e, st) {
+      AppLogger.error(_tag, 'Network error: ${e.message}', e, st);
 
       if (mounted) setState(() => isPaymentProcessing = false);
       if (mounted) {
@@ -342,12 +279,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           ),
         );
       }
-    } on TimeoutException catch (e) {
-      print("⏰ [RAZORPAY DEBUG] TIMEOUT ERROR:");
-      print("   - Error: $e");
-      print("   - Type: ${e.runtimeType}");
-      print("   - Message: ${e.message}");
-      print("   - Duration: ${e.duration}");
+    } on TimeoutException catch (e, st) {
+      AppLogger.error(_tag, 'Timeout: ${e.message}', e, st);
 
       if (mounted) setState(() => isPaymentProcessing = false);
       if (mounted) {
@@ -358,12 +291,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           ),
         );
       }
-    } on FormatException catch (e) {
-      print("📝 [RAZORPAY DEBUG] FORMAT ERROR:");
-      print("   - Error: $e");
-      print("   - Type: ${e.runtimeType}");
-      print("   - Message: ${e.message}");
-      print("   - Source: ${e.source}");
+    } on FormatException catch (e, st) {
+      AppLogger.error(_tag, 'Format error: ${e.message}', e, st);
 
       if (mounted) setState(() => isPaymentProcessing = false);
       if (mounted) {
@@ -374,11 +303,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           ),
         );
       }
-    } catch (e, stackTrace) {
-      print("💥 [RAZORPAY DEBUG] UNEXPECTED ERROR:");
-      print("   - Error: $e");
-      print("   - Type: ${e.runtimeType}");
-      print("   - Stack Trace: $stackTrace");
+    } catch (e, st) {
+      AppLogger.error(_tag, 'Unexpected payment error', e, st);
 
       if (mounted) setState(() => isPaymentProcessing = false);
       if (mounted) {
@@ -393,40 +319,34 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   }
 
   Future<void> _enrollFreeItem() async {
-    print("🆓 [RAZORPAY DEBUG] STARTING FREE ITEM ENROLLMENT...");
-    print("   - Item ID: $currentItemId");
-    print("   - Item Type: $currentItemType");
+    AppLogger.info(
+      _tag,
+      'Free enrollment: itemId=$currentItemId itemType=$currentItemType',
+    );
 
     if (currentItemId == null || currentItemType == null) {
-      print(
-        "❌ [RAZORPAY DEBUG] ERROR: Item details are null for free enrollment",
-      );
+      AppLogger.error(_tag, 'Item details null for free enrollment');
       if (mounted) setState(() => isPaymentProcessing = false);
       return;
     }
 
     try {
-      print("📡 [RAZORPAY DEBUG] Calling free enrollment API...");
-
       await _apiService.payment.enrollFreeItem(
         itemId: currentItemId!,
         itemType: currentItemType!,
       );
 
-      print("✅ [RAZORPAY DEBUG] Free enrollment API call successful!");
-      print("📚 [RAZORPAY DEBUG] Fetching updated courses...");
+      AppLogger.info(_tag, 'Free enrollment success; refreshing course list');
 
       if (mounted) {
         await context.read<LearningViewModel>().fetchCourses();
         if (!mounted) return;
 
-        print("🎉 [RAZORPAY DEBUG] Updating UI state for free enrollment...");
         setState(() {
           isEnrolled = true;
           isPaymentProcessing = false;
         });
 
-        print("✅ [RAZORPAY DEBUG] Showing free enrollment success message...");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Free course enrolled successfully!'),
@@ -434,10 +354,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           ),
         );
       }
-    } catch (e) {
-      print("❌ [RAZORPAY DEBUG] FREE ENROLLMENT ERROR:");
-      print("   - Error: $e");
-      print("   - Type: ${e.runtimeType}");
+    } catch (e, st) {
+      AppLogger.error(_tag, 'Free enrollment failed', e, st);
 
       if (mounted) setState(() => isPaymentProcessing = false);
       if (mounted) {
