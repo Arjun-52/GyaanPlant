@@ -24,8 +24,8 @@ class PaymentService {
   }) {
     if (_isInitialized) return;
 
-    // Initialize SSL context for Razorpay WebView
-    _initializeSSLContext();
+    // Fails loudly if RAZORPAY_KEY wasn't supplied at build time.
+    PaymentConfig.ensureConfigured();
 
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
@@ -35,9 +35,8 @@ class PaymentService {
     _isInitialized = true;
     AppLogger.info(
       _tag,
-      '🔧 Razorpay initialized with key: ${PaymentConfig.razorpayKey}',
+      'Razorpay initialized (${PaymentConfig.isProduction ? "live" : "test"} mode)',
     );
-    AppLogger.info(_tag, '🔒 SSL context initialized for payment WebView');
   }
 
   Future<void> purchaseItem({
@@ -265,7 +264,7 @@ class PaymentService {
     _cancelPaymentTimeout(); // Cancel any existing timer
 
     _paymentTimer = Timer(PaymentConfig.paymentTimeout, () {
-      print("⏰ PAYMENT TIMEOUT REACHED");
+      AppLogger.warning(_tag, 'Payment timeout reached');
       _cancelPaymentTimeout();
       // Note: UI should handle timeout state through callbacks
     });
@@ -282,22 +281,6 @@ class PaymentService {
       _paymentTimer!.cancel();
       _paymentTimer = null;
       AppLogger.info(_tag, '⏹️ Payment timeout cancelled');
-    }
-  }
-
-  /// Initialize SSL context for secure connections
-  void _initializeSSLContext() {
-    try {
-      // This helps with SSL certificate validation in WebView
-      AppLogger.info(
-        _tag,
-        '🔒 Initializing SSL context for payment processing',
-      );
-
-      // Note: SecurityContext configuration is handled at platform level
-      // The network_security_config.xml will handle certificate validation
-    } catch (e) {
-      AppLogger.warning(_tag, '⚠️ SSL context initialization failed: $e');
     }
   }
 

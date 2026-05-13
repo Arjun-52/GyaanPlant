@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/services/local_storage_service.dart';
@@ -5,6 +7,7 @@ import '../../data/services/api_service.dart';
 import '../../models/auth/auth_user_model.dart';
 import '../../network/auth_cache.dart';
 import '../../core/utils/app_logger.dart';
+import '../../services/notification_service.dart';
 
 class AuthViewModel extends ChangeNotifier {
   static const _tag = 'AuthViewModel';
@@ -87,6 +90,10 @@ class AuthViewModel extends ChangeNotifier {
         if (data.user.role.isNotEmpty) {
           await LocalStorageService.saveRole(data.user.role.toLowerCase());
         }
+
+        // Now that we have an auth token, register the device's FCM token
+        // with the backend. Fire-and-forget — never block the login flow.
+        unawaited(NotificationService.registerFCMTokenWithBackend());
 
         AppLogger.info(_tag, 'Login successful for ${data.user.email}');
 

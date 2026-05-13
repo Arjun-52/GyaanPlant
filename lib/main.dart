@@ -1,6 +1,5 @@
-import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/notification_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -25,13 +24,9 @@ import 'viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize global SSL bypass for development (helps with Razorpay WebView)
-  _initializeGlobalSSLBypass();
-
-  // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Initialize notification service and request permissions
+  // Register permission prompts + message listeners. Does NOT contact backend.
   await NotificationService.initialize();
 
   NetworkAPIManager.initialize();
@@ -40,6 +35,11 @@ void main() async {
   // have the token synchronously on the first frame.
   final token = await LocalStorageService.getToken();
   AuthCache.token = token;
+
+  // Only register the FCM token with the backend once we know we're logged in.
+  if (token != null) {
+    unawaited(NotificationService.registerFCMTokenWithBackend());
+  }
 
   AuthInterceptor.onUnauthorized = () {
     AppRouter.router.go('/');
@@ -75,25 +75,5 @@ class MyApp extends StatelessWidget {
         routerConfig: AppRouter.router,
       ),
     );
-  }
-}
-
-/// Initialize global SSL bypass for development
-/// This helps with Razorpay WebView and other HTTPS requests
-void _initializeGlobalSSLBypass() {
-  try {
-    HttpOverrides.global = _DevelopmentHttpOverrides();
-    AppLogger.info('SSL', '🔒 Global SSL bypass initialized for development');
-  } catch (e) {
-    AppLogger.error('SSL', '⚠️ Failed to initialize SSL bypass: $e');
-  }
-}
-
-/// Custom HttpOverrides for development SSL bypass
-class _DevelopmentHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback = (cert, host, port) => true;
   }
 }
