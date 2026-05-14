@@ -3,6 +3,7 @@ import 'package:gyaanplant/views/tpo_role/reports/services/pdf_generator_service
 import 'package:gyaanplant/views/tpo_role/reports/services/download_handler.dart';
 import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/models/tpo_role_models/report_model.dart';
+import 'package:gyaanplant/views/tpo_role/reports/services/report_type.dart';
 
 /// Service for managing report generation and download
 class ReportService {

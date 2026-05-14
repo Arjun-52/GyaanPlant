@@ -62,6 +62,16 @@ class DrivesViewModel extends ChangeNotifier {
     }
   }
 
+  /// Locally append a newly created drive to the in-memory list.
+  ///
+  /// TODO: wire to a backend create-drive endpoint when available. Today the
+  /// frontend constructs the Drive locally and inserts here; a real
+  /// integration should POST first and trust the server's response.
+  Future<void> addDrive(Drive drive) async {
+    _drives = [drive, ..._drives];
+    notifyListeners();
+  }
+
   // Force refresh - bypasses loading guard
   Future<void> refreshDrives() async {
     print('🔄 DrivesViewModel.refreshDrives() called - force refresh');

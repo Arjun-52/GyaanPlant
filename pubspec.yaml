@@ -54,6 +54,16 @@ dependencies:
   share_plus: ^12.0.2
   table_calendar: ^3.2.0
 
+  # Mentor/calendar deep-links and report downloads
+  url_launcher: ^6.3.1
+
+  # File picking (drive JD uploads)
+  file_picker: ^8.1.6
+
+  # PDF report generation + sharing
+  pdf: ^3.11.1
+  printing: ^5.13.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
