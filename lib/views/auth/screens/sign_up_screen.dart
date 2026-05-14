@@ -83,10 +83,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 decoration: BoxDecoration(
                   color: cardColor,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: primaryGreen.withValues(alpha: 0.2)),
+                  border: Border.all(color: primaryGreen.withOpacity(0.2)),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryGreen.withValues(alpha: 0.08),
+                      color: primaryGreen.withOpacity(0.08),
                       blurRadius: 20,
                       spreadRadius: 1,
                     ),
@@ -111,7 +111,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   vertical: 14,
                                 ),
                                 side: BorderSide(
-                                  color: primaryGreen.withValues(alpha: 0.5),
+                                  color: primaryGreen.withOpacity(0.5),
                                 ),
                               ),
                               child: const Text(

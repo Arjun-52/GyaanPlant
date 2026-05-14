@@ -1,28 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
 import 'package:gyaanplant/models/student_role_models/mentor_model.dart';
 
 class MentorViewModel extends ChangeNotifier {
-  static const _tag = 'MentorViewModel';
-
   final _api = ApiService();
 
   List<MentorModel> mentors = [];
   bool isLoading = false;
   String? error;
-  bool _disposed = false;
-
-  @override
-  void dispose() {
-    _disposed = true;
-    super.dispose();
-  }
-
-  @override
-  void notifyListeners() {
-    if (!_disposed) super.notifyListeners();
-  }
 
   Future<void> fetchMentors() async {
     isLoading = true;
@@ -34,18 +19,16 @@ class MentorViewModel extends ChangeNotifier {
 
       if (result.isSuccess && result.data != null) {
         mentors = result.data!;
-        AppLogger.info(_tag, 'Loaded ${mentors.length} mentors');
+        print("✅ MENTORS COUNT: ${mentors.length}");
       } else {
         mentors = [];
-        error = result.error?.message ?? 'Failed to load mentors';
-        AppLogger.error(_tag, error!);
+        error = result.error?.message ?? "Failed to load mentors";
       }
-    } catch (e, st) {
+    } catch (e) {
       error = e.toString();
-      AppLogger.error(_tag, 'Failed to load mentors', e, st);
-    } finally {
-      isLoading = false;
-      if (!_disposed) notifyListeners();
     }
+
+    isLoading = false;
+    notifyListeners();
   }
 }

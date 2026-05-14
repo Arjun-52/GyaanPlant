@@ -17,8 +17,14 @@ class _JobScreenState extends State<JobScreen> {
   @override
   void initState() {
     super.initState();
+    print("🖥️ JobScreen initState() called");
     Future.microtask(() {
-      if (mounted) context.read<JobViewModel>().fetchJobs();
+      if (mounted) {
+        print("🖥️ Calling fetchJobs() from JobScreen initState");
+        context.read<JobViewModel>().fetchJobs();
+      } else {
+        print("❌ Widget not mounted, skipping fetchJobs()");
+      }
     });
   }
 

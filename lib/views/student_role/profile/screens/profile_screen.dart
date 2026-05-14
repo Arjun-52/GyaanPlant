@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/dashboard_viewmodel.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/certificates_viewmodel.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/achievements_viewmodel.dart';
-import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
 import 'package:gyaanplant/views/student_role/profile/widgets/badge_card.dart';
 import 'package:gyaanplant/views/student_role/profile/widgets/certificates_empty_state_fixed.dart';
 import 'package:gyaanplant/views/student_role/profile/widgets/achievements_empty_state_fixed.dart';
@@ -10,6 +10,7 @@ import 'package:gyaanplant/views/student_role/profile/widgets/mentor_section.dar
 import 'package:gyaanplant/views/student_role/profile/widgets/profile_header.dart';
 import 'package:gyaanplant/views/student_role/profile/widgets/stats_grid.dart';
 import 'package:provider/provider.dart';
+import '../../../../data/services/local_storage_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -250,17 +251,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     );
 
                     if (shouldLogout == true) {
-                      await context.read<AuthViewModel>().logout(context);
+                      await LocalStorageService.clearToken();
+                      if (context.mounted) context.go('/');
                     }
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.1),
+                      color: Colors.red.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.red.withValues(alpha: 0.3),
-                      ),
+                      border: Border.all(color: Colors.red.withOpacity(0.3)),
                     ),
                     child: const Icon(
                       Icons.logout,

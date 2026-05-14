@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../../../services/mentor_booking_service.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import '../../../../services/payment_service.dart';
+import '../../../../models/payment/item_type.dart';
+import '../../../../data/services/api_service.dart';
 
+/// MentorPaymentScreen
+///
+/// Displays a payment summary for a mentor session booking and triggers
+/// Razorpay checkout via the backend create-order API.
 class MentorPaymentScreen extends StatefulWidget {
+  final String mentorId;
   final String mentorName;
   final String mentorRole;
   final String mentorAvatar;
@@ -13,6 +20,7 @@ class MentorPaymentScreen extends StatefulWidget {
 
   const MentorPaymentScreen({
     super.key,
+    required this.mentorId,
     required this.mentorName,
     required this.mentorRole,
     required this.mentorAvatar,
@@ -27,56 +35,136 @@ class MentorPaymentScreen extends StatefulWidget {
 }
 
 class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
-  // Payment calculation
+  // Payment amounts
   late double _sessionFee;
   late double _platformFee;
   late double _gst;
   late double _totalAmount;
-  late MentorBookingService _mentorBookingService;
+
+  // Payment service
+  late final PaymentService _paymentService;
+  bool _isProcessing = false;
+
+  // API service for verification
+  final ApiService _apiService = ApiService();
 
   @override
   void initState() {
     super.initState();
-    _mentorBookingService = MentorBookingService();
     _calculatePaymentAmounts();
 
-    // Initialize MentorBookingService with callbacks
-    _mentorBookingService.init(
-      onSuccess: (response) => _handlePaymentSuccess(response),
-      onError: (response) => _handlePaymentError(response),
-      onExternal: (response) => _handleExternalWallet(response),
+    _paymentService = PaymentService();
+    _paymentService.initialize(
+      onSuccess: _handlePaymentSuccess,
+      onError: _handlePaymentError,
+      onExternalWallet: _handleExternalWallet,
     );
   }
 
   @override
   void dispose() {
-    _mentorBookingService.dispose();
+    _paymentService.dispose();
     super.dispose();
   }
 
+  // ─── Payment Amount Calculation ──────────────────────────────────────────
+
   void _calculatePaymentAmounts() {
-    // Extract base price from mentorPrice (e.g., "₹500/hr" -> 500.0)
     final String priceString = widget.mentorPrice.replaceAll(
       RegExp(r'[^\d.]'),
       '',
     );
     final double basePrice = double.tryParse(priceString) ?? 0.0;
 
-    // Calculate based on duration
     if (widget.selectedDuration.contains('30')) {
-      _sessionFee = basePrice * 0.5; // 30 mins = 0.5 hour
-    } else if (widget.selectedDuration.contains('60')) {
-      _sessionFee = basePrice; // 60 mins = 1 hour
+      _sessionFee = basePrice * 0.5;
     } else if (widget.selectedDuration.contains('90')) {
-      _sessionFee = basePrice * 1.5; // 90 mins = 1.5 hours
+      _sessionFee = basePrice * 1.5;
     } else {
-      _sessionFee = basePrice; // Default to 1 hour
+      _sessionFee = basePrice; // Default: 60 mins = 1 hour
     }
 
     _platformFee = _sessionFee * 0.05; // 5% platform fee
     _gst = (_sessionFee + _platformFee) * 0.18; // 18% GST
     _totalAmount = _sessionFee + _platformFee + _gst;
   }
+
+  // ─── Razorpay Callbacks ───────────────────────────────────────────────────
+
+  Future<void> _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    debugPrint('✅ Mentor booking payment SUCCESS: ${response.paymentId}');
+
+    if (!mounted) return;
+    setState(() => _isProcessing = false);
+
+    try {
+      // Verify payment with backend
+      await _apiService.payment.verifyPayment(
+        razorpayPaymentId: response.paymentId!,
+        razorpayOrderId: response.orderId!,
+        itemId: widget.mentorId,
+        itemType: ItemType.session,
+      );
+      debugPrint('✅ Mentor booking payment verified');
+
+      if (mounted) {
+        _showSuccessDialog(
+          'Mentor session booked successfully! Your booking is confirmed.',
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Mentor booking verification failed: $e');
+      if (mounted) {
+        _showErrorDialog(
+          'Payment received but verification failed. Please contact support.',
+        );
+      }
+    }
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    debugPrint(
+      '❌ Mentor booking payment ERROR: ${response.code} — ${response.message}',
+    );
+    if (!mounted) return;
+    setState(() => _isProcessing = false);
+    _showErrorDialog(_friendlyErrorMessage(response.code?.toString()));
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    debugPrint('👛 External wallet selected: ${response.walletName}');
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Opening ${response.walletName}...'),
+          backgroundColor: Colors.blue,
+        ),
+      );
+    }
+  }
+
+  // ─── Initiate Payment ────────────────────────────────────────────────────
+
+  Future<void> _proceedToPayment() async {
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+
+    await _paymentService.createOrderAndOpenCheckout(
+      context: context,
+      itemId: widget.mentorId,
+      itemType: ItemType.session,
+      itemDescription:
+          '${widget.selectedDuration} session with ${widget.mentorName} '
+          'on ${_formatDate(widget.selectedDate)} at ${widget.selectedTime}',
+    );
+
+    // Reset processing state if checkout was not opened (error case)
+    if (mounted && _isProcessing) {
+      setState(() => _isProcessing = false);
+    }
+  }
+
+  // ─── UI ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -104,25 +192,14 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Mentor Information Card
             _buildMentorInfoCard(),
-
             const SizedBox(height: 20),
-
-            // Booking Details Card
             _buildBookingDetailsCard(),
-
             const SizedBox(height: 20),
-
-            // Payment Breakdown Card
             _buildPaymentBreakdownCard(),
-
             const SizedBox(height: 20),
-
-            // Payment Method Card
             _buildPaymentMethodCard(),
-
-            const SizedBox(height: 100), // Space for fixed bottom button
+            const SizedBox(height: 100),
           ],
         ),
       ),
@@ -140,9 +217,10 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: _proceedToPayment,
+            onPressed: _isProcessing ? null : _proceedToPayment,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00C853),
+              backgroundColor:
+                  _isProcessing ? Colors.grey : const Color(0xFF00C853),
               foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -150,10 +228,20 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
               ),
               elevation: 0,
             ),
-            child: const Text(
-              'Proceed to Pay',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
+            child: _isProcessing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Colors.black),
+                    ),
+                  )
+                : const Text(
+                    'Proceed to Pay',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
           ),
         ),
       ),
@@ -172,7 +260,6 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
       ),
       child: Row(
         children: [
-          // Avatar
           Container(
             width: 60,
             height: 60,
@@ -192,10 +279,7 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
               ),
             ),
           ),
-
           const SizedBox(width: 16),
-
-          // Mentor Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,26 +336,18 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Date
           _buildDetailRow(
             icon: Icons.calendar_today_outlined,
             label: 'Date',
             value: _formatDate(widget.selectedDate),
           ),
-
           const SizedBox(height: 12),
-
-          // Time
           _buildDetailRow(
             icon: Icons.access_time_outlined,
             label: 'Time',
             value: widget.selectedTime,
           ),
-
           const SizedBox(height: 12),
-
-          // Duration
           _buildDetailRow(
             icon: Icons.timer_outlined,
             label: 'Duration',
@@ -304,44 +380,30 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Session Fee
           _buildPaymentRow(
             label: 'Session Fee',
             value: '₹${_sessionFee.toStringAsFixed(2)}',
-            isHighlighted: false,
+            highlighted: false,
           ),
-
           const SizedBox(height: 8),
-
-          // Platform Fee
           _buildPaymentRow(
-            label: 'Platform Fee',
+            label: 'Platform Fee (5%)',
             value: '₹${_platformFee.toStringAsFixed(2)}',
-            isHighlighted: false,
+            highlighted: false,
           ),
-
           const SizedBox(height: 8),
-
-          // GST
           _buildPaymentRow(
             label: 'GST (18%)',
             value: '₹${_gst.toStringAsFixed(2)}',
-            isHighlighted: false,
+            highlighted: false,
           ),
-
           const SizedBox(height: 16),
-
-          // Divider
           Container(height: 1, color: Colors.white.withOpacity(0.1)),
-
           const SizedBox(height: 16),
-
-          // Total Amount
           _buildPaymentRow(
             label: 'Total Amount',
             value: '₹${_totalAmount.toStringAsFixed(2)}',
-            isHighlighted: true,
+            highlighted: true,
           ),
         ],
       ),
@@ -370,18 +432,15 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Razorpay Option
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Color(0xFF00C853).withOpacity(0.1),
+              color: const Color(0xFF00C853).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFF00C853)),
             ),
             child: Row(
               children: [
-                // Razorpay Icon (placeholder)
                 Container(
                   width: 40,
                   height: 40,
@@ -395,14 +454,12 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
                     size: 20,
                   ),
                 ),
-
                 const SizedBox(width: 12),
-
                 const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Razorpay',
                         style: TextStyle(
                           color: Colors.white,
@@ -410,21 +467,19 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      const Text(
+                      SizedBox(height: 2),
+                      Text(
                         'Secure payment gateway',
                         style: TextStyle(color: Colors.white60, fontSize: 12),
                       ),
                     ],
                   ),
                 ),
-
-                // Selected indicator
                 Container(
                   width: 20,
                   height: 20,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF00C853),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF00C853),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.check, color: Colors.black, size: 14),
@@ -432,10 +487,8 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
               ],
             ),
           ),
-
-          // Future payment methods placeholder
           const SizedBox(height: 12),
-          Text(
+          const Text(
             'More payment methods coming soon',
             style: TextStyle(color: Colors.white38, fontSize: 12),
           ),
@@ -453,10 +506,7 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
       children: [
         Icon(icon, color: const Color(0xFF00C853), size: 20),
         const SizedBox(width: 12),
-        Text(
-          label,
-          style: const TextStyle(color: Colors.white60, fontSize: 14),
-        ),
+        Text(label, style: const TextStyle(color: Colors.white60, fontSize: 14)),
         const Spacer(),
         Text(
           value,
@@ -473,7 +523,7 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
   Widget _buildPaymentRow({
     required String label,
     required String value,
-    required bool isHighlighted,
+    required bool highlighted,
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -481,144 +531,54 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
         Text(
           label,
           style: TextStyle(
-            color: isHighlighted ? Colors.white : Colors.white70,
-            fontSize: isHighlighted ? 16 : 14,
-            fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.w500,
+            color: highlighted ? Colors.white : Colors.white70,
+            fontSize: highlighted ? 16 : 14,
+            fontWeight: highlighted ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
         Text(
           value,
           style: TextStyle(
-            color: isHighlighted ? const Color(0xFF00C853) : Colors.white,
-            fontSize: isHighlighted ? 16 : 14,
-            fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.w500,
+            color: highlighted ? const Color(0xFF00C853) : Colors.white,
+            fontSize: highlighted ? 16 : 14,
+            fontWeight: highlighted ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
       ],
     );
   }
 
+  // ─── Helpers ─────────────────────────────────────────────────────────────
+
   String _formatDate(DateTime date) {
-    final List<String> months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
-  void _proceedToPayment() {
-    print(
-      '💳 Proceeding to mentor booking payment with amount: ₹${_totalAmount.toStringAsFixed(2)}',
-    );
-
-    // Prepare booking data
-    final bookingData = {
-      'mentorName': widget.mentorName,
-      'mentorRole': widget.mentorRole,
-      'date': widget.selectedDate,
-      'time': widget.selectedTime,
-      'duration': widget.selectedDuration,
-      'sessionFee': _sessionFee,
-      'platformFee': _platformFee,
-      'gst': _gst,
-      'totalAmount': _totalAmount,
-    };
-
-    print('📋 Mentor Booking Data: $bookingData');
-
-    // Open Razorpay checkout using MentorBookingService
-    try {
-      // Use MentorBookingService for mentor session booking
-      _mentorBookingService.purchaseMentorSession(
-        context: context,
-        mentorId:
-            'mentor_${widget.mentorName.toLowerCase().replaceAll(' ', '_')}',
-        mentorName: widget.mentorName,
-        selectedDate: widget.selectedDate,
-        selectedTime: widget.selectedTime,
-        selectedDuration: widget.selectedDuration,
-        totalAmount: _totalAmount,
-        bookingDetails: {
-          'sessionFee': _sessionFee,
-          'platformFee': _platformFee,
-          'gst': _gst,
-          'mentorRole': widget.mentorRole,
-          'mentorAvatar': widget.mentorAvatar,
-        },
-      );
-    } catch (e) {
-      print('❌ Error opening mentor booking payment: $e');
-      _showErrorDialog('Failed to complete mentor booking: $e');
-    }
-  }
-
-  void _handlePaymentSuccess(dynamic response) {
-    print('✅ Mentor Booking Payment Success: ${response.paymentId}');
-    print('📋 Mentor Booking Details: $response');
-
-    // Show success dialog
-    _showSuccessDialog(
-      'Mentor session booked successfully! Your booking is confirmed.',
-    );
-
-    // TODO: Navigate to booking confirmation screen
-    // TODO: Save booking data to backend
-  }
-
-  void _handlePaymentError(dynamic response) {
-    print(
-      '❌ Mentor Booking Payment Error: ${response.code} - ${response.message}',
-    );
-
-    // Get user-friendly error message
-    final errorMessage = _getMentorBookingErrorMessage(
-      response.code?.toString(),
-    );
-    _showErrorDialog(errorMessage);
-  }
-
-  void _handleExternalWallet(dynamic response) {
-    print('👛 External Wallet: ${response.walletName}');
-    _showInfoDialog(
-      'Opening ${response.walletName} for mentor booking payment...',
-    );
-  }
-
-  String _getMentorBookingErrorMessage(String? errorCode) {
-    switch (errorCode) {
+  String _friendlyErrorMessage(String? code) {
+    switch (code) {
       case 'BAD_REQUEST_ERROR':
-        return 'Invalid mentor booking request. Please try again.';
+        return 'Invalid request. Please try again.';
       case 'NETWORK_ERROR':
-        return 'Network error. Please check your connection and try again.';
+        return 'Network error. Please check your connection.';
       case 'INTERNAL_SERVER_ERROR':
         return 'Server error. Please try again in a few minutes.';
-      case 'INVALID_SIGNATURE':
-        return 'Mentor booking payment verification failed. Please contact support.';
       case 'PAYMENT_CANCELLED':
-        return 'Mentor booking payment was cancelled. Please try again.';
+        return 'Payment was cancelled. Please try again.';
       case 'PAYMENT_FAILED':
-        return 'Mentor booking payment failed. Please try a different payment method.';
-      case 'INVALID_ORDER':
-        return 'Invalid mentor booking order. Please try again.';
+        return 'Payment failed. Please try a different payment method.';
       default:
-        return 'Mentor booking failed. Please try again.';
+        return 'Payment failed. Please try again.';
     }
   }
 
   void _showSuccessDialog(String message) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF020B08),
         title: const Text(
           'Payment Successful',
@@ -629,9 +589,12 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              // TODO: Navigate to booking confirmation
+              Navigator.of(context).pop(); // Return to previous screen
             },
-            child: const Text('OK', style: TextStyle(color: Color(0xFF00C853))),
+            child: const Text(
+              'OK',
+              style: TextStyle(color: Color(0xFF00C853)),
+            ),
           ),
         ],
       ),
@@ -641,7 +604,7 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF020B08),
         title: const Text(
           'Payment Error',
@@ -655,23 +618,6 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
               'Retry',
               style: TextStyle(color: Color(0xFF00C853)),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showInfoDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF020B08),
-        title: const Text('Payment', style: TextStyle(color: Colors.white)),
-        content: Text(message, style: const TextStyle(color: Colors.white70)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK', style: TextStyle(color: Color(0xFF00C853))),
           ),
         ],
       ),

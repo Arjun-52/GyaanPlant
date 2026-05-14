@@ -1,18 +1,24 @@
-import 'package:gyaanplant/core/utils/app_logger.dart';
 import '../models/payment/item_type.dart';
-import '../models/payment/order_result.dart';
 import '../network/api_endpoints.dart';
 import '../network/api_manager.dart';
 import '../network/api_response.dart';
 
-class PaymentRepository {
-  static const _tag = 'PaymentRepository';
+class FreeCourseException implements Exception {
+  final String message;
 
+  const FreeCourseException(this.message);
+
+  @override
+  String toString() => message;
+}
+
+class PaymentRepository {
   final NetworkAPIManager _api;
 
   PaymentRepository(this._api);
 
-  Future<OrderResult> createOrder({
+  ///  Create payment order for any item type
+  Future<Map<String, dynamic>> createOrder({
     required String itemId,
     required ItemType itemType,
   }) async {
@@ -22,79 +28,89 @@ class PaymentRepository {
       fromJson: (json) => json as Map<String, dynamic>,
     );
 
+    print("🧾 ORDER RESPONSE: ${response.data}");
+
+    // Handle case where response.data might be null for error responses
     if (response.data == null) {
-      AppLogger.warning(_tag, 'createOrder: null response — treating as free');
-      return const FreeItemOrder();
+      // For 400 responses, the data might be in the error response
+      // We'll return a special flag for free items
+      print("⚠️ FREE COURSE DETECTED → DIRECT ENROLL");
+      return {"isFree": true};
     }
 
     final responseData = response.data!;
 
+    // Check if this is a free course
     if (responseData['success'] != true) {
       final message = responseData['message']?.toString().toLowerCase() ?? '';
       if (message.contains('free') || message.contains('enrol directly')) {
-        return const FreeItemOrder();
+        print("⚠️ FREE COURSE DETECTED → DIRECT ENROLL");
+        return {"isFree": true};
       }
       throw Exception('Failed to create order: $responseData');
     }
 
-    final data = responseData['data'];
-    if (data is! Map<String, dynamic>) {
+    if (responseData['data'] == null) {
       throw Exception('No order data received from server');
     }
 
-    final orderId = (data['razorpayOrderId'] ?? data['orderId']) as String?;
-    final amount = (data['amountInPaise'] ?? data['amount']) as int?;
-    if (orderId == null || amount == null) {
-      throw Exception('Invalid order response: missing orderId or amount');
-    }
-
-    return PaidOrder(orderId: orderId, amount: amount);
+    return responseData['data'] as Map<String, dynamic>;
   }
 
+  /// Enroll in free item directly without payment
   Future<void> enrollFreeItem({
     required String itemId,
     required ItemType itemType,
   }) async {
-    final response = await _api.post<Map<String, dynamic>>(
-      '/api/v1/learning/enroll',
-      data: {'itemId': itemId, 'itemType': itemType.value},
-      fromJson: (json) => json as Map<String, dynamic>,
-    );
+    try {
+      final response = await _api.post<Map<String, dynamic>>(
+        '/api/v1/learning/enroll', // Direct enrollment endpoint
+        data: {'itemId': itemId, 'itemType': itemType.value},
+        fromJson: (json) => json as Map<String, dynamic>,
+      );
 
-    if (response.data == null || response.data!['success'] != true) {
-      throw Exception('Failed to enroll in free item');
+      print("🎉 ENROLLED WITHOUT PAYMENT: ${response.data}");
+
+      if (response.data == null || response.data!['success'] != true) {
+        throw Exception('Failed to enroll in free item');
+      }
+    } catch (e) {
+      print("❌ FREE ENROLLMENT FAILED: $e");
+      throw Exception('Failed to enroll in free item: $e');
     }
-    AppLogger.info(_tag, 'Free enrollment success: $itemId');
   }
 
+  /// Enroll in a course directly
   Future<void> enrollCourse({
     required String itemId,
     required ItemType itemType,
   }) async {
-    final response = await _api.post<Map<String, dynamic>>(
-      '/api/v1/learning/$itemId/enroll',
-      data: {'itemType': itemType.value},
-      fromJson: (json) => json as Map<String, dynamic>,
-    );
+    try {
+      final response = await _api.post<Map<String, dynamic>>(
+        '/api/v1/learning/$itemId/enroll', // Direct enrollment endpoint
+        data: {'itemType': itemType.value},
+        fromJson: (json) => json as Map<String, dynamic>,
+      );
 
-    if (response.success && response.data?['success'] == true) {
-      AppLogger.info(_tag, 'Course enrollment success: $itemId');
-      return;
+      print("🎉 ENROLLMENT RESPONSE: ${response.data}");
+
+      if (response.data == null || response.data!['success'] != true) {
+        throw Exception('Failed to enroll in course');
+      }
+    } catch (e) {
+      print("❌ ENROLLMENT FAILED: $e");
+
+      // Handle "Already enrolled" case as success
+      if (e.toString().contains("Already enrolled")) {
+        print("✅ ALREADY ENROLLED - TREATING AS SUCCESS");
+        return;
+      }
+
+      throw Exception('Failed to enroll in course: $e');
     }
-
-    // Idempotent: already-enrolled is treated as success.
-    // Prefer the structured error code; fall back to substring match so this
-    // works whether or not the backend has shipped the ALREADY_ENROLLED code.
-    final errCode = response.error?.code;
-    final errMsg = response.error?.message.toLowerCase() ?? '';
-    if (errCode == 'ALREADY_ENROLLED' || errMsg.contains('already enrolled')) {
-      AppLogger.info(_tag, 'Course already enrolled (idempotent): $itemId');
-      return;
-    }
-
-    throw Exception('Failed to enroll in course: ${response.error?.message}');
   }
 
+  ///  Verify payment after successful Razorpay transaction
   Future<Map<String, dynamic>> verifyPayment({
     required String razorpayPaymentId,
     required String razorpayOrderId,
@@ -112,20 +128,25 @@ class PaymentRepository {
       fromJson: (json) => json as Map<String, dynamic>,
     );
 
-    if (response.data == null) throw Exception('No response from server');
+    print("💳 PAYMENT VERIFICATION: ${response.data}");
+
+    if (response.data == null) {
+      throw Exception('No response data received from server');
+    }
 
     final responseData = response.data!;
     if (responseData['success'] != true) {
       throw Exception('Payment verification failed: $responseData');
     }
+
     if (responseData['data'] == null) {
-      throw Exception('No verification data received');
+      throw Exception('No verification data received from server');
     }
 
-    AppLogger.info(_tag, 'Payment verified: $razorpayPaymentId');
     return responseData['data'] as Map<String, dynamic>;
   }
 
+  ///  Get payment history for user
   Future<ApiResponse<List<Map<String, dynamic>>>> getPaymentHistory({
     int page = 1,
     int limit = 20,
@@ -136,6 +157,7 @@ class PaymentRepository {
       fromJson: (json) {
         final map = json as Map<String, dynamic>;
         final list = map['data'] as List<dynamic>;
+
         return list.map((e) => e as Map<String, dynamic>).toList();
       },
     );

@@ -1,5 +1,3 @@
-import 'package:gyaanplant/core/utils/app_logger.dart';
-
 class Pagination {
   final int total;
   final int page;
@@ -77,7 +75,9 @@ class DriveModel {
             json['updatedAt'] as String? ?? DateTime.now().toIso8601String(),
       );
     } catch (e) {
-      AppLogger.warning('DriveModel', 'fromJson error on ${json['_id']}: $e');
+      print('💥 DriveModel.fromJson error: $e');
+      print('💥 JSON data: $json');
+      // Return a safe default model
       return DriveModel(
         id: json['_id'] as String? ?? '',
         createdAt: DateTime.now().toIso8601String(),

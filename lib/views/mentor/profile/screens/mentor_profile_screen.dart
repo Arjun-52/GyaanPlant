@@ -90,7 +90,7 @@ class MentorProfileScreen extends StatelessWidget {
                                   ],
                                 ),
                               );
-                              if (shouldLogout == true && context.mounted) {
+                              if (shouldLogout == true) {
                                 await context.read<AuthViewModel>().logout(
                                   context,
                                 );
@@ -103,10 +103,10 @@ class MentorProfileScreen extends StatelessWidget {
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.red.withValues(alpha: 0.2),
+                                color: Colors.red.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: Colors.red.withValues(alpha: 0.5),
+                                  color: Colors.red.withOpacity(0.5),
                                 ),
                               ),
                               child: const Icon(

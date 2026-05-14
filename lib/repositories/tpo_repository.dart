@@ -1,5 +1,6 @@
 import '../models/tpo_role_models/drive_model.dart';
 import '../models/tpo_role_models/student_model.dart';
+
 import '../network/api_endpoints.dart';
 import '../network/api_manager.dart';
 import '../network/api_response.dart';
@@ -29,15 +30,22 @@ class TpoRepository {
   }
 
   Future<ApiResponse<List<Student>>> getStudents(String collegeId) {
+    print("🌐 STUDENT API REQUEST:");
+    print("URL: ${ApiEndpoints.students}");
+    print("QUERY PARAMS: {college: $collegeId}");
+
     return _api.get<List<Student>>(
       ApiEndpoints.students,
       queryParameters: {'college': collegeId},
       fromJson: (json) {
+        print("📦 RAW RESPONSE: $json");
         final map = json as Map<String, dynamic>;
         final list = map['data'] as List<dynamic>? ?? [];
-        return list
+        final students = list
             .map((e) => Student.fromJson(e as Map<String, dynamic>))
             .toList();
+        print("📊 FILTERED STUDENTS COUNT: ${students.length}");
+        return students;
       },
     );
   }

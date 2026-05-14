@@ -13,10 +13,12 @@ class DeptProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("🔥 DEPT DATA: $departments");
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.green.withValues(alpha: 0.6)),
+        border: Border.all(color: Colors.green.withOpacity(0.6)),
         borderRadius: BorderRadius.circular(20),
         color: const Color(0xFF0F3D34),
       ),
@@ -59,7 +61,7 @@ class DeptProgressCard extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: progress,
                       minHeight: 10,
-                      backgroundColor: Colors.white.withValues(alpha: 0.12),
+                      backgroundColor: Colors.white.withOpacity(0.12),
                       valueColor: AlwaysStoppedAnimation<Color>(color),
                     ),
                   ),

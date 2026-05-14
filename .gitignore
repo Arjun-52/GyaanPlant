@@ -4,11 +4,6 @@
 *.pyc
 *.swp
 .DS_Store
-
-# Environment files — never commit secrets
-.env
-.env.local
-.env.*.local
 .atom/
 .build/
 .buildlog/
@@ -23,7 +18,7 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# VS Code workspace settings — per-developer, not team-shared.
+# Visual Studio Code related
 .vscode/
 
 # Flutter/Dart/Pub related
@@ -36,13 +31,44 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Android related
+**/android/.gradle/
+**/android/local.properties
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+*.jks
+*.keystore
+
+# iOS related
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+
+# Windows related
+**/windows/flutter/ephemeral/
+**/windows/flutter/generated_config.cmake
+CMakeCache.txt
+CMakeFiles/
+CMakeSettings.json
+
+# Web related
+.web/
+
+# Secrets and environment variables
+.env*
+google-services.json
+GoogleService-Info.plist
+
 # Symbolication related
 app.*.symbols
 
 # Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+demo_proj/build/
+.dart_tool/
+android/.gradle/
+*.apk

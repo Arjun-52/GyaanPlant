@@ -14,8 +14,14 @@ class _TPODashboardState extends State<TPODashboard> {
   @override
   void initState() {
     super.initState();
+    print("🖥️ TPO Dashboard initState() called");
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.read<TpoDashboardViewModel>().initialize();
+      if (mounted) {
+        print("🖥️ Calling TPO Dashboard initialize() from initState");
+        context.read<TpoDashboardViewModel>().initialize();
+      } else {
+        print("❌ Widget not mounted, skipping initialize()");
+      }
     });
   }
 

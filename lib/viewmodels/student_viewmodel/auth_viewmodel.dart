@@ -1,14 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/events/auth_event_bus.dart';
-import '../../core/utils/app_logger.dart';
-import '../../data/services/api_service.dart';
 import '../../data/services/local_storage_service.dart';
+import '../../data/services/api_service.dart';
 import '../../models/auth/auth_user_model.dart';
 import '../../network/auth_cache.dart';
-import '../../services/notification_service.dart';
+import '../../core/utils/app_logger.dart';
 
 class AuthViewModel extends ChangeNotifier {
   static const _tag = 'AuthViewModel';
@@ -17,7 +13,7 @@ class AuthViewModel extends ChangeNotifier {
 
   bool _disposed = false;
 
-  // Form fields
+  // FORM FIELDS
   String name = '';
   String email = '';
   String password = '';
@@ -26,7 +22,7 @@ class AuthViewModel extends ChangeNotifier {
   String branch = 'Select Branch';
   String careerPath = 'Select Career Path';
 
-  // State
+  // STATE
   int currentStep = 1;
   bool isLoading = false;
   String? errorMessage;
@@ -49,7 +45,7 @@ class AuthViewModel extends ChangeNotifier {
     if (!_disposed) super.notifyListeners();
   }
 
-  // Setters
+  // SETTERS
   void setName(String v) => name = v;
   void setEmail(String v) => email = v;
   void setPassword(String v) => password = v;
@@ -74,6 +70,7 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // LOGIN
   Future<void> login(BuildContext context) async {
     if (!_validateLoginFields(context)) return;
 
@@ -85,36 +82,30 @@ class AuthViewModel extends ChangeNotifier {
         final data = result.data!;
         user = data.user;
 
+        print("🔑 LOGIN SUCCESS - TOKEN: ${data.accessToken}");
+        print("🔑 TOKEN LENGTH: ${data.accessToken?.length}");
+
+        // Update in-memory cache first for immediate performance
         AuthCache.token = data.accessToken;
+        print("🔑 TOKEN SAVED TO AUTH CACHE: ${AuthCache.token}");
+
+        // Persist to storage (async, no blocking)
         await LocalStorageService.saveToken(data.accessToken);
+        print("🔑 TOKEN SAVED TO LOCAL STORAGE");
+
+        // Verify token was saved
+        final savedToken = await LocalStorageService.getToken();
+        print("🔑 VERIFICATION - TOKEN FROM STORAGE: $savedToken");
+
         await LocalStorageService.saveUser(data.user.toJson());
         if (data.user.role.isNotEmpty) {
           await LocalStorageService.saveRole(data.user.role.toLowerCase());
         }
-
-        // Now that we have an auth token, register the device's FCM token
-        // with the backend. Fire-and-forget — never block the login flow.
-        unawaited(NotificationService.instance.registerFCMTokenWithBackend());
-
         AppLogger.info(_tag, 'Login successful for ${data.user.email}');
-
         if (_disposed || !context.mounted) return;
-
-        // Navigate directly to the role-specific home screen.
-        switch (data.user.role.toLowerCase()) {
-          case 'student':
-            context.go('/student-dashboard');
-          case 'tpo':
-            context.go('/tpo-dashboard');
-          case 'hod':
-            context.go('/overview');
-          case 'mentor':
-            context.go('/mentor-dashboard');
-          default:
-            context.go('/role');
-        }
+        context.go('/');
       } else {
-        if (context.mounted) _showError(context, result.error?.message ?? 'Login failed');
+        _showError(context, result.error?.message ?? 'Login failed');
       }
     } catch (e, st) {
       AppLogger.error(_tag, 'Login error', e, st);
@@ -124,6 +115,7 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  // SIGNUP STEP NAVIGATION
   Future<void> nextStep(BuildContext context) async {
     if (currentStep == 1) {
       if (name.isEmpty || email.isEmpty || password.isEmpty) {
@@ -162,6 +154,8 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  // REGISTER
+
   Future<void> _register(BuildContext context) async {
     _setLoading(true);
     try {
@@ -178,7 +172,7 @@ class AuthViewModel extends ChangeNotifier {
         _showError(context, 'Account created! Please log in.');
         context.go('/');
       } else {
-        if (context.mounted) _showError(context, result.error?.message ?? 'Registration failed');
+        _showError(context, result.error?.message ?? 'Registration failed');
       }
     } catch (e, st) {
       AppLogger.error(_tag, 'Register error', e, st);
@@ -189,43 +183,49 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> logout(BuildContext context) async {
+    print("🔥 LOGOUT: Starting proper logout flow");
+
     try {
+      // ✅ STEP 1: Call API FIRST (token still exists)
       await _auth.logout();
+      print("✅ LOGOUT API SUCCESS");
     } catch (e) {
-      AppLogger.warning(_tag, 'Logout API failed (continuing): $e');
+      print("⚠️ LOGOUT API FAILED: $e");
+      // Don't block logout if API fails
     }
 
+    // ✅ STEP 2: Now clear local data
     await LocalStorageService.clearToken();
-    AuthCache.token = null;
+    await LocalStorageService.removeRole();
+
+    print("🔥 LOGOUT: Local data cleared");
 
     user = null;
     notifyListeners();
 
-    // Notify the rest of the app — currently used by `main.dart` to clear the
-    // FCM-token de-dup cache so the next user re-registers their device.
-    AuthEventBus.emit(const LoggedOut());
-
-    if (context.mounted) context.go('/role');
+    if (context.mounted) {
+      context.go('/role');
+    }
   }
 
   Future<void> forgotPassword(BuildContext context, String email) async {
     if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email is required')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Email is required")));
       return;
     }
 
-    _setLoading(true);
     try {
+      _setLoading(true);
+
       final result = await _auth.forgotPassword(email: email);
 
-      if (!context.mounted) return;
       if (result.isSuccess) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              result.message ?? 'If that email exists, a reset link was sent.',
+              result.message ?? "If that email exists, a reset link was sent.",
             ),
             backgroundColor: Colors.green,
           ),
@@ -234,26 +234,25 @@ class AuthViewModel extends ChangeNotifier {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result.error?.message ?? 'Failed to send reset link'),
+            content: Text(result.error?.message ?? "Failed to send reset link"),
             backgroundColor: Colors.red,
           ),
         );
       }
     } catch (e, st) {
       AppLogger.error(_tag, 'Forgot password error', e, st);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Something went wrong. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Something went wrong. Please try again."),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       _setLoading(false);
     }
   }
 
+  // PRIVATE HELPERS
   Future<void> _loadUser() async {
     final raw = await LocalStorageService.getUser();
     if (raw != null) {
@@ -288,6 +287,8 @@ class AuthViewModel extends ChangeNotifier {
   void _showError(BuildContext context, String message) {
     errorMessage = message;
     notifyListeners();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }

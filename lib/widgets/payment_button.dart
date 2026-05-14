@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:gyaanplant/core/utils/app_logger.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../models/payment/item_type.dart';
-import '../models/payment/payment_result.dart';
 import '../services/payment_service.dart';
-import '../viewmodels/student_viewmodel/auth_viewmodel.dart';
+import '../viewmodels/student_viewmodel/learning_viewmodel.dart';
 
+/// A reusable payment button that initiates the Razorpay checkout flow.
+///
+/// Uses [PaymentService] to create an order via the backend and open checkout.
+/// Calls [onPaymentSuccess] after successful payment + backend verification.
 class PaymentButton extends StatefulWidget {
   final String itemId;
   final ItemType itemType;
-  final String? itemName;
   final String? itemDescription;
   final String buttonText;
   final VoidCallback? onPaymentSuccess;
@@ -19,7 +21,6 @@ class PaymentButton extends StatefulWidget {
     super.key,
     required this.itemId,
     required this.itemType,
-    this.itemName,
     this.itemDescription,
     this.buttonText = 'Purchase',
     this.onPaymentSuccess,
@@ -31,15 +32,18 @@ class PaymentButton extends StatefulWidget {
 }
 
 class _PaymentButtonState extends State<PaymentButton> {
-  static const _tag = 'PaymentButton';
-
   late final PaymentService _paymentService;
   bool _isProcessing = false;
 
   @override
   void initState() {
     super.initState();
-    _paymentService = PaymentService()..init();
+    _paymentService = PaymentService();
+    _paymentService.initialize(
+      onSuccess: _handlePaymentSuccess,
+      onError: _handlePaymentError,
+      onExternalWallet: _handleExternalWallet,
+    );
   }
 
   @override
@@ -48,89 +52,118 @@ class _PaymentButtonState extends State<PaymentButton> {
     super.dispose();
   }
 
-  Future<void> _startPayment() async {
-    if (_isProcessing) return;
-    setState(() => _isProcessing = true);
+  // ─── Razorpay Callbacks ───────────────────────────────────────────────────
 
-    final result = await _paymentService.purchaseItem(
-      itemId: widget.itemId,
-      itemType: widget.itemType,
-      itemDescription: widget.itemDescription,
-      user: context.read<AuthViewModel>().user,
-    );
+  Future<void> _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    debugPrint('💳 PaymentButton: Payment SUCCESS — ${response.paymentId}');
 
-    if (!mounted) return;
-    setState(() => _isProcessing = false);
-
-    switch (result) {
-      case FreeEnrollmentSucceeded():
-        _showDialog(
-          'Success',
-          'Free ${widget.itemType.value} enrolled successfully!',
-        );
-        widget.onPaymentSuccess?.call();
-      case PaymentSucceeded(
-          razorpayPaymentId: final pid,
-          razorpayOrderId: final oid
-        ):
-        await _verifyAndAnnounce(pid, oid);
-      case PaymentFailed(message: final msg):
-        _showDialog('Payment Error', msg);
-      case ExternalWalletSelected(walletName: final wallet):
-        _showDialog('Info', 'External wallet selected: ${wallet ?? "unknown"}');
-    }
-  }
-
-  Future<void> _verifyAndAnnounce(String paymentId, String orderId) async {
     try {
-      final verification = await _paymentService.verifyPayment(
-        razorpayPaymentId: paymentId,
-        razorpayOrderId: orderId,
+      await _paymentService.verifyPayment(
+        razorpayPaymentId: response.paymentId!,
+        razorpayOrderId: response.orderId!,
         itemId: widget.itemId,
         itemType: widget.itemType,
       );
-      AppLogger.info(_tag, 'Payment verified: ${verification.keys}');
-      if (!mounted) return;
-      _showDialog(
-        'Success',
-        'Payment successful! Your ${widget.itemType.value} has been activated.',
-      );
-      widget.onPaymentSuccess?.call();
-    } catch (e, st) {
-      AppLogger.error(_tag, 'Verification failed', e, st);
-      if (!mounted) return;
-      _showDialog('Payment Error', 'Payment verification failed: $e');
+
+      debugPrint('✅ PaymentButton: Payment verified');
+
+      if (mounted) {
+        setState(() => _isProcessing = false);
+
+        // Refresh courses if applicable
+        if (widget.itemType == ItemType.course) {
+          await context.read<LearningViewModel>().fetchCourses();
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Payment successful! Your ${widget.itemType.value} has been activated.',
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        widget.onPaymentSuccess?.call();
+      }
+    } catch (e) {
+      debugPrint('❌ PaymentButton: Verification failed — $e');
+      if (mounted) {
+        setState(() => _isProcessing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment verification failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
-  void _showDialog(String title, String message) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('OK'),
-          ),
-        ],
+  void _handlePaymentError(PaymentFailureResponse response) {
+    debugPrint(
+      '❌ PaymentButton: Payment ERROR — ${response.code}: ${response.message}',
+    );
+    if (!mounted) return;
+    setState(() => _isProcessing = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Payment failed: ${response.message}'),
+        backgroundColor: Colors.red,
       ),
     );
   }
 
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    debugPrint('👛 PaymentButton: External wallet — ${response.walletName}');
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('External wallet selected: ${response.walletName}'),
+          backgroundColor: Colors.blue,
+        ),
+      );
+    }
+  }
+
+  // ─── Payment Trigger ─────────────────────────────────────────────────────
+
+  Future<void> _startPayment() async {
+    if (_isProcessing || !widget.isEnabled) return;
+
+    setState(() => _isProcessing = true);
+
+    await _paymentService.createOrderAndOpenCheckout(
+      context: context,
+      itemId: widget.itemId,
+      itemType: widget.itemType,
+      itemDescription:
+          widget.itemDescription ?? 'Purchase ${widget.itemType.value}',
+    );
+
+    // Reset if checkout failed to open
+    if (mounted && _isProcessing) {
+      setState(() => _isProcessing = false);
+    }
+  }
+
+  // ─── UI ──────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
+    final bool disabled = _isProcessing || !widget.isEnabled;
+
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: (_isProcessing || !widget.isEnabled) ? null : _startPayment,
+        onPressed: disabled ? null : _startPayment,
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              widget.isEnabled ? const Color(0xFF00C853) : Colors.grey,
+          backgroundColor: disabled ? Colors.grey : const Color(0xFF00C853),
           foregroundColor: Colors.black,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
         ),
         child: _isProcessing
             ? const Row(
@@ -141,7 +174,8 @@ class _PaymentButtonState extends State<PaymentButton> {
                     height: 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Colors.black),
                     ),
                   ),
                   SizedBox(width: 8),
@@ -150,7 +184,10 @@ class _PaymentButtonState extends State<PaymentButton> {
               )
             : Text(
                 widget.buttonText,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
       ),
     );

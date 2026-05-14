@@ -3,6 +3,7 @@ import 'package:table_calendar/table_calendar.dart';
 import '../screens/mentor_payment_screen.dart';
 
 class MentorBookingSheet extends StatefulWidget {
+  final String mentorId;
   final String mentorName;
   final String mentorRole;
   final String mentorAvatar;
@@ -10,6 +11,7 @@ class MentorBookingSheet extends StatefulWidget {
 
   const MentorBookingSheet({
     super.key,
+    required this.mentorId,
     required this.mentorName,
     required this.mentorRole,
     required this.mentorAvatar,
@@ -423,6 +425,7 @@ class _MentorBookingSheetState extends State<MentorBookingSheet> {
       context,
       MaterialPageRoute(
         builder: (context) => MentorPaymentScreen(
+          mentorId: widget.mentorId,
           mentorName: widget.mentorName,
           mentorRole: widget.mentorRole,
           mentorAvatar: widget.mentorAvatar,
