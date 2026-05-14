@@ -1,0 +1,188 @@
+import 'package:flutter/material.dart';
+import 'package:gyaanplant/models/tpo_role_models/student_model.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
+
+class StudentViewModel extends ChangeNotifier {
+  final _tpo = ApiService().tpo;
+
+  List<Student> _students = [];
+  bool _isLoading = false;
+  String? _errorMessage;
+  bool _disposed = false;
+
+  String _searchQuery = '';
+  String _selectedFilter = 'All';
+
+  List<Student> get students => _students;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+  bool get hasError => _errorMessage != null;
+  bool get hasData => _students.isNotEmpty;
+  String get selectedFilter => _selectedFilter;
+  String get searchQuery => _searchQuery;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
+  }
+
+  Future<void> initialize() async {
+    print('🚀 StudentViewModel.initialize() called');
+    await fetchStudents();
+  }
+
+  Future<void> fetchStudents() async {
+    print('📡 StudentViewModel.fetchStudents() called');
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      // STEP 1: FETCH COLLEGE ID FROM USER
+      print('🏫 Fetching current user to get collegeId...');
+      final userRes = await ApiService().auth.getCurrentUser();
+
+      print("👤 USER RESPONSE OBJECT: $userRes");
+      print("👤 USER DATA: ${userRes.data}");
+
+      final college = userRes.data?.college;
+      String? collegeId;
+
+      if (college == null) {
+        print('❌ College data is null');
+      } else {
+        collegeId = college.id;
+        print('🏫 College ID extracted: $collegeId');
+        print('🏫 College name: ${college.name}');
+      }
+
+      // STEP 2: SAFETY CHECKS
+      if (collegeId == null) {
+        print('❌ No collegeId found, skipping API call');
+        _errorMessage = 'No college assigned to user';
+        _students = [];
+        return;
+      }
+
+      print('🏫 Using collegeId for filtering: $collegeId');
+      print('🏫 collegeId type: ${collegeId.runtimeType}');
+
+      // STEP 3: UPDATE VIEWMODEL CALL
+      print('�� Calling API: _tpo.getStudents(collegeId)');
+      final result = await _tpo.getStudents(collegeId);
+      print(
+        '📦 API Response: isSuccess=${result.isSuccess}, data=${result.data}',
+      );
+
+      if (result.isSuccess) {
+        _students = result.data ?? [];
+        print('✅ Successfully loaded ${_students.length} students');
+        print('📊 FILTERED STUDENTS COUNT: ${_students.length}');
+
+        if (_students.isNotEmpty) {
+          print('📊 First student name: ${_students.first.name}');
+        }
+      } else {
+        throw Exception(result.error?.message ?? 'Failed to load students');
+      }
+    } catch (e) {
+      print('❌ Error fetching students: $e');
+      _errorMessage = e.toString();
+      _students = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+      print('🏁 fetchStudents() completed');
+    }
+  }
+
+  Future<void> refreshStudents() async => fetchStudents();
+
+  void setSearch(String value) {
+    if (_searchQuery != value) {
+      _searchQuery = value;
+      notifyListeners();
+    }
+  }
+
+  void setFilter(String filter) {
+    if (_selectedFilter != filter) {
+      _selectedFilter = filter;
+      notifyListeners();
+    }
+  }
+
+  void clearError() {
+    if (_errorMessage != null) {
+      _errorMessage = null;
+      notifyListeners();
+    }
+  }
+
+  List<Student> get filteredStudents {
+    if (_students.isEmpty) return [];
+
+    return _students.where((student) {
+      final matchesSearch =
+          student.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          student.email.toLowerCase().contains(_searchQuery.toLowerCase());
+
+      bool matchesFilter = true;
+      switch (_selectedFilter) {
+        case 'MNC Ready':
+          matchesFilter = student.status == 'MNC Ready';
+          break;
+        case 'At Risk':
+          matchesFilter = student.status == 'At Risk';
+          break;
+        case 'Average':
+          matchesFilter = student.status == 'Average';
+          break;
+        default:
+          matchesFilter =
+              _selectedFilter == 'All' || student.branch == _selectedFilter;
+      }
+
+      return matchesSearch && matchesFilter;
+    }).toList();
+  }
+
+  List<String> get availableFilters {
+    final filters = <String>{'All'};
+    filters.addAll(_students.map((s) => s.status).toSet());
+    filters.addAll(
+      _students.map((s) => s.branch).where((b) => b != 'N/A').toSet(),
+    );
+    return filters.toList();
+  }
+
+  Map<String, int> get statistics {
+    final stats = <String, int>{
+      'total': _students.length,
+      'mncReady': 0,
+      'atRisk': 0,
+      'average': 0,
+    };
+    for (final student in _students) {
+      switch (student.status) {
+        case 'MNC Ready':
+          stats['mncReady'] = (stats['mncReady'] ?? 0) + 1;
+          break;
+        case 'At Risk':
+          stats['atRisk'] = (stats['atRisk'] ?? 0) + 1;
+          break;
+        case 'Average':
+          stats['average'] = (stats['average'] ?? 0) + 1;
+          break;
+      }
+    }
+    return stats;
+  }
+}
