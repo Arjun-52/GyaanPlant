@@ -71,9 +71,10 @@ class _PaymentButtonState extends State<PaymentButton> {
         widget.onPaymentSuccess?.call();
       case PaymentSucceeded(
           razorpayPaymentId: final pid,
-          razorpayOrderId: final oid
+          razorpayOrderId: final oid,
+          razorpaySignature: final sig,
         ):
-        await _verifyAndAnnounce(pid, oid);
+        await _verifyAndAnnounce(pid, oid, sig);
       case PaymentFailed(message: final msg):
         _showDialog('Payment Error', msg);
       case ExternalWalletSelected(walletName: final wallet):
@@ -81,13 +82,16 @@ class _PaymentButtonState extends State<PaymentButton> {
     }
   }
 
-  Future<void> _verifyAndAnnounce(String paymentId, String orderId) async {
+  Future<void> _verifyAndAnnounce(
+    String paymentId,
+    String orderId,
+    String signature,
+  ) async {
     try {
       final verification = await _paymentService.verifyPayment(
         razorpayPaymentId: paymentId,
         razorpayOrderId: orderId,
-        itemId: widget.itemId,
-        itemType: widget.itemType,
+        razorpaySignature: signature,
       );
       AppLogger.info(_tag, 'Payment verified: ${verification.keys}');
       if (!mounted) return;

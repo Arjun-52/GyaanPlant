@@ -21,12 +21,14 @@ class MentorBookingService {
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, onExternal);
 
     _isInitialized = true;
-    print(
-      "🔧 MentorBookingService initialized with key: ${PaymentConfig.razorpayKey}",
-    );
+    print("🔧 MentorBookingService initialized");
   }
 
-  /// Purchase mentor session booking
+  /// Purchase mentor session booking.
+  ///
+  /// `keyId` is the Razorpay public key the backend returned on the
+  /// create-order response. The frontend no longer holds a build-time key —
+  /// the caller is responsible for fetching `keyId` from the backend.
   Future<void> purchaseMentorSession({
     required BuildContext context,
     required String mentorId,
@@ -35,6 +37,7 @@ class MentorBookingService {
     required String selectedTime,
     required String selectedDuration,
     required double totalAmount,
+    required String keyId,
     Map<String, dynamic>? bookingDetails,
   }) async {
     if (!_isInitialized) {
@@ -56,7 +59,7 @@ class MentorBookingService {
 
       // Open Razorpay checkout for mentor session
       final options = {
-        'key': PaymentConfig.razorpayKey,
+        'key': keyId,
         'amount': amount,
         'order_id': orderId,
         'name': 'Mentor Session with $mentorName',

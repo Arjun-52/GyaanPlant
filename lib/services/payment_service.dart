@@ -33,19 +33,13 @@ class PaymentService {
   void init() {
     if (_isInitialized) return;
 
-    // Fails loudly if RAZORPAY_KEY wasn't supplied at build time.
-    PaymentConfig.ensureConfigured();
-
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
 
     _isInitialized = true;
-    AppLogger.info(
-      _tag,
-      'Razorpay initialized (${PaymentConfig.isProduction ? "live" : "test"} mode)',
-    );
+    AppLogger.info(_tag, 'Razorpay initialized');
   }
 
   /// Create an order and (if paid) open Razorpay checkout.
@@ -127,13 +121,17 @@ class PaymentService {
           );
         }
 
-      case PaidOrder(orderId: final orderId, amount: final amount):
+      case PaidOrder(
+            orderId: final orderId,
+            amount: final amount,
+            keyId: final keyId,
+          ):
         AppLogger.info(_tag, 'Opening Razorpay for order $orderId');
         final completer = Completer<PaymentResult>();
         _pending = completer;
 
         final options = <String, dynamic>{
-          'key': PaymentConfig.razorpayKey,
+          'key': keyId,
           'order_id': orderId,
           'amount': amount,
           'name': 'GyaanPlant',
@@ -164,14 +162,12 @@ class PaymentService {
   Future<Map<String, dynamic>> verifyPayment({
     required String razorpayPaymentId,
     required String razorpayOrderId,
-    required String itemId,
-    required ItemType itemType,
+    required String razorpaySignature,
   }) {
     return _apiService.payment.verifyPayment(
       razorpayPaymentId: razorpayPaymentId,
       razorpayOrderId: razorpayOrderId,
-      itemId: itemId,
-      itemType: itemType,
+      razorpaySignature: razorpaySignature,
     );
   }
 
@@ -203,6 +199,7 @@ class PaymentService {
       PaymentSucceeded(
         razorpayPaymentId: response.paymentId ?? '',
         razorpayOrderId: response.orderId ?? '',
+        razorpaySignature: response.signature ?? '',
       ),
     );
   }

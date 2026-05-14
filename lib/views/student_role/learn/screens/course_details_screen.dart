@@ -8,7 +8,6 @@ import '../../../../models/learning/learning_model.dart';
 import '../../../../models/payment/item_type.dart';
 import '../../../../models/payment/order_result.dart';
 import '../../../../viewmodels/student_viewmodel/learning_viewmodel.dart';
-import '../../../../config/payment_config.dart';
 import 'package:provider/provider.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
@@ -89,22 +88,14 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       'Payment success: paymentId=${response.paymentId} orderId=${response.orderId} itemId=$currentItemId itemType=$currentItemType',
     );
 
-    if (response.paymentId == null) {
-      AppLogger.error(_tag, 'Payment ID is null');
-      if (mounted) setState(() => isPaymentProcessing = false);
-      return;
-    }
-
-    if (response.orderId == null) {
-      AppLogger.error(_tag, 'Order ID is null');
-      if (mounted) setState(() => isPaymentProcessing = false);
-      return;
-    }
-
-    if (currentItemId == null || currentItemType == null) {
+    if (response.paymentId == null ||
+        response.orderId == null ||
+        response.signature == null) {
       AppLogger.error(
         _tag,
-        'Current item details are null: itemId=$currentItemId itemType=$currentItemType',
+        'Razorpay success callback missing field(s): '
+        'paymentId=${response.paymentId} orderId=${response.orderId} '
+        'signature=${response.signature}',
       );
       if (mounted) setState(() => isPaymentProcessing = false);
       return;
@@ -116,8 +107,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       await _apiService.payment.verifyPayment(
         razorpayPaymentId: response.paymentId!,
         razorpayOrderId: response.orderId!,
-        itemId: currentItemId!,
-        itemType: currentItemType!,
+        razorpaySignature: response.signature!,
       );
 
       AppLogger.info(_tag, 'Payment verified; refreshing course list');
@@ -234,14 +224,20 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
       final int amount;
       final String orderId;
+      final String keyId;
       switch (order) {
         case FreeItemOrder():
           AppLogger.info(_tag, 'Course is FREE — direct enrollment');
           await _enrollFreeItem();
           return;
-        case PaidOrder(orderId: final id, amount: final amt):
+        case PaidOrder(
+            orderId: final id,
+            amount: final amt,
+            keyId: final key,
+          ):
           orderId = id;
           amount = amt;
+          keyId = key;
       }
 
       if (amount <= 0) {
@@ -250,7 +246,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       }
 
       final options = {
-        'key': PaymentConfig.razorpayKey,
+        'key': keyId,
         'order_id': orderId,
         'amount': amount,
         'name': 'GyaanPlant',
@@ -261,7 +257,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
       AppLogger.info(
         _tag,
-        'Opening Razorpay: orderId=$orderId amount=₹${(amount / 100).toStringAsFixed(2)} testMode=${PaymentConfig.isTestMode}',
+        'Opening Razorpay: orderId=$orderId amount=₹${(amount / 100).toStringAsFixed(2)} testMode=${keyId.startsWith('rzp_test_')}',
       );
 
       _razorpay.open(options);

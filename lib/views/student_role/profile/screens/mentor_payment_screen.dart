@@ -539,6 +539,12 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
     // Open Razorpay checkout using MentorBookingService
     try {
       // Use MentorBookingService for mentor session booking
+      // TODO: This mentor-booking flow is mocked end-to-end (fake mentorId,
+      // fake orderId, mocked verification). When wired to the real backend,
+      // call `PaymentRepository.createOrder(itemType: ItemType.session, ...)`
+      // and use the returned `PaidOrder.keyId / orderId / amount` here, the
+      // same way the course flow does. Until then the key is read from the
+      // build env so no secret is committed to source.
       _mentorBookingService.purchaseMentorSession(
         context: context,
         mentorId:
@@ -548,6 +554,7 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
         selectedTime: widget.selectedTime,
         selectedDuration: widget.selectedDuration,
         totalAmount: _totalAmount,
+        keyId: const String.fromEnvironment('RAZORPAY_KEY'),
         bookingDetails: {
           'sessionFee': _sessionFee,
           'platformFee': _platformFee,
