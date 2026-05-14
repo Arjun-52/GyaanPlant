@@ -117,8 +117,6 @@ class ApiEndpoints {
 
   // ── Notifications ────────────────────────────────────────────────────────
   static const String notifications = '/api/v1/notification';
-  static const String notificationsUnreadCount =
-      '/api/v1/notification/unread-count';
 
   // ── Payments ─────────────────────────────────────────────────────────────
   static const String createOrder = '/api/v1/payments/create-order';

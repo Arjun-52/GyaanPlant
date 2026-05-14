@@ -17,7 +17,7 @@ class EarningsStatBox extends StatelessWidget {
         gradient: const LinearGradient(
           colors: [Color(0xFF0F2A20), Color(0xFF0A1F18)],
         ),
-        border: Border.all(color: color.withValues(alpha: 0.25)),
+        border: Border.all(color: color.withOpacity(0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

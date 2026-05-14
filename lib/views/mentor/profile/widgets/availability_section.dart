@@ -86,7 +86,7 @@ class AvailabilitySection extends StatelessWidget {
 
         /// ACTIVE = green glow
         color: isActive
-            ? const Color(0xFF00C853).withValues(alpha: 0.15)
+            ? const Color(0xFF00C853).withOpacity(0.15)
             : Colors.transparent,
 
         /// BORDER STYLE
@@ -111,6 +111,6 @@ class AvailabilitySection extends StatelessWidget {
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
-    border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.2)),
+    border: Border.all(color: Colors.greenAccent.withOpacity(0.2)),
   );
 }

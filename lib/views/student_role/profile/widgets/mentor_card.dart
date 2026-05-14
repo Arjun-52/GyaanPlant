@@ -8,6 +8,8 @@ class MentorCard extends StatelessWidget {
   final String price;
   final String initials;
   final Color avatarColor;
+  /// Optional backend mentor ID. Falls back to a name-based slug if not provided.
+  final String? mentorId;
 
   const MentorCard({
     super.key,
@@ -17,6 +19,7 @@ class MentorCard extends StatelessWidget {
     required this.price,
     required this.initials,
     required this.avatarColor,
+    this.mentorId,
   });
 
   @override
@@ -299,6 +302,7 @@ class MentorCard extends StatelessWidget {
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
                   builder: (context) => MentorBookingSheet(
+                    mentorId: mentorId ?? name.toLowerCase().replaceAll(' ', '_'),
                     mentorName: name,
                     mentorRole: role,
                     mentorAvatar: initials,

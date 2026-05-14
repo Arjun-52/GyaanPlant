@@ -28,6 +28,8 @@ class AnalyticsModel {
   });
 
   factory AnalyticsModel.fromJson(Map<String, dynamic> json) {
+    print("ANALYTICS MODEL PARSING JSON: $json");
+
     return AnalyticsModel(
       monthlyActive: (json["monthlyActive"] as List? ?? [])
           .map((e) => e as int)
