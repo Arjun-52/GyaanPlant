@@ -3,6 +3,7 @@ import '../../../../services/mentor_booking_service.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class MentorPaymentScreen extends StatefulWidget {
+  final String mentorId;
   final String mentorName;
   final String mentorRole;
   final String mentorAvatar;
@@ -13,6 +14,7 @@ class MentorPaymentScreen extends StatefulWidget {
 
   const MentorPaymentScreen({
     super.key,
+    required this.mentorId,
     required this.mentorName,
     required this.mentorRole,
     required this.mentorAvatar,
@@ -547,8 +549,7 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
       // build env so no secret is committed to source.
       _mentorBookingService.purchaseMentorSession(
         context: context,
-        mentorId:
-            'mentor_${widget.mentorName.toLowerCase().replaceAll(' ', '_')}',
+        mentorId: widget.mentorId,
         mentorName: widget.mentorName,
         selectedDate: widget.selectedDate,
         selectedTime: widget.selectedTime,

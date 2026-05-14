@@ -64,16 +64,13 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     });
 
     try {
-      final result = await _learning.getCourseById(widget.courseId);
-      if (result.isSuccess && result.data != null) {
-        course = result.data;
-        if (mounted) {
-          isEnrolled = context.read<LearningViewModel>().isCourseEnrolled(
-            widget.courseId,
-          );
-        }
-      } else {
-        error = result.error?.message ?? 'Failed to load course';
+      // `getCourseById` now returns `CourseModel` directly and throws on
+      // failure — no `ApiResponse` wrapper.
+      course = await _learning.getCourseById(widget.courseId);
+      if (mounted) {
+        isEnrolled = context.read<LearningViewModel>().isCourseEnrolled(
+          widget.courseId,
+        );
       }
     } catch (e) {
       error = e.toString();
