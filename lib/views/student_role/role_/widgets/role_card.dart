@@ -26,13 +26,7 @@ class RoleCard extends StatelessWidget {
         }
 
         await LocalStorageService.saveRole(selectedRole);
-<<<<<<< Updated upstream
-        if (context.mounted) context.go('/');
-=======
-        if (context.mounted) {
-          context.go('/signin');
-        }
->>>>>>> Stashed changes
+        if (context.mounted) context.go('/signin');
       },
       child: Container(
         padding: const EdgeInsets.all(16),

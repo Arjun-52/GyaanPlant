@@ -584,7 +584,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
-<<<<<<< Updated upstream
   pdf:
     dependency: "direct main"
     description:
@@ -601,8 +600,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
-=======
->>>>>>> Stashed changes
   petitparser:
     dependency: transitive
     description:
@@ -635,7 +632,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.5.0"
-<<<<<<< Updated upstream
   printing:
     dependency: "direct main"
     description:
@@ -644,8 +640,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.14.3"
-=======
->>>>>>> Stashed changes
   provider:
     dependency: "direct main"
     description:

@@ -106,7 +106,6 @@ class AuthViewModel extends ChangeNotifier {
         final data = result.data!;
         user = data.user;
 
-<<<<<<< Updated upstream
         AuthCache.token = data.accessToken;
         await LocalStorageService.saveToken(data.accessToken);
         await LocalStorageService.saveUser(data.user.toJson());
@@ -137,68 +136,6 @@ class AuthViewModel extends ChangeNotifier {
         }
       } else {
         if (context.mounted) _showError(context, result.error?.message ?? 'Login failed');
-=======
-        print("🕵️‍♂️ [AuthViewModel.login] Raw extracted token: ${data.accessToken}");
-
-        try {
-          print("🕵️‍♂️ [AuthViewModel.login] BEFORE AuthCache.token = data.accessToken");
-          AuthCache.token = data.accessToken;
-          print("🕵️‍♂️ [AuthViewModel.login] AFTER AuthCache.token. In-memory cache is now: ${AuthCache.token}");
-        } catch (e) {
-          print("🕵️‍♂️ [AuthViewModel.login] ERROR saving token to AuthCache: $e");
-        }
-
-        try {
-          print("🕵️‍♂️ [AuthViewModel.login] BEFORE LocalStorageService.saveToken()");
-          await LocalStorageService.saveToken(data.accessToken);
-          print("🕵️‍♂️ [AuthViewModel.login] AFTER LocalStorageService.saveToken()");
-          
-          final verifyToken = await LocalStorageService.getToken();
-          print("🕵️‍♂️ [AuthViewModel.login] VERIFICATION - Token retrieved from local storage: $verifyToken");
-        } catch (e) {
-          print("🕵️‍♂️ [AuthViewModel.login] ERROR saving token to LocalStorageService: $e");
-        }
-
-        try {
-          print("🕵️‍♂️ [AuthViewModel.login] BEFORE LocalStorageService.saveUser()");
-          await LocalStorageService.saveUser(data.user.toJson());
-          print("🕵️‍♂️ [AuthViewModel.login] AFTER LocalStorageService.saveUser()");
-        } catch (e) {
-          print("🕵️‍♂️ [AuthViewModel.login] ERROR saving user to LocalStorageService: $e");
-        }
-
-        try {
-          if (data.user.role.isNotEmpty) {
-            print("🕵️‍♂️ [AuthViewModel.login] BEFORE LocalStorageService.saveRole()");
-            await LocalStorageService.saveRole(data.user.role.toLowerCase());
-            print("🕵️‍♂️ [AuthViewModel.login] AFTER LocalStorageService.saveRole()");
-          }
-        } catch (e) {
-          print("🕵️‍♂️ [AuthViewModel.login] ERROR saving role to LocalStorageService: $e");
-        }
-
-        AppLogger.info(_tag, 'Login successful for ${data.user.email}');
-        
-        if (_disposed) {
-          print("🕵️‍♂️ [AuthViewModel.login] Navigation cancelled: AuthViewModel is disposed.");
-          return;
-        }
-        if (!context.mounted) {
-          print("🕵️‍♂️ [AuthViewModel.login] Navigation cancelled: BuildContext is no longer mounted.");
-          return;
-        }
-
-        try {
-          print("🕵️‍♂️ [AuthViewModel.login] BEFORE context.go('/') navigation");
-          context.go('/');
-          print("🕵️‍♂️ [AuthViewModel.login] AFTER context.go('/') navigation triggered");
-        } catch (e, st) {
-          print("🕵️‍♂️ [AuthViewModel.login] ERROR during navigation redirect: $e\n$st");
-        }
-      } else {
-        print("🕵️‍♂️ [AuthViewModel.login] Login failed on server side: ${result.error?.message}");
-        _showError(context, result.error?.message ?? 'Login failed');
->>>>>>> Stashed changes
       }
     } catch (e, st) {
       AppLogger.error(_tag, 'Login error', e, st);
@@ -358,12 +295,7 @@ class AuthViewModel extends ChangeNotifier {
           print("🕵️‍♂️ [AuthViewModel._register] ERROR during navigation redirect: $e\n$st");
         }
       } else {
-<<<<<<< Updated upstream
         if (context.mounted) _showError(context, result.error?.message ?? 'Registration failed');
-=======
-        print("🕵️‍♂️ [AuthViewModel._register] Registration failed on server side: ${result.error?.message}");
-        _showError(context, result.error?.message ?? 'Registration failed');
->>>>>>> Stashed changes
       }
     } catch (e, st) {
       AppLogger.error(_tag, 'Register error', e, st);
@@ -383,29 +315,16 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     await LocalStorageService.clearToken();
-<<<<<<< Updated upstream
     AuthCache.token = null;
-=======
-    await LocalStorageService.removeRole();
-    AuthCache.token = null;
-
-    print("🔥 LOGOUT: Local data cleared");
->>>>>>> Stashed changes
 
     user = null;
     notifyListeners();
 
-<<<<<<< Updated upstream
     // Notify the rest of the app — currently used by `main.dart` to clear the
     // FCM-token de-dup cache so the next user re-registers their device.
     AuthEventBus.emit(const LoggedOut());
 
     if (context.mounted) context.go('/role');
-=======
-    if (context.mounted) {
-      context.go('/signin');
-    }
->>>>>>> Stashed changes
   }
 
   Future<void> forgotPassword(BuildContext context, String email) async {

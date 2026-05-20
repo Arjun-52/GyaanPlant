@@ -3,10 +3,7 @@ import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
 import 'package:gyaanplant/models/HOD_models/department_model.dart';
 import 'package:gyaanplant/network/auth_cache.dart';
-<<<<<<< Updated upstream
-=======
 import 'package:gyaanplant/data/services/local_storage_service.dart';
->>>>>>> Stashed changes
 
 class DepartmentsViewModel extends ChangeNotifier {
   static const _tag = 'DepartmentsViewModel';
@@ -30,21 +27,11 @@ class DepartmentsViewModel extends ChangeNotifier {
   }
 
   Future<void> loadDepartments() async {
-<<<<<<< Updated upstream
     if (AuthCache.token == null) {
       error = 'Not logged in';
       notifyListeners();
       return;
     }
-=======
-    print("🚀 LOADING DEPARTMENTS FOR HOD");
-
-    final token = AuthCache.token;
-    print(
-      "🔑 TOKEN: ${token != null ? 'Present (${token.length} chars)' : 'MISSING'}",
-    );
-    if (token == null) throw Exception('User not logged in');
->>>>>>> Stashed changes
 
     isLoading = true;
     error = null;
@@ -68,8 +55,6 @@ class DepartmentsViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-<<<<<<< Updated upstream
-=======
 
   /// Debug method to check user info and API response structure
   Future<void> debugUserInfo() async {
@@ -138,5 +123,4 @@ class DepartmentsViewModel extends ChangeNotifier {
       print("💥 DEBUG Exception: $e");
     }
   }
->>>>>>> Stashed changes
 }

@@ -26,21 +26,11 @@ class HodDashboardViewModel extends ChangeNotifier {
   }
 
   Future<void> loadDashboard() async {
-<<<<<<< Updated upstream
     if (AuthCache.token == null) {
       error = 'Not logged in';
       notifyListeners();
       return;
     }
-=======
-    print("🚀 LOADING HOD DASHBOARD");
-
-    final token = AuthCache.token;
-    print(
-      "🔑 TOKEN: ${token != null ? 'Present (${token.length} chars)' : 'MISSING'}",
-    );
-    if (token == null) throw Exception("User not logged in");
->>>>>>> Stashed changes
 
     isLoading = true;
     error = null;

@@ -38,8 +38,6 @@ class AuthUser {
   });
 
   factory AuthUser.fromJson(Map<String, dynamic> json) {
-<<<<<<< Updated upstream
-=======
     print("🏫 [AuthUser.fromJson] Raw input: $json");
     print("🏫 Parsing college field: ${json['college']}");
 
@@ -81,7 +79,6 @@ class AuthUser {
       }
     }
 
->>>>>>> Stashed changes
     return AuthUser(
       id: idValue,
       name: nameValue,
