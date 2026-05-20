@@ -1,7 +1,17 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 class AppConstants {
   AppConstants._();
 
-  static const String baseUrl = 'https://backend.gyaanplant.com';
+  static final String baseUrl = (() {
+    if (kIsWeb) return 'https://backend.gyaanplant.co.in';
+    try {
+      if (Platform.isAndroid) return 'https://backend.gyaanplant.co.in';
+      if (Platform.isIOS) return 'https://backend.gyaanplant.co.in';
+    } catch (_) {}
+    return 'https://backend.gyaanplant.co.in';
+  })();
 
   static const int connectTimeout = 30000;
   static const int receiveTimeout = 30000;

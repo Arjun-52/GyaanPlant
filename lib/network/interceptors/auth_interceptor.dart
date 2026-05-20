@@ -8,6 +8,8 @@ import '../auth_cache.dart';
 class AuthInterceptor extends Interceptor {
   static const _tag = 'AuthInterceptor';
 
+  // ⚠️ TESTING: These endpoints are skipped temporarily for testing without auth
+  // Remove 'ApiEndpoints.dashboardStudent' before production!
   static const _skipList = [
     ApiEndpoints.login,
     ApiEndpoints.register,

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
+<<<<<<< Updated upstream
+=======
+import 'package:gyaanplant/network/auth_cache.dart';
+import 'dart:math' as math;
+>>>>>>> Stashed changes
 
 class TpoDashboardViewModel extends ChangeNotifier {
   static const _tag = 'TpoDashboardViewModel';
@@ -48,6 +53,22 @@ class TpoDashboardViewModel extends ChangeNotifier {
   }
 
   Future<void> fetchDashboardData() async {
+<<<<<<< Updated upstream
+=======
+    print("🚀 API CALL STARTED");
+
+    // Log current token for debugging
+    final token = AuthCache.token;
+    print(
+      "🔑 TOKEN: ${token != null ? 'Present (${token.length} chars)' : 'MISSING'}",
+    );
+    if (token != null) {
+      print(
+        "🔑 TOKEN PREFIX: ${token.substring(0, math.min(20, token.length))}...",
+      );
+    }
+
+>>>>>>> Stashed changes
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();

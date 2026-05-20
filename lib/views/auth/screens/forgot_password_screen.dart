@@ -56,7 +56,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               const SizedBox(height: 20),
 
-              /// 🔥 HEADER
+              ///  HEADER
               const Text(
                 "Forgot Password?",
                 style: TextStyle(
@@ -79,7 +79,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               const SizedBox(height: 40),
 
-              /// 🔥 CARD
+              /// CARD
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
@@ -106,12 +106,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                       CustomTextField(
                         hint: "name@institution.edu",
-                        onChanged: (value) {},
+                        onChanged: (value) {
+                          _emailController.text = value;
+                        },
                       ),
 
                       const SizedBox(height: 30),
 
-                      /// 🔥 BUTTON
+                      ///  BUTTON
                       Consumer<AuthViewModel>(
                         builder: (context, vm, child) {
                           return PrimaryButton(
@@ -125,7 +127,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                       const SizedBox(height: 20),
 
-                      /// 🔗 SIGN IN
+                      ///  SIGN IN
                       Center(
                         child: GestureDetector(
                           onTap: () => context.go('/'),

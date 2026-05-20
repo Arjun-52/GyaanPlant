@@ -38,30 +38,67 @@ class AuthUser {
   });
 
   factory AuthUser.fromJson(Map<String, dynamic> json) {
+<<<<<<< Updated upstream
+=======
+    print("🏫 [AuthUser.fromJson] Raw input: $json");
+    print("🏫 Parsing college field: ${json['college']}");
+
+    final idValue = json['_id'] as String? ?? json['id'] as String? ?? '';
+    final nameValue = json['name'] as String? ?? '';
+    final emailValue = json['email'] as String? ?? '';
+    final roleValue = json['role'] as String? ?? '';
+    final avatarValue = json['avatar'] as String?;
+    final statusValue = json['status'] as String? ?? 'active';
+    final emailVerifiedValue = json['emailVerified'] as bool? ?? false;
+    
+    final organizationValue = json['organization'] as String?;
+    final timezoneValue = json['timezone'] as String? ?? 'Asia/Kolkata';
+    final isGoogleLinkedValue = json['isGoogleLinked'] as bool?;
+    final createdAtValue = json['createdAt'] as String? ?? '';
+    final updatedAtValue = json['updatedAt'] as String? ?? '';
+    final lastLoginValue = json['lastLogin'] as String?;
+    final lastLoginIPValue = json['lastLoginIP'] as String?;
+
+    List<String> fcmTokensList = [];
+    if (json['fcmTokens'] != null) {
+      try {
+        if (json['fcmTokens'] is List) {
+          fcmTokensList = (json['fcmTokens'] as List<dynamic>)
+              .map((e) => e.toString())
+              .toList();
+        }
+      } catch (e) {
+        print("⚠️ [AuthUser.fromJson] FCM tokens parse error: $e");
+      }
+    }
+
+    College? collegeValue;
+    if (json['college'] != null && json['college'] is Map<String, dynamic>) {
+      try {
+        collegeValue = College.fromJson(json['college'] as Map<String, dynamic>);
+      } catch (e) {
+        print("⚠️ [AuthUser.fromJson] College parse error: $e");
+      }
+    }
+
+>>>>>>> Stashed changes
     return AuthUser(
-      id: json['_id'] as String,
-      name: json['name'] as String,
-      email: json['email'] as String,
-      role: json['role'] as String,
-      avatar: json['avatar'] as String?,
-      status: json['status'] as String? ?? 'active',
-      emailVerified: json['emailVerified'] as bool? ?? false,
-      college:
-          json['college'] != null && json['college'] is Map<String, dynamic>
-          ? College.fromJson(json['college'])
-          : null,
-      organization: json['organization'] as String?,
-      fcmTokens:
-          (json['fcmTokens'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          [],
-      timezone: json['timezone'] as String? ?? 'Asia/Kolkata',
-      isGoogleLinked: json['isGoogleLinked'] as bool?,
-      createdAt: json['createdAt'] as String,
-      updatedAt: json['updatedAt'] as String,
-      lastLogin: json['lastLogin'] as String?,
-      lastLoginIP: json['lastLoginIP'] as String?,
+      id: idValue,
+      name: nameValue,
+      email: emailValue,
+      role: roleValue,
+      avatar: avatarValue,
+      status: statusValue,
+      emailVerified: emailVerifiedValue,
+      college: collegeValue,
+      organization: organizationValue,
+      fcmTokens: fcmTokensList,
+      timezone: timezoneValue,
+      isGoogleLinked: isGoogleLinkedValue,
+      createdAt: createdAtValue,
+      updatedAt: updatedAtValue,
+      lastLogin: lastLoginValue,
+      lastLoginIP: lastLoginIPValue,
     );
   }
 

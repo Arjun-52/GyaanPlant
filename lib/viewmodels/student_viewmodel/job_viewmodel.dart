@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import '../../core/utils/app_logger.dart';
 import '../../data/services/api_service.dart';
 import '../../models/drive/drive_model.dart';
+<<<<<<< Updated upstream
+=======
+import '../../network/auth_cache.dart';
+>>>>>>> Stashed changes
 
 class JobViewModel extends ChangeNotifier {
   static const _tag = 'JobViewModel';
@@ -30,6 +34,21 @@ class JobViewModel extends ChangeNotifier {
   Future<void> fetchJobs() async {
     if (isLoaded) return;
 
+<<<<<<< Updated upstream
+=======
+    // Check token before API call
+    final token = AuthCache.token;
+    print(
+      "🔑 TOKEN: ${token != null ? 'Present (${token.length} chars)' : 'MISSING'}",
+    );
+
+    if (isLoaded) {
+      print("⚠️ Already loaded, skipping API call");
+      return;
+    }
+
+    print("🌐 JOBS API URL: /api/v1/drive");
+>>>>>>> Stashed changes
     isLoading = true;
     errorMessage = null;
     notifyListeners();
@@ -37,10 +56,33 @@ class JobViewModel extends ChangeNotifier {
     try {
       final result = await _drive.getDrives();
 
+<<<<<<< Updated upstream
       if (result.isSuccess && result.data != null) {
         jobs = result.data!.drives;
         isLoaded = true;
         AppLogger.info(_tag, 'Loaded ${jobs.length} jobs');
+=======
+      print("📦 STATUS: ${result.isSuccess ? 'SUCCESS' : 'FAILED'}");
+      if (result.isSuccess) {
+        print("📊 RESPONSE DATA: ${result.data}");
+
+        if (result.data != null) {
+          jobs = result.data!.drives;
+          isLoaded = true;
+          print("✅ JOBS STORED: ${jobs.length} jobs loaded");
+
+          // Log first job details for debugging
+          if (jobs.isNotEmpty) {
+            final firstJob = jobs.first;
+            print(
+              "🔍 FIRST JOB: id=${firstJob.id}, role=${firstJob.role}, companyName=${firstJob.companyName}",
+            );
+          }
+        } else {
+          print("❌ RESULT DATA IS NULL");
+          errorMessage = 'API returned null data';
+        }
+>>>>>>> Stashed changes
       } else {
         errorMessage = result.error?.message ?? 'Failed to fetch jobs';
         AppLogger.error(_tag, errorMessage!);

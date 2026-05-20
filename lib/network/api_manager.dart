@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'api_response.dart';
 import 'app_constants.dart';
+import 'auth_cache.dart';
+import 'interceptors/auth_interceptor.dart';
 import 'network_config.dart';
 
 class NetworkAPIManager {
@@ -266,6 +268,12 @@ class NetworkAPIManager {
         parsed = raw as T?;
       }
       return ApiResponse.success(data: parsed as T, statusCode: statusCode);
+    }
+
+    // Handle 401 — force logout since validateStatus lets 4xx through
+    if (statusCode == 401) {
+      AuthCache.token = null;
+      AuthInterceptor.onUnauthorized?.call();
     }
 
     final error = _parseErrorBody(response.data);

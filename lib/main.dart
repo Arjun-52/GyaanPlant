@@ -37,6 +37,7 @@ void main() async {
   final token = await LocalStorageService.getToken();
   AuthCache.token = token;
 
+<<<<<<< Updated upstream
   // Only register the FCM token with the backend once we know we're logged in.
   if (token != null) {
     unawaited(NotificationService.instance.registerFCMTokenWithBackend());
@@ -52,6 +53,13 @@ void main() async {
         NotificationService.instance.clearSavedTokenCache();
     }
   });
+=======
+  AuthInterceptor.onUnauthorized = () async {
+    await LocalStorageService.clearToken();
+    AuthCache.token = null;
+    AppRouter.router.go('/signin');
+  };
+>>>>>>> Stashed changes
 
   runApp(const MyApp());
 }
