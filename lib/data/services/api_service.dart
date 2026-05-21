@@ -1,4 +1,6 @@
+import '../../models/auth/college_dropdown_model.dart';
 import '../../network/api_manager.dart';
+import '../../network/api_response.dart';
 import '../../repositories/auth_repository.dart';
 import '../../repositories/drive_repository.dart';
 import '../../repositories/gamification_repository.dart';
@@ -42,4 +44,8 @@ class ApiService {
   HodRepository get hod => _hod;
   MentorRepository get mentor => _mentor;
   CollegeRepository get college => _college;
+
+  /// Pass-through used by registration flow to fetch the college dropdown list.
+  Future<ApiResponse<List<CollegeDropdownModel>>> getColleges() =>
+      _college.getColleges();
 }

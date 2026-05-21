@@ -8,6 +8,8 @@ import 'package:gyaanplant/views/auth/widgets/primary_button.dart';
 import 'package:gyaanplant/views/auth/widgets/step_indicator.dart';
 import 'package:provider/provider.dart';
 
+import '../../../models/auth/college_dropdown_model.dart';
+
 import '../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -27,12 +29,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
   static const accentGreen = Color(0xFF00E676);
 
   @override
+  void initState() {
+    super.initState();
+    // Ensure colleges are fetched when the screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<AuthViewModel>(context, listen: false).fetchColleges();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final vm = Provider.of<AuthViewModel>(context);
-
     return Scaffold(
       backgroundColor: bgColor,
-
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -72,12 +81,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
               const SizedBox(height: 20),
 
-              /// STEP INDICATOR (assumes internal styling ok)
+              // STEP INDICATOR
               StepIndicator(currentStep: vm.currentStep),
 
               const SizedBox(height: 20),
 
-              /// CARD
+              // CARD
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
@@ -99,7 +108,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                     const SizedBox(height: 20),
 
-                    /// BUTTONS
+                    // BUTTONS
                     Row(
                       children: [
                         if (vm.currentStep > 1)
@@ -150,6 +159,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ),
     );
   }
+
+
+
 
   ///  STEP CONTENT
   Widget _buildStepContent(AuthViewModel vm) {
@@ -224,11 +236,32 @@ class _SignUpScreenState extends State<SignUpScreen> {
             const FormLabel(text: "COLLEGE", color: Colors.white70),
             const SizedBox(height: 6),
 
-            CustomDropdown(
-              value: vm.college,
-              items: const ["Select", "IIT", "NIT", "Other"],
-              onChanged: vm.setCollege,
-            ),
+            // Dynamic College Dropdown – shows loading spinner while fetching
+            vm.isCollegeLoading
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                : Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F3F3),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: DropdownButton<CollegeDropdownModel?>(
+                      isExpanded: true,
+                      hint: const Text('Select College'),
+                      value: vm.selectedCollege,
+                      underline: const SizedBox(),
+                      items: vm.colleges
+                          .map((c) => DropdownMenuItem<CollegeDropdownModel?>(
+                                value: c,
+                                child: Text(c.name),
+                              ))
+                          .toList(),
+                      onChanged: (CollegeDropdownModel? c) => vm.setSelectedCollege(c),
+                    ),
+                  ),
           ],
         );
 
