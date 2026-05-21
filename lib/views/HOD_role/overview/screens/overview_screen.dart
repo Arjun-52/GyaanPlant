@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
-import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
 import 'package:gyaanplant/views/HOD_role/overview/widgets/stat_card.dart';
 import 'package:gyaanplant/views/HOD_role/overview/widgets/syllabus_card.dart';
 import 'package:provider/provider.dart';
@@ -127,19 +126,6 @@ class _OverViewScreenState extends State<OverViewScreen> {
                                             color: Colors.white70,
                                           ),
                                     tooltip: 'Refresh Dashboard',
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Consumer<AuthViewModel>(
-                                  builder: (context, authVM, _) => IconButton(
-                                    onPressed: () async {
-                                      await authVM.logout(context);
-                                    },
-                                    icon: const Icon(
-                                      Icons.logout,
-                                      color: Colors.white70,
-                                    ),
-                                    tooltip: 'Logout',
                                   ),
                                 ),
                               ],

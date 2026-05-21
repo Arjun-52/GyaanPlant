@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
 import '../../../../viewmodels/HOD_viewmodel/settings_view_model.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -131,6 +132,70 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         _tile('Report Templates'),
                         _tile('Staff Access Management'),
                         _tile('GyaanPlant MOU Details'),
+                        const SizedBox(height: 16),
+                        GestureDetector(
+                          onTap: () async {
+                            final shouldLogout = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                backgroundColor: const Color(0xFF071E17),
+                                title: const Text(
+                                  'Confirm Logout',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                content: const Text(
+                                  'Are you sure you want to log out?',
+                                  style: TextStyle(color: Colors.white70),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context, false),
+                                    child: const Text(
+                                      'Cancel',
+                                      style: TextStyle(color: Colors.greenAccent),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context, true),
+                                    child: const Text(
+                                      'Logout',
+                                      style: TextStyle(color: Colors.redAccent),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (shouldLogout == true && context.mounted) {
+                              await context.read<AuthViewModel>().logout(context);
+                            }
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F3D34),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.redAccent.withAlpha(80)),
+                            ),
+                            child: Row(
+                              children: const [
+                                Icon(Icons.logout, color: Colors.redAccent),
+                                SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Logout',
+                                    style: TextStyle(
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Icon(Icons.chevron_right, color: Colors.redAccent),
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
