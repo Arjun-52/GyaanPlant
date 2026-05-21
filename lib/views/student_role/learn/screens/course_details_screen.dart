@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:gyaanplant/views/student_role/learn/widgets/course-details/info_card.dart';
 import 'package:gyaanplant/views/student_role/learn/widgets/course-details/section_card.dart';
 import 'package:gyaanplant/views/student_role/learn/widgets/course-details/row_item.dart';
+import 'package:gyaanplant/views/student_role/learn/screens/course_learning_screen.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
   final String courseId;
@@ -366,16 +367,16 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   }
 
   void _resumeCourse() {
-    // TODO: Navigate to course content
-    // For now, just show a message
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Opening course content...'),
-          backgroundColor: Colors.blue,
+    if (course == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CourseLearningScreen(
+          courseId: widget.courseId,
+          courseTitle: course!.title,
         ),
-      );
-    }
+      ),
+    );
   }
 
   @override
