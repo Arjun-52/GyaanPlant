@@ -16,7 +16,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   @override
   void initState() {
     super.initState();
-    _vm = ReportsViewModel();
+    _vm = ReportsViewModel()..initialize();
   }
 
   @override
