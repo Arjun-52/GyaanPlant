@@ -12,6 +12,8 @@ import 'package:provider/provider.dart';
 import 'package:gyaanplant/views/student_role/learn/widgets/course-details/info_card.dart';
 import 'package:gyaanplant/views/student_role/learn/widgets/course-details/section_card.dart';
 import 'package:gyaanplant/views/student_role/learn/widgets/course-details/row_item.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/course-details/error_retry_widget.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/course-details/price_enroll_card.dart';
 import 'package:gyaanplant/views/student_role/learn/screens/course_learning_screen.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
@@ -398,35 +400,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               child: CircularProgressIndicator(color: Color(0xFF00C853)),
             )
           : error != null
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error, color: Colors.red, size: 64),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Error loading course",
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    error!,
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _fetchCourse,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00C853),
-                    ),
-                    child: const Text(
-                      "Retry",
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
-                ],
-              ),
+          ? ErrorRetryWidget(
+              errorMessage: error!,
+              onRetry: _fetchCourse,
             )
           : course == null
           ? const Center(
@@ -518,82 +494,12 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   const SizedBox(height: 20),
 
                   /// Price + enroll
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white12),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          "PRICE",
-                          style: TextStyle(color: Colors.white54),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          course!.category ?? "Free",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: isPaymentProcessing
-                                ? null
-                                : isEnrolled
-                                ? _resumeCourse
-                                : _startPayment,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isPaymentProcessing
-                                  ? Colors.grey
-                                  : isEnrolled
-                                  ? Colors.orange
-                                  : const Color(0xFF00C853),
-                              foregroundColor: Colors.black,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: isPaymentProcessing
-                                ? const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                Colors.black,
-                                              ),
-                                        ),
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text('Processing...'),
-                                    ],
-                                  )
-                                : Text(
-                                    isEnrolled ? "RESUME COURSE" : "ENROLL NOW",
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  PriceEnrollCard(
+                    priceText: course!.category ?? "Free",
+                    isEnrolled: isEnrolled,
+                    isPaymentProcessing: isPaymentProcessing,
+                    onEnroll: _startPayment,
+                    onResume: _resumeCourse,
                   ),
                 ],
               ),
