@@ -9,6 +9,9 @@ import '../../../../models/payment/item_type.dart';
 import '../../../../models/payment/order_result.dart';
 import '../../../../viewmodels/student_viewmodel/learning_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/course-details/info_card.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/course-details/section_card.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/course-details/row_item.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
   final String courseId;
@@ -451,24 +454,24 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   /// Info cards
                   Row(
                     children: [
-                      _infoCard("Modules", "${course!.totalModules}"),
+                      InfoCard(title: "Modules", value: "${course!.totalModules}"),
                       const SizedBox(width: 10),
-                      _infoCard("Duration", "${course!.durationMins}m"),
+                      InfoCard(title: "Duration", value: "${course!.durationMins}m"),
                     ],
                   ),
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      _infoCard("Points", "50"),
+                      InfoCard(title: "Points", value: "50"),
                       const SizedBox(width: 10),
-                      _infoCard("XP", "100"),
+                      InfoCard(title: "XP", value: "100"),
                     ],
                   ),
 
                   const SizedBox(height: 20),
 
                   /// Curriculum
-                  _sectionCard(
+                  SectionCard(
                     title: "Curriculum Overview",
                     child: Column(
                       children: const [
@@ -490,12 +493,12 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   const SizedBox(height: 16),
 
                   /// Requirements
-                  _sectionCard(
+                  SectionCard(
                     title: "Requirements",
                     child: Column(
                       children: const [
-                        _rowItem("Passing Score", "70%"),
-                        _rowItem("Target Audience", "Student"),
+                        RowItem(title: "Passing Score", value: "70%"),
+                        RowItem(title: "Target Audience", value: "Student"),
                       ],
                     ),
                   ),
@@ -503,7 +506,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   const SizedBox(height: 16),
 
                   /// Students
-                  _sectionCard(
+                  SectionCard(
                     title: "Enrolled Students",
                     child: const Text(
                       "0 Learners",
@@ -594,82 +597,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 ],
               ),
             ),
-    );
-  }
-
-  Widget _infoCard(String title, String value) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.white12),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Text(title, style: const TextStyle(color: Colors.white54)),
-            const SizedBox(height: 6),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _sectionCard({required String title, required Widget child}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.white12),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          child,
-        ],
-      ),
-    );
-  }
-}
-
-class _rowItem extends StatelessWidget {
-  final String title;
-  final String value;
-
-  const _rowItem(this.title, this.value);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: const TextStyle(color: Colors.white54)),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
