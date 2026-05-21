@@ -34,69 +34,87 @@ class LearningViewModel extends ChangeNotifier {
 
   /// Fetch everything (courses + enrollments)
   Future<void> fetchCourses() async {
-    print("🚀 FETCH COURSES STARTED");
+    print("🚀 [LearningViewModel] FETCH COURSES STARTED. Setting isLoading = true");
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
 
     final token = AuthCache.token;
     if (token == null) {
-      errorMessage = 'Please login';
-      notifyListeners();
-      return;
+      print("⚠️ [LearningViewModel] AuthCache.token is null! Proceeding anyway for the temporary test flow.");
     }
 
-    isLoading = true;
-    notifyListeners();
-
     try {
+      print("🚀 [LearningViewModel] Calling _learning.getCourses()...");
       final coursesResult = await _learning.getCourses();
+      print("🚀 [LearningViewModel] Courses response received: isSuccess=${coursesResult.isSuccess}");
+
+      print("🚀 [LearningViewModel] Calling _learning.getMyEnrollments()...");
       final enrollmentsResult = await _learning.getMyEnrollments();
+      print("🚀 [LearningViewModel] Enrollments response received: isSuccess=${enrollmentsResult.isSuccess}");
 
       /// ALL COURSES
       if (coursesResult.isSuccess) {
         courses = coursesResult.data ?? [];
-        print("✅ COURSES: ${courses.length}");
+        print("✅ [LearningViewModel] COURSES LOADED: ${courses.length}");
       } else {
         courses = [];
+        print("❌ [LearningViewModel] Failed to load courses: ${coursesResult.error?.message}");
       }
 
       /// ENROLLMENTS
       if (enrollmentsResult.isSuccess) {
         enrollments = enrollmentsResult.data ?? [];
-        print("✅ ENROLLMENTS: ${enrollments.length}");
+        print("✅ [LearningViewModel] ENROLLMENTS LOADED: ${enrollments.length}");
       } else {
         enrollments = [];
+        print("❌ [LearningViewModel] Failed to load enrollments: ${enrollmentsResult.error?.message}");
       }
     } catch (e) {
       errorMessage = e.toString();
-      print("💥 ERROR: $e");
+      print("💥 [LearningViewModel] ERROR in fetchCourses: $e");
+    } finally {
+      print("🚀 [LearningViewModel] fetchCourses completed. Setting isLoading = false");
+      isLoading = false;
+      if (!_disposed) {
+        notifyListeners();
+        print("🚀 [LearningViewModel] Listeners notified.");
+      }
     }
-
-    isLoading = false;
-    notifyListeners();
   }
 
   /// Only enrolled courses (for My Courses screen)
   Future<void> fetchMyCourses() async {
-    print("🚀 FETCH MY COURSES");
+    print("🚀 [LearningViewModel] FETCH MY COURSES. Setting isLoading = true");
 
     isLoading = true;
+    errorMessage = null;
     notifyListeners();
 
     try {
+      print("🚀 [LearningViewModel] Calling _learning.getMyEnrollments()...");
       final result = await _learning.getMyEnrollments();
+      print("🚀 [LearningViewModel] Enrollments response: isSuccess=${result.isSuccess}");
 
       if (result.isSuccess) {
         enrollments = result.data ?? [];
-        print("📚 MY COURSES: ${enrollments.length}");
+        print("📚 [LearningViewModel] MY COURSES: ${enrollments.length}");
       } else {
         enrollments = [];
+        print("❌ [LearningViewModel] Failed to load my courses: ${result.error?.message}");
       }
     } catch (e) {
-      print("💥 ERROR: $e");
+      errorMessage = e.toString();
+      print("💥 [LearningViewModel] ERROR in fetchMyCourses: $e");
       enrollments = [];
+    } finally {
+      print("🚀 [LearningViewModel] fetchMyCourses completed. Setting isLoading = false");
+      isLoading = false;
+      if (!_disposed) {
+        notifyListeners();
+        print("🚀 [LearningViewModel] Listeners notified.");
+      }
     }
-
-    isLoading = false;
-    notifyListeners();
   }
 
   /// Check enrollment

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/services/api_service.dart';
 import '../../models/drive/drive_model.dart';
-import '../../services/auth_service.dart';
+import '../../network/auth_cache.dart';
 
 class JobViewModel extends ChangeNotifier {
   static const _tag = 'JobViewModel';
@@ -31,7 +31,7 @@ class JobViewModel extends ChangeNotifier {
     print("🚀 CALLING JOBS API - fetchJobs() triggered");
 
     // Check token before API call
-    final token = AuthService.token;
+    final token = AuthCache.token;
     print(
       "🔑 TOKEN: ${token != null ? 'Present (${token.length} chars)' : 'MISSING'}",
     );
@@ -55,9 +55,7 @@ class JobViewModel extends ChangeNotifier {
         print("📊 RESPONSE DATA: ${result.data}");
 
         if (result.data != null) {
-          jobs = (result.data as List)
-              .map((e) => DriveModel.fromJson(e))
-              .toList();
+          jobs = result.data!.drives;
           isLoaded = true;
           print("✅ JOBS STORED: ${jobs.length} jobs loaded");
 

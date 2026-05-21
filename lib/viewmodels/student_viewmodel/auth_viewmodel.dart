@@ -72,45 +72,104 @@ class AuthViewModel extends ChangeNotifier {
 
   // LOGIN
   Future<void> login(BuildContext context) async {
+    // 🚧 TEMPORARY DEVELOPMENT BYPASS: Set to true to bypass login validation and mock credentials
+    const bool useDevBypass = false;
+    if (useDevBypass) {
+      print("🚧 DEV BYPASS: Tapped login. Mocking login and moving to student dashboard.");
+      await LocalStorageService.saveToken("mock_dev_token");
+      await LocalStorageService.saveRole("student");
+      await LocalStorageService.saveUser({
+        "id": "mock_id",
+        "name": "Dev Student",
+        "email": email.isNotEmpty ? email : "dev@gyaanplant.com",
+        "role": "student",
+      });
+      AuthCache.token = "mock_dev_token";
+      
+      if (_disposed || !context.mounted) return;
+      context.go('/student-dashboard');
+      return;
+    }
+
     if (!_validateLoginFields(context)) return;
 
     _setLoading(true);
     try {
+      print("🕵️‍♂️ [AuthViewModel.login] Sending login request for email: $email");
       final result = await _auth.login(email: email, password: password);
+      print("🕵️‍♂️ [AuthViewModel.login] Login API response received. success=${result.isSuccess}, statusCode=${result.statusCode}");
 
       if (result.isSuccess) {
         final data = result.data!;
         user = data.user;
 
-        print("🔑 LOGIN SUCCESS - TOKEN: ${data.accessToken}");
-        print("🔑 TOKEN LENGTH: ${data.accessToken?.length}");
+        print("🕵️‍♂️ [AuthViewModel.login] Raw extracted token: ${data.accessToken}");
 
-        // Update in-memory cache first for immediate performance
-        AuthCache.token = data.accessToken;
-        print("🔑 TOKEN SAVED TO AUTH CACHE: ${AuthCache.token}");
-
-        // Persist to storage (async, no blocking)
-        await LocalStorageService.saveToken(data.accessToken);
-        print("🔑 TOKEN SAVED TO LOCAL STORAGE");
-
-        // Verify token was saved
-        final savedToken = await LocalStorageService.getToken();
-        print("🔑 VERIFICATION - TOKEN FROM STORAGE: $savedToken");
-
-        await LocalStorageService.saveUser(data.user.toJson());
-        if (data.user.role.isNotEmpty) {
-          await LocalStorageService.saveRole(data.user.role.toLowerCase());
+        try {
+          print("🕵️‍♂️ [AuthViewModel.login] BEFORE AuthCache.token = data.accessToken");
+          AuthCache.token = data.accessToken;
+          print("🕵️‍♂️ [AuthViewModel.login] AFTER AuthCache.token. In-memory cache is now: ${AuthCache.token}");
+        } catch (e) {
+          print("🕵️‍♂️ [AuthViewModel.login] ERROR saving token to AuthCache: $e");
         }
+
+        try {
+          print("🕵️‍♂️ [AuthViewModel.login] BEFORE LocalStorageService.saveToken()");
+          await LocalStorageService.saveToken(data.accessToken);
+          print("🕵️‍♂️ [AuthViewModel.login] AFTER LocalStorageService.saveToken()");
+          
+          final verifyToken = await LocalStorageService.getToken();
+          print("🕵️‍♂️ [AuthViewModel.login] VERIFICATION - Token retrieved from local storage: $verifyToken");
+        } catch (e) {
+          print("🕵️‍♂️ [AuthViewModel.login] ERROR saving token to LocalStorageService: $e");
+        }
+
+        try {
+          print("🕵️‍♂️ [AuthViewModel.login] BEFORE LocalStorageService.saveUser()");
+          await LocalStorageService.saveUser(data.user.toJson());
+          print("🕵️‍♂️ [AuthViewModel.login] AFTER LocalStorageService.saveUser()");
+        } catch (e) {
+          print("🕵️‍♂️ [AuthViewModel.login] ERROR saving user to LocalStorageService: $e");
+        }
+
+        try {
+          if (data.user.role.isNotEmpty) {
+            print("🕵️‍♂️ [AuthViewModel.login] BEFORE LocalStorageService.saveRole()");
+            await LocalStorageService.saveRole(data.user.role.toLowerCase());
+            print("🕵️‍♂️ [AuthViewModel.login] AFTER LocalStorageService.saveRole()");
+          }
+        } catch (e) {
+          print("🕵️‍♂️ [AuthViewModel.login] ERROR saving role to LocalStorageService: $e");
+        }
+
         AppLogger.info(_tag, 'Login successful for ${data.user.email}');
-        if (_disposed || !context.mounted) return;
-        context.go('/');
+        
+        if (_disposed) {
+          print("🕵️‍♂️ [AuthViewModel.login] Navigation cancelled: AuthViewModel is disposed.");
+          return;
+        }
+        if (!context.mounted) {
+          print("🕵️‍♂️ [AuthViewModel.login] Navigation cancelled: BuildContext is no longer mounted.");
+          return;
+        }
+
+        try {
+          print("🕵️‍♂️ [AuthViewModel.login] BEFORE context.go('/') navigation");
+          context.go('/');
+          print("🕵️‍♂️ [AuthViewModel.login] AFTER context.go('/') navigation triggered");
+        } catch (e, st) {
+          print("🕵️‍♂️ [AuthViewModel.login] ERROR during navigation redirect: $e\n$st");
+        }
       } else {
+        print("🕵️‍♂️ [AuthViewModel.login] Login failed on server side: ${result.error?.message}");
         _showError(context, result.error?.message ?? 'Login failed');
       }
     } catch (e, st) {
       AppLogger.error(_tag, 'Login error', e, st);
+      print("🕵️‍♂️ [AuthViewModel.login] EXCEPTION caught during login flow: $e\n$st");
       if (context.mounted) _showError(context, 'An unexpected error occurred');
     } finally {
+      print("🕵️‍♂️ [AuthViewModel.login] FINALLY block reached. Resetting loading state to false.");
       _setLoading(false);
     }
   }
@@ -157,27 +216,124 @@ class AuthViewModel extends ChangeNotifier {
   // REGISTER
 
   Future<void> _register(BuildContext context) async {
+    // 🚧 TEMPORARY DEVELOPMENT BYPASS: Set to true to bypass registration API and mock credentials
+    const bool useDevBypass = false;
+    if (useDevBypass) {
+      print("🚧 DEV BYPASS: Tapped register. Mocking registration and moving to student dashboard.");
+      await LocalStorageService.saveToken("mock_dev_token");
+      await LocalStorageService.saveRole("student");
+      await LocalStorageService.saveUser({
+        "id": "mock_id",
+        "name": name.isNotEmpty ? name : "Dev Student",
+        "email": email.isNotEmpty ? email : "dev@gyaanplant.com",
+        "role": "student",
+      });
+      AuthCache.token = "mock_dev_token";
+      
+      if (_disposed || !context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Registration successful'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      context.go('/student-dashboard');
+      return;
+    }
+
     _setLoading(true);
     try {
+      print("🕵️‍♂️ [AuthViewModel._register] Sending registration request for: $email, role: $role");
       final result = await _auth.register(
         name: name,
         email: email,
         password: password,
         role: role.toLowerCase(),
       );
+      print("🕵️‍♂️ [AuthViewModel._register] Registration API response received. success=${result.isSuccess}, statusCode=${result.statusCode}");
 
       if (result.isSuccess) {
-        AppLogger.info(_tag, 'Registration successful for $email');
-        if (_disposed || !context.mounted) return;
-        _showError(context, 'Account created! Please log in.');
-        context.go('/');
+        final data = result.data!;
+        user = data.user;
+
+        print("🕵️‍♂️ [AuthViewModel._register] Raw extracted token: ${data.accessToken}");
+
+        try {
+          print("🕵️‍♂️ [AuthViewModel._register] BEFORE AuthCache.token = data.accessToken");
+          AuthCache.token = data.accessToken;
+          print("🕵️‍♂️ [AuthViewModel._register] AFTER AuthCache.token. In-memory cache is now: ${AuthCache.token}");
+        } catch (e) {
+          print("🕵️‍♂️ [AuthViewModel._register] ERROR saving token to AuthCache: $e");
+        }
+
+        try {
+          print("🕵️‍♂️ [AuthViewModel._register] BEFORE LocalStorageService.saveToken()");
+          await LocalStorageService.saveToken(data.accessToken);
+          print("🕵️‍♂️ [AuthViewModel._register] AFTER LocalStorageService.saveToken()");
+          
+          final verifyToken = await LocalStorageService.getToken();
+          print("🕵️‍♂️ [AuthViewModel._register] VERIFICATION - Token retrieved from local storage: $verifyToken");
+        } catch (e) {
+          print("🕵️‍♂️ [AuthViewModel._register] ERROR saving token to LocalStorageService: $e");
+        }
+
+        try {
+          print("🕵️‍♂️ [AuthViewModel._register] BEFORE LocalStorageService.saveUser()");
+          await LocalStorageService.saveUser(data.user.toJson());
+          print("🕵️‍♂️ [AuthViewModel._register] AFTER LocalStorageService.saveUser()");
+        } catch (e) {
+          print("🕵️‍♂️ [AuthViewModel._register] ERROR saving user to LocalStorageService: $e");
+        }
+
+        try {
+          if (data.user.role.isNotEmpty) {
+            print("🕵️‍♂️ [AuthViewModel._register] BEFORE LocalStorageService.saveRole()");
+            await LocalStorageService.saveRole(data.user.role.toLowerCase());
+            print("🕵️‍♂️ [AuthViewModel._register] AFTER LocalStorageService.saveRole()");
+          }
+        } catch (e) {
+          print("🕵️‍♂️ [AuthViewModel._register] ERROR saving role to LocalStorageService: $e");
+        }
+
+        AppLogger.info(_tag, 'Registration and auto-login successful for $email');
+        
+        if (_disposed) {
+          print("🕵️‍♂️ [AuthViewModel._register] Navigation/SnackBar skipped: AuthViewModel is disposed.");
+          return;
+        }
+        if (!context.mounted) {
+          print("🕵️‍♂️ [AuthViewModel._register] Navigation/SnackBar skipped: BuildContext is no longer mounted.");
+          return;
+        }
+
+        try {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Registration successful!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } catch (e) {
+          print("🕵️‍♂️ [AuthViewModel._register] SnackBar display error: $e");
+        }
+
+        try {
+          print("🕵️‍♂️ [AuthViewModel._register] BEFORE context.go('/') navigation");
+          context.go('/');
+          print("🕵️‍♂️ [AuthViewModel._register] AFTER context.go('/') navigation triggered");
+        } catch (e, st) {
+          print("🕵️‍♂️ [AuthViewModel._register] ERROR during navigation redirect: $e\n$st");
+        }
       } else {
+        print("🕵️‍♂️ [AuthViewModel._register] Registration failed on server side: ${result.error?.message}");
         _showError(context, result.error?.message ?? 'Registration failed');
       }
     } catch (e, st) {
       AppLogger.error(_tag, 'Register error', e, st);
+      print("🕵️‍♂️ [AuthViewModel._register] EXCEPTION caught during registration flow: $e\n$st");
       if (context.mounted) _showError(context, 'An unexpected error occurred');
     } finally {
+      print("🕵️‍♂️ [AuthViewModel._register] FINALLY block reached. Resetting loading state to false.");
       _setLoading(false);
     }
   }
@@ -197,6 +353,7 @@ class AuthViewModel extends ChangeNotifier {
     // ✅ STEP 2: Now clear local data
     await LocalStorageService.clearToken();
     await LocalStorageService.removeRole();
+    AuthCache.token = null;
 
     print("🔥 LOGOUT: Local data cleared");
 
@@ -204,7 +361,7 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
 
     if (context.mounted) {
-      context.go('/role');
+      context.go('/signin');
     }
   }
 

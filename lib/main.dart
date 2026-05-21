@@ -38,8 +38,10 @@ void main() async {
   print("🔑 TOKEN LOADED ON STARTUP: $token");
   print("🔑 TOKEN IS NULL: ${token == null}");
 
-  AuthInterceptor.onUnauthorized = () {
-    AppRouter.router.go('/');
+  AuthInterceptor.onUnauthorized = () async {
+    await LocalStorageService.clearToken();
+    AuthCache.token = null;
+    AppRouter.router.go('/signin');
   };
 
   runApp(const MyApp());

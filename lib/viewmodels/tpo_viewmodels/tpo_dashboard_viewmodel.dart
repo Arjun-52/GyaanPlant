@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
-import 'package:gyaanplant/services/auth_service.dart';
+import 'package:gyaanplant/network/auth_cache.dart';
 import 'dart:math' as math;
 
 /// TPO Dashboard ViewModel
@@ -46,7 +46,7 @@ class TpoDashboardViewModel extends ChangeNotifier {
     print("🚀 API CALL STARTED");
 
     // Log current token for debugging
-    final token = AuthService.token;
+    final token = AuthCache.token;
     print(
       "🔑 TOKEN: ${token != null ? 'Present (${token.length} chars)' : 'MISSING'}",
     );

@@ -10,7 +10,7 @@ import 'package:gyaanplant/views/student_role/profile/widgets/mentor_section.dar
 import 'package:gyaanplant/views/student_role/profile/widgets/profile_header.dart';
 import 'package:gyaanplant/views/student_role/profile/widgets/stats_grid.dart';
 import 'package:provider/provider.dart';
-import '../../../../data/services/local_storage_service.dart';
+import '../../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -250,9 +250,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     );
 
-                    if (shouldLogout == true) {
-                      await LocalStorageService.clearToken();
-                      if (context.mounted) context.go('/');
+                    if (shouldLogout == true && context.mounted) {
+                      context.read<AuthViewModel>().logout(context);
                     }
                   },
                   child: Container(

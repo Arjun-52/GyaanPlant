@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/HOD_models/hod_dashboard_model.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
-import 'package:gyaanplant/services/auth_service.dart';
+import 'package:gyaanplant/network/auth_cache.dart';
 
 class HodDashboardViewModel extends ChangeNotifier {
   final _hod = ApiService().hod;
@@ -13,7 +13,7 @@ class HodDashboardViewModel extends ChangeNotifier {
   Future<void> loadDashboard() async {
     print("🚀 LOADING HOD DASHBOARD");
 
-    final token = AuthService.token;
+    final token = AuthCache.token;
     print(
       "🔑 TOKEN: ${token != null ? 'Present (${token.length} chars)' : 'MISSING'}",
     );

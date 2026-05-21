@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
 import 'package:gyaanplant/models/HOD_models/department_model.dart';
-import 'package:gyaanplant/services/auth_service.dart';
+import 'package:gyaanplant/network/auth_cache.dart';
 import 'package:gyaanplant/data/services/local_storage_service.dart';
 
 class DepartmentsViewModel extends ChangeNotifier {
@@ -26,7 +26,7 @@ class DepartmentsViewModel extends ChangeNotifier {
   Future<void> loadDepartments() async {
     print("🚀 LOADING DEPARTMENTS FOR HOD");
 
-    final token = AuthService.token;
+    final token = AuthCache.token;
     print(
       "🔑 TOKEN: ${token != null ? 'Present (${token.length} chars)' : 'MISSING'}",
     );
@@ -85,7 +85,7 @@ class DepartmentsViewModel extends ChangeNotifier {
 
     try {
       // Check token
-      final token = AuthService.token;
+      final token = AuthCache.token;
       print("🔑 Token Present: ${token != null ? 'YES' : 'NO'}");
 
       // Check stored user data

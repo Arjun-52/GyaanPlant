@@ -7,6 +7,8 @@ class AuthInterceptor extends Interceptor {
   // Set this once at app startup (e.g. in main.dart) to handle forced logout
   static void Function()? onUnauthorized;
 
+  // ⚠️ TESTING: These endpoints are skipped temporarily for testing without auth
+  // Remove 'ApiEndpoints.dashboardStudent' before production!
   static const _skipList = [
     ApiEndpoints.login,
     ApiEndpoints.register,

@@ -64,11 +64,29 @@ class _StudentDashboardState extends State<StudentDashboard> {
       body: SafeArea(
         child: Consumer<DashboardViewModel>(
           builder: (context, vm, child) {
+            print("🎨 [StudentDashboard.build] Rendering - isLoading: ${vm.isLoading}, isLoaded: ${vm.isLoaded}, errorMessage: ${vm.errorMessage}, dashboardNull: ${vm.dashboard == null}");
+            
+            // Show loading state
             if (vm.isLoading) {
-              return const Center(child: CircularProgressIndicator());
+              print("🎨 [StudentDashboard.build] Showing loading spinner");
+              return const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text(
+                      'Loading dashboard...',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              );
             }
 
+            // Show error state
             if (vm.errorMessage != null) {
+              print("🎨 [StudentDashboard.build] Showing error: ${vm.errorMessage}");
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -84,13 +102,15 @@ class _StudentDashboardState extends State<StudentDashboard> {
                       style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Check your connection and try again',
-                      style: TextStyle(color: Colors.white54),
+                    Text(
+                      vm.errorMessage ?? 'Unknown error',
+                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
+                        print("🎨 [StudentDashboard.build] Retry button pressed");
                         vm.isLoaded = false;
                         vm.fetchDashboard();
                       },
@@ -101,15 +121,38 @@ class _StudentDashboardState extends State<StudentDashboard> {
               );
             }
 
+            // Show empty state
             if (vm.dashboard == null) {
-              return const Center(
-                child: Text(
-                  'No data available',
-                  style: TextStyle(color: Colors.white),
+              print("🎨 [StudentDashboard.build] Dashboard is null, showing no data message");
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.dashboard,
+                      color: Colors.white38,
+                      size: 48,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No data available',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        print("🎨 [StudentDashboard.build] Retry button pressed");
+                        vm.isLoaded = false;
+                        vm.fetchDashboard();
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
                 ),
               );
             }
 
+            print("🎨 [StudentDashboard.build] Showing dashboard content");
             final data = vm.dashboard!;
             final userName = context.read<AuthViewModel>().userName ?? 'User';
 
@@ -124,9 +167,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   ),
                   const SizedBox(height: 20),
                   ScoreCard(
-                    xp: data.xp,
-                    rank: data.rank,
-                    progress: data.xpProgress,
+                    xp: data.xp ?? 0,
+                    rank: data.rank ?? 0,
+                    progress: data.xpProgress ?? 0,
                   ),
                   const SizedBox(height: 20),
                   const StreakCard(),
@@ -154,7 +197,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  UpcomingDrivesSection(drives: data.drives),
+                  UpcomingDrivesSection(drives: data.drives ?? const []),
                 ],
               ),
             );

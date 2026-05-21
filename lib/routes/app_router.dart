@@ -25,6 +25,7 @@ import 'package:gyaanplant/views/mentor/earnings/screens/earnings_screen.dart';
 import 'package:gyaanplant/views/mentor/profile/screens/mentor_profile_screen.dart';
 
 import '../data/services/local_storage_service.dart';
+import '../network/auth_cache.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -32,28 +33,35 @@ class AppRouter {
     debugLogDiagnostics: true,
 
     redirect: (context, state) async {
-      final token = await LocalStorageService.getToken();
-      final role = await LocalStorageService.getRole();
+      // DEVELOPMENT-ONLY BYPASS
+      // Set devBypass = true to bypass login/signup and go straight to Student Dashboard on launch.
+      // Set to false to restore original login/registration routing.
+      const bool devBypass = false;
+
+      var token = await LocalStorageService.getToken();
+      if (token == 'mock_dev_token') {
+        print(" ROUTER: Found old mock_dev_token. Clearing session for a fresh login.");
+        await LocalStorageService.clearToken();
+        await LocalStorageService.removeRole();
+        AuthCache.token = null;
+        token = null;
+      }
+      final role = devBypass ? 'student' : await LocalStorageService.getRole();
       final location = state.uri.toString();
 
-      final isLoggedIn = token != null && token.isNotEmpty;
+      final isLoggedIn = devBypass ? true : (token != null && token.isNotEmpty);
 
       print("🔄 ROUTER: token=$isLoggedIn role=$role location=$location");
 
       // NOT LOGGED IN → allow only auth screens
       if (!isLoggedIn) {
-        if (location == '/role' ||
-            location == '/splash' ||
-            location == '/' ||
-            location == '/signup' ||
-            location == '/forgot-password') {
-          return null;
-        }
-        return '/role';
+        const authPaths = {'/role', '/signin', '/', '/signup', '/forgot-password', '/splash'};
+        return authPaths.contains(location) ? null : '/role';
       }
 
       // LOGGED IN → prevent going to auth screens
       if (location == '/' ||
+          location == '/signin' ||
           location == '/signup' ||
           location == '/forgot-password' ||
           location == '/role') {
@@ -67,6 +75,7 @@ class AppRouter {
           case 'mentor':
             return '/mentor-dashboard';
           default:
+            if (location == '/role') return null; // Avoid infinite redirect loop
             return '/role';
         }
       }
@@ -85,6 +94,12 @@ class AppRouter {
       ///  AUTH
       GoRoute(
         path: '/',
+        name: 'root',
+        redirect: (context, state) => '/splash',
+      ),
+
+      GoRoute(
+        path: '/signin',
         name: 'signIn',
         builder: (context, state) => const SignInScreen(),
       ),

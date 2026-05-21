@@ -13,10 +13,10 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Navigate to role screen after a delay
+    // Navigate after delay — router redirect will handle auth state
     Timer(const Duration(seconds: 3), () {
       if (mounted) {
-        context.go('/role');
+        context.go('/signin');
       }
     });
   }

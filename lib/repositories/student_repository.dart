@@ -47,11 +47,35 @@ class StudentRepository {
 
   /// GET /api/v1/dashboard/student — student role only
   Future<ApiResponse<StudentDashboard>> getDashboard() {
+    print("📡 [StudentRepository.getDashboard] Starting API call...");
     return _api.get<StudentDashboard>(
       ApiEndpoints.dashboardStudent,
       fromJson: (json) {
-        final map = json as Map<String, dynamic>;
-        return StudentDashboard.fromJson(map['data'] as Map<String, dynamic>);
+        print("📡 [StudentRepository.getDashboard] Raw API response: $json");
+        
+        try {
+          final map = json as Map<String, dynamic>;
+          print("📡 [StudentRepository.getDashboard] Extracted map: $map");
+          
+          final dataField = map['data'];
+          print("📡 [StudentRepository.getDashboard] Data field: $dataField, type: ${dataField.runtimeType}");
+          
+          if (dataField == null) {
+            print("⚠️  [StudentRepository.getDashboard] Data field is null!");
+            throw Exception('Dashboard data field is null');
+          }
+          
+          final dashboardData = dataField as Map<String, dynamic>;
+          print("📡 [StudentRepository.getDashboard] Calling StudentDashboard.fromJson with: $dashboardData");
+          
+          final result = StudentDashboard.fromJson(dashboardData);
+          print("✅ [StudentRepository.getDashboard] Successfully parsed StudentDashboard");
+          return result;
+        } catch (e, st) {
+          print("❌ [StudentRepository.getDashboard] Error during parsing: $e");
+          print(st);
+          rethrow;
+        }
       },
     );
   }

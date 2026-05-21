@@ -12,9 +12,9 @@ class StudentUser {
   });
 
   factory StudentUser.fromJson(Map<String, dynamic> json) => StudentUser(
-    id: json['_id'] as String,
-    name: json['name'] as String,
-    email: json['email'] as String,
+    id: json['_id'] as String? ?? '',
+    name: json['name'] as String? ?? '',
+    email: json['email'] as String? ?? '',
     avatar: json['avatar'] as String?,
   );
 }
@@ -27,8 +27,8 @@ class StudentCollege {
   const StudentCollege({required this.id, required this.name, this.city});
 
   factory StudentCollege.fromJson(Map<String, dynamic> json) => StudentCollege(
-    id: json['_id'] as String,
-    name: json['name'] as String,
+    id: json['_id'] as String? ?? '',
+    name: json['name'] as String? ?? '',
     city: json['city'] as String?,
   );
 }
@@ -89,7 +89,7 @@ class StudentModel {
     final collegeRaw = json['college'];
 
     return StudentModel(
-      id: json['_id'] as String,
+      id: json['_id'] as String? ?? '',
       user: userRaw is Map<String, dynamic>
           ? StudentUser.fromJson(userRaw)
           : null,
@@ -121,8 +121,8 @@ class StudentModel {
               .toList() ??
           [],
       rank: json['rank'] as int? ?? 0,
-      createdAt: json['createdAt'] as String,
-      updatedAt: json['updatedAt'] as String,
+      createdAt: json['createdAt'] as String? ?? '',
+      updatedAt: json['updatedAt'] as String? ?? '',
       lastActivityDate: json['lastActivityDate'] as String?,
     );
   }
