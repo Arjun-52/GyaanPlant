@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
 import '../../../../viewmodels/HOD_viewmodel/settings_view_model.dart';
+import 'security_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -127,10 +128,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _tile('College Profile & Branding'),
-                        _tile('Syllabus Mapping Config'),
-                        _tile('Report Templates'),
-                        _tile('Staff Access Management'),
+                        _tile(
+                          'Security & Privacy',
+                          icon: Icons.security,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const SecuritySettingsScreen(),
+                              ),
+                            );
+                          },
+                        ),
                         _tile('GyaanPlant MOU Details'),
                         const SizedBox(height: 16),
                         GestureDetector(
@@ -205,24 +215,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _tile(String title) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F3D34),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.green.withAlpha(80)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.settings, color: Colors.white70),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(title, style: const TextStyle(color: Colors.white)),
-          ),
-          const Icon(Icons.chevron_right, color: Colors.white38),
-        ],
+  Widget _tile(
+    String title, {
+    VoidCallback? onTap,
+    IconData icon = Icons.settings,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F3D34),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.green.withAlpha(80)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white70),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(title, style: const TextStyle(color: Colors.white)),
+            ),
+            const Icon(Icons.chevron_right, color: Colors.white38),
+          ],
+        ),
       ),
     );
   }

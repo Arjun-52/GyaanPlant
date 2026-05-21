@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/data/services/local_storage_service.dart';
 import 'package:gyaanplant/viewmodels/tpo_viewmodels/settings_viewmodel.dart';
+import 'package:gyaanplant/views/tpo_role/settings/screens/security_screen.dart';
 import 'package:gyaanplant/views/tpo_role/settings/widgets/settings_tile.dart';
 import 'package:provider/provider.dart';
 
@@ -182,8 +183,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Expanded(
                       child: ListView.separated(
                         itemCount: vm.items.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (_, i) => SettingsTile(item: vm.items[i]),
+                        separatorBuilder: (context, index) => const SizedBox(height: 12),
+                        itemBuilder: (context, i) {
+                          final item = vm.items[i];
+                          return InkWell(
+                            onTap: () {
+                              if (item.title == "Security & Privacy") {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const SecurityScreen(),
+                                  ),
+                                );
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(18),
+                            child: SettingsTile(item: item),
+                          );
+                        },
                       ),
                     ),
                   ],

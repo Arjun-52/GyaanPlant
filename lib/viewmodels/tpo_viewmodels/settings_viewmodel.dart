@@ -24,26 +24,6 @@ class SettingsViewModel extends ChangeNotifier {
 
   List<SettingsItem> _items = [
     SettingsItem(
-      title: "Notification Preferences",
-      subtitle: "WhatsApp, email alerts",
-      icon: "🔔",
-    ),
-    SettingsItem(
-      title: "Parent Report Schedule",
-      subtitle: "Monthly • Auto-send on 1st",
-      icon: "📅",
-    ),
-    SettingsItem(
-      title: "College Profile",
-      subtitle: "Loading... • A+ Grade • 2,847 students",
-      icon: "🏫",
-    ),
-    SettingsItem(
-      title: "API Integrations",
-      subtitle: "Naukri, LinkedIn Jobs connected",
-      icon: "🔗",
-    ),
-    SettingsItem(
       title: "Security & Privacy",
       subtitle: "2FA enabled",
       icon: "🔒",
@@ -89,56 +69,33 @@ class SettingsViewModel extends ChangeNotifier {
             if (collegeInfo.containsKey('name')) {
               collegeName = collegeInfo['name'];
               print("🏫 Settings: Final College Name: $collegeName");
-
-              // Update the college profile item subtitle
-              _updateCollegeProfileItem();
             } else {
               collegeName = "Unknown College";
               print("⚠️ Settings: College name not found in response");
-              _updateCollegeProfileItem();
             }
           } else {
             collegeName = "Error loading college";
             print(
               "❌ Settings: College API failed: ${collegeResult.error?.message}",
             );
-            _updateCollegeProfileItem();
           }
         } else {
           collegeName = "No College Assigned";
           print("⚠️ Settings: No college ID found for user");
-          _updateCollegeProfileItem();
         }
       } else {
         collegeName = "Error loading user";
         print(
           "❌ Settings: Failed to get current user: ${userResult.error?.message}",
         );
-        _updateCollegeProfileItem();
       }
     } catch (e) {
       collegeName = "Error loading college";
       print("💥 Settings: Exception in fetchCollegeName: $e");
-      _updateCollegeProfileItem();
     }
 
     // Notify listeners to update UI
     notifyListeners();
-  }
-
-  /// Update the college profile item with the actual college name
-  void _updateCollegeProfileItem() {
-    // Find and update the college profile item
-    for (int i = 0; i < _items.length; i++) {
-      if (_items[i].title == "College Profile") {
-        _items[i] = SettingsItem(
-          title: _items[i].title,
-          subtitle: "$collegeName • A+ Grade • 2,847 students",
-          icon: _items[i].icon,
-        );
-        break;
-      }
-    }
   }
 
   /// Initialize ViewModel - called when screen is first created
