@@ -1,10 +1,12 @@
 import '../models/mentor_models/booking_model.dart';
 import '../models/mentor_models/mentor_dashboard_model.dart';
+import '../models/mentor_models/mentor_earnings_model.dart';
 import '../models/mentor_models/sessions_model.dart';
 import '../models/student_role_models/mentor_model.dart';
 import '../network/api_endpoints.dart';
 import '../network/api_manager.dart';
 import '../network/api_response.dart';
+import '../core/utils/app_logger.dart';
 
 class MentorRepository {
   final NetworkAPIManager _api;
@@ -104,6 +106,17 @@ class MentorRepository {
       fromJson: (json) {
         final map = json as Map<String, dynamic>;
         return map['data'] as Map<String, dynamic>? ?? map;
+      },
+    );
+  }
+
+  Future<ApiResponse<MentorEarningsModel>> getMentorEarnings() {
+    AppLogger.info('MentorRepository', "🚀 FETCH MENTOR EARNINGS");
+    return _api.get<MentorEarningsModel>(
+      ApiEndpoints.mentorEarnings,
+      fromJson: (json) {
+        final map = json as Map<String, dynamic>;
+        return MentorEarningsModel.fromJson(map['data'] as Map<String, dynamic>);
       },
     );
   }

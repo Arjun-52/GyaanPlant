@@ -1,4 +1,5 @@
 import '../../models/auth/college_dropdown_model.dart';
+import '../../models/mentor_models/mentor_earnings_model.dart';
 import '../../network/api_manager.dart';
 import '../../network/api_response.dart';
 import '../../repositories/auth_repository.dart';
@@ -51,4 +52,8 @@ class ApiService {
   /// Pass-through used by registration flow to fetch the college dropdown list.
   Future<ApiResponse<List<CollegeDropdownModel>>> getColleges() =>
       _college.getColleges();
+
+  /// Pass-through to fetch mentor earnings details.
+  Future<ApiResponse<MentorEarningsModel>> getMentorEarnings() =>
+      _mentor.getMentorEarnings();
 }

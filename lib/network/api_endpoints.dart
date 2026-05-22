@@ -49,6 +49,7 @@ class ApiEndpoints {
 
   // ── Mentors ──────────────────────────────────────────────────────────────
   static const String mentors = '/api/v1/mentor';
+  static const String mentorEarnings = '/api/v1/mentor/earnings';
 
   // ── Sessions ─────────────────────────────────────────────────────────────
   static const String sessionMy = '/api/v1/session/my';

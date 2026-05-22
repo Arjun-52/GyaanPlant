@@ -21,6 +21,7 @@ import 'viewmodels/tpo_viewmodels/tpo_dashboard_viewmodel.dart';
 import 'viewmodels/student_viewmodel/notification_viewmodel.dart';
 import 'viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
 import 'viewmodels/student_viewmodel/organization_viewmodel.dart';
+import 'viewmodels/mentor_viewmodel/mentor_earnings_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -70,6 +71,7 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (_) => NotificationViewModel()),
         ChangeNotifierProvider(create: (_) => OrganizationViewModel()),
+        ChangeNotifierProvider(create: (_) => MentorEarningsController()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
