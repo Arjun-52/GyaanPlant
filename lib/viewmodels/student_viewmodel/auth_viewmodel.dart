@@ -237,9 +237,13 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     if (currentStep == 3) {
-      if (branch == 'Select Branch' || careerPath == 'Select Career Path') {
-        _showError(context, 'Please complete all fields');
-        return;
+      // Role-based validation: Branch and career path are only required for Students
+      final isStudent = role.toLowerCase() == 'student';
+      if (isStudent) {
+        if (branch == 'Select Branch' || careerPath == 'Select Career Path') {
+          _showError(context, 'Please complete all fields');
+          return;
+        }
       }
     }
 

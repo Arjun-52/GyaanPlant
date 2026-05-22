@@ -266,55 +266,76 @@ class _SignUpScreenState extends State<SignUpScreen> {
         );
 
       case 3:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const FormLabel(text: "BRANCH/STREAM", color: Colors.white70),
-            const SizedBox(height: 6),
+        
+        final isStudent = vm.role.toLowerCase() == 'student';
 
-            CustomDropdown(
-              value: vm.branch,
-              items: const [
-                "Select Branch",
-                "CSE",
-                "ECE",
-                "EEE",
-                "Mechanical",
-                "Civil",
-              ],
-              onChanged: vm.setBranch,
-            ),
+        if (isStudent) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const FormLabel(text: "BRANCH/STREAM", color: Colors.white70),
+              const SizedBox(height: 6),
 
-            const SizedBox(height: 16),
-
-            const FormLabel(
-              text: "CAREER PATH / INTEREST",
-              color: Colors.white70,
-            ),
-            const SizedBox(height: 6),
-
-            CustomDropdown(
-              value: vm.careerPath,
-              items: const [
-                "Select Career Path",
-                "Software",
-                "Core Engineering",
-                "Management",
-                "Research",
-              ],
-              onChanged: vm.setCareerPath,
-            ),
-
-            const SizedBox(height: 16),
-
-            const Center(
-              child: Text(
-                "Review your details before registration",
-                style: TextStyle(color: Colors.white60, fontSize: 12),
+              CustomDropdown(
+                value: vm.branch,
+                items: const [
+                  "Select Branch",
+                  "CSE",
+                  "ECE",
+                  "EEE",
+                  "Mechanical",
+                  "Civil",
+                ],
+                onChanged: vm.setBranch,
               ),
-            ),
-          ],
-        );
+
+              const SizedBox(height: 16),
+
+              const FormLabel(
+                text: "CAREER PATH / INTEREST",
+                color: Colors.white70,
+              ),
+              const SizedBox(height: 6),
+
+              CustomDropdown(
+                value: vm.careerPath,
+                items: const [
+                  "Select Career Path",
+                  "Software",
+                  "Core Engineering",
+                  "Management",
+                  "Research",
+                ],
+                onChanged: vm.setCareerPath,
+              ),
+
+              const SizedBox(height: 16),
+
+              const Center(
+                child: Text(
+                  "Review your details before registration",
+                  style: TextStyle(color: Colors.white60, fontSize: 12),
+                ),
+              ),
+            ],
+          );
+        } else {
+          return const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              
+              SizedBox(
+                height: 200,
+                child: Center(
+                  child: Text(
+                    "Review your details before registration",
+                    style: TextStyle(color: Colors.white60, fontSize: 12),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
 
       default:
         return const SizedBox();
