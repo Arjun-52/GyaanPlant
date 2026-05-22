@@ -20,6 +20,7 @@ import 'viewmodels/tpo_viewmodels/drives_viewmodel.dart';
 import 'viewmodels/tpo_viewmodels/tpo_dashboard_viewmodel.dart';
 import 'viewmodels/student_viewmodel/notification_viewmodel.dart';
 import 'viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
+import 'viewmodels/student_viewmodel/organization_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,6 +69,7 @@ class MyApp extends StatelessWidget {
           create: (_) => HodDashboardViewModel()..loadDashboard(),
         ),
         ChangeNotifierProvider(create: (_) => NotificationViewModel()),
+        ChangeNotifierProvider(create: (_) => OrganizationViewModel()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

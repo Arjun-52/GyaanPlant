@@ -11,6 +11,7 @@ import '../../repositories/tpo_repository.dart';
 import '../../repositories/hod_repository.dart';
 import '../../repositories/mentor_repository.dart';
 import '../../repositories/college_repository.dart';
+import '../../repositories/organization_repository.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -33,6 +34,7 @@ class ApiService {
   late final HodRepository _hod = HodRepository(_api);
   late final MentorRepository _mentor = MentorRepository(_api);
   late final CollegeRepository _college = CollegeRepository(_api);
+  late final OrganizationRepository _organization = OrganizationRepository(_api);
 
   AuthRepository get auth => _auth;
   StudentRepository get student => _student;
@@ -44,6 +46,7 @@ class ApiService {
   HodRepository get hod => _hod;
   MentorRepository get mentor => _mentor;
   CollegeRepository get college => _college;
+  OrganizationRepository get organization => _organization;
 
   /// Pass-through used by registration flow to fetch the college dropdown list.
   Future<ApiResponse<List<CollegeDropdownModel>>> getColleges() =>

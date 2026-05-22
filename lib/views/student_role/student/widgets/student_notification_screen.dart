@@ -28,6 +28,7 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF06130F),
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           "Notifications",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

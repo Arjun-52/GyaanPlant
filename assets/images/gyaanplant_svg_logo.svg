@@ -1,0 +1,39 @@
+
+<svg width="800" height="300" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+
+
+  <!-- Tree trunk -->
+  <line x1="390" y1="150" x2="390" y2="220" stroke="#00AEEF" stroke-width="10"/>
+  <line x1="410" y1="150" x2="410" y2="220" stroke="#7AC943" stroke-width="10"/>
+  <line x1="430" y1="150" x2="430" y2="220" stroke="#F15A24" stroke-width="10"/>
+  <line x1="450" y1="150" x2="450" y2="220" stroke="#92278F" stroke-width="10"/>
+
+  <!-- Branches -->
+  <g stroke="#444" stroke-width="3" fill="none">
+    <line x1="420" y1="150" x2="350" y2="100"/>
+    <line x1="420" y1="150" x2="300" y2="70"/>
+    <line x1="420" y1="150" x2="490" y2="90"/>
+    <line x1="420" y1="150" x2="540" y2="65"/>
+    <line x1="420" y1="150" x2="420" y2="50"/>
+  </g>
+
+  <!-- Nodes -->
+  <g>
+    <circle cx="300" cy="70" r="18" fill="#E94E77"/>
+    <circle cx="350" cy="100" r="16" fill="#FBB03B"/>
+    <circle cx="420" cy="50" r="18" fill="#39B54A"/>
+    <circle cx="490" cy="90" r="16" fill="#29ABE2"/>
+    <circle cx="540" cy="65" r="18" fill="#F15A24"/>
+    <circle cx="390" cy="90" r="14" fill="#662D91"/>
+    <circle cx="455" cy="40" r="14" fill="#00AEEF"/>
+  </g>
+
+  <!-- Logo text -->
+  <text x="400" y="280" text-anchor="middle"
+        font-family="Arial, sans-serif"
+        font-size="42"
+        fill="#2E7D32"
+        font-weight="bold">
+    GYAANPLANT
+  </text>
+</svg>

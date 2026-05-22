@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/test_viewmodel.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/organization_viewmodel.dart';
 
 import 'package:gyaanplant/views/student_role/Test_/widgets/test_header.dart';
 import 'package:gyaanplant/views/student_role/Test_/widgets/stats_row.dart';
@@ -18,8 +19,6 @@ class TestScreen extends StatefulWidget {
 }
 
 class _TestScreenState extends State<TestScreen> {
-  int selectedIndex = 0;
-
   @override
   void initState() {
     super.initState();
@@ -31,6 +30,11 @@ class _TestScreenState extends State<TestScreen> {
         vm.fetchTests();
       }
       vm.fetchPrepPacks();
+
+      final orgVm = context.read<OrganizationViewModel>();
+      if (orgVm.companies.isEmpty && !orgVm.isLoading) {
+        orgVm.fetchOrganizations();
+      }
     });
   }
 
@@ -56,45 +60,71 @@ class _TestScreenState extends State<TestScreen> {
                   const SizedBox(height: 16),
 
                   /// FILTER CHIPS
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        FilterChipTest(
-                          label: "TCS",
-                          isSelected: selectedIndex == 0,
-                          onTap: () => setState(() => selectedIndex = 0),
-                        ),
-                        const SizedBox(width: 10),
-                        FilterChipTest(
-                          label: "Infosys",
-                          isSelected: selectedIndex == 1,
-                          onTap: () => setState(() => selectedIndex = 1),
-                        ),
-                        const SizedBox(width: 10),
-                        FilterChipTest(
-                          label: "Wipro",
-                          isSelected: selectedIndex == 2,
-                          onTap: () => setState(() => selectedIndex = 2),
-                        ),
-                        const SizedBox(width: 10),
-                        FilterChipTest(
-                          label: "Amazon",
-                          isSelected: selectedIndex == 3,
-                          onTap: () => setState(() => selectedIndex = 3),
-                        ),
-                        FilterChipTest(
-                          label: "Accenture",
-                          isSelected: selectedIndex == 4,
-                          onTap: () => setState(() => selectedIndex = 4),
-                        ),
-                      ],
-                    ),
+                  Consumer<OrganizationViewModel>(
+                    builder: (context, orgVm, child) {
+                      if (orgVm.isLoading) {
+                        return Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: List.generate(
+                            3,
+                            (index) => FilterChipTest(
+                              label: "Loading...",
+                              isSelected: false,
+                              onTap: () {},
+                            ),
+                          ),
+                        );
+                      }
+
+                      if (orgVm.errorMessage != null) {
+                        return Row(
+                          children: [
+                            const Text(
+                              "Unable to load companies",
+                              style: TextStyle(color: Colors.white70, fontSize: 14),
+                            ),
+                            const SizedBox(width: 12),
+                            TextButton(
+                              style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFF00C853),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  side: const BorderSide(
+                                    color: Color(0xFF00C853),
+                                  ),
+                                ),
+                              ),
+                              onPressed: () => orgVm.fetchOrganizations(),
+                              child: const Text("Retry"),
+                            ),
+                          ],
+                        );
+                      }
+
+                      return Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: orgVm.companies.map((company) {
+                          return FilterChipTest(
+                            label: company.name,
+                            isSelected: orgVm.selectedCompany == company.name,
+                            onTap: () {
+                              orgVm.selectCompany(company.name);
+                            },
+                          );
+                        }).toList(),
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 20),
 
-                  /// STATS (still static for now)
+                  /// STATS 
                   const StatsRow(),
 
                   const SizedBox(height: 20),
