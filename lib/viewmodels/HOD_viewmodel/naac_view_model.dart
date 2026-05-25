@@ -4,7 +4,10 @@ import 'package:gyaanplant/models/HOD_models/naac_model.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
 import 'package:gyaanplant/views/tpo_role/reports/services/report_service.dart';
 import 'package:gyaanplant/views/tpo_role/reports/services/report_type.dart';
+import 'package:gyaanplant/views/tpo_role/reports/services/download_handler.dart';
+import 'package:gyaanplant/views/tpo_role/reports/services/pdf_generator_service.dart';
 import 'package:gyaanplant/core/utils/helpers.dart';
+import 'package:share_plus/share_plus.dart';
 
 class NaacViewModel extends ChangeNotifier {
   static const _tag = 'NaacViewModel';
@@ -77,23 +80,56 @@ class NaacViewModel extends ChangeNotifier {
     isGeneratingReport = true;
     notifyListeners();
 
-    Helpers.showInfoSnackBar(context, "Generating Full NAAC Report...");
+    Helpers.showInfoSnackBar(context, 'Generating NAAC Report...');
+
     try {
-      final success = await ReportService.generateAndDownloadReport(
+      // Step 1: Generate PDF bytes
+      final reportData = ReportService.getMockNaacData();
+      final pdfBytes = await PdfGeneratorService.generateReport(
         reportType: ReportType.naac,
         collegeName: collegeName,
+        reportData: reportData,
       );
+
+      // Step 2: Save to a shareable file path
+      final fileName = DownloadHandler.generateFileName(
+        reportType: ReportType.naac.name,
+        collegeName: collegeName,
+      );
+      final filePath = await DownloadHandler.savePdfForSharing(
+        pdfBytes: pdfBytes,
+        fileName: fileName,
+      );
+
+      if (filePath == null) {
+        if (context.mounted) {
+          Helpers.showErrorSnackBar(context, 'Failed to save report file.');
+        }
+        return;
+      }
+
+      // Step 3: Open system share sheet (WhatsApp, Facebook, Gmail, Drive…)
+      final result = await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(filePath, mimeType: 'application/pdf')],
+          subject: 'NAAC Accreditation Report — $collegeName',
+          text: 'Please find the NAAC Accreditation Report for $collegeName attached.',
+        ),
+      );
+
       if (context.mounted) {
-        if (success) {
-          Helpers.showSuccessSnackBar(context, "NAAC Report generated successfully!");
+        if (result.status == ShareResultStatus.success) {
+          Helpers.showSuccessSnackBar(context, 'Report shared successfully!');
+        } else if (result.status == ShareResultStatus.dismissed) {
+          // User dismissed — silently ignore
         } else {
-          Helpers.showErrorSnackBar(context, "Failed to generate NAAC Report.");
+          Helpers.showInfoSnackBar(context, 'Report saved to app documents.');
         }
       }
     } catch (e, st) {
       AppLogger.error(_tag, 'Error generating NAAC Report', e, st);
       if (context.mounted) {
-        Helpers.showErrorSnackBar(context, "Error generating report: $e");
+        Helpers.showErrorSnackBar(context, 'Error generating report: $e');
       }
     } finally {
       isGeneratingReport = false;

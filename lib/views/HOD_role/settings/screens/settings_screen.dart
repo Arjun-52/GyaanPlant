@@ -141,7 +141,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             );
                           },
                         ),
-                        _tile('GyaanPlant MOU Details'),
                         const SizedBox(height: 16),
                         GestureDetector(
                           onTap: () async {

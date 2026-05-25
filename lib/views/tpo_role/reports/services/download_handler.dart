@@ -97,6 +97,24 @@ class DownloadHandler {
     }
   }
 
+  /// Save PDF to temp directory and return the file path for sharing.
+  /// Use this when you want to share via share_plus (WhatsApp, Gmail, etc.)
+  static Future<String?> savePdfForSharing({
+    required Uint8List pdfBytes,
+    required String fileName,
+  }) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final path = '${dir.path}/$fileName.pdf';
+      await File(path).writeAsBytes(pdfBytes);
+      AppLogger.info(_tag, 'PDF saved for sharing at: $path');
+      return path;
+    } catch (e, st) {
+      AppLogger.error(_tag, 'Failed to save PDF for sharing', e, st);
+      return null;
+    }
+  }
+
   /// Get the appropriate downloads directory for the platform
   static Future<Directory?> getDownloadsDirectory() async {
     try {

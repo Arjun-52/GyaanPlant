@@ -8,9 +8,36 @@ class DepartmentsViewModel extends ChangeNotifier {
   final _hod = ApiService().hod;
 
   List<Department> departments = [];
+  List<Department> _filtered = [];
+  String searchQuery = '';
   bool isLoading = false;
   String? error;
   bool _disposed = false;
+
+  /// Returns filtered list when a query is active, full list otherwise.
+  List<Department> get filteredDepartments =>
+      _filtered.isNotEmpty || searchQuery.isNotEmpty ? _filtered : departments;
+
+  /// Called when user types — only updates local state, no API call.
+  void updateQuery(String query) {
+    searchQuery = query;
+    notifyListeners();
+  }
+
+  /// Called when APPLY button is pressed — runs client-side filter.
+  void applyFilter() {
+    final q = searchQuery.trim().toLowerCase();
+    if (q.isEmpty) {
+      _filtered = [];
+    } else {
+      _filtered = departments.where((d) {
+        final name = d.name.toLowerCase();
+        final code = (d.code ?? '').toLowerCase();
+        return name.contains(q) || code.contains(q);
+      }).toList();
+    }
+    notifyListeners();
+  }
 
   @override
   void dispose() {

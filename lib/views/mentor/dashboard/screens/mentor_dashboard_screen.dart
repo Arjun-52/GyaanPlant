@@ -4,6 +4,7 @@ import 'package:gyaanplant/views/mentor/dashboard/widgets/header_widget.dart';
 import 'package:gyaanplant/views/mentor/dashboard/widgets/quick_stats.dart';
 import 'package:gyaanplant/views/mentor/dashboard/widgets/session_card.dart';
 import 'package:gyaanplant/core/common_widgets/mentor_bottom_nav.dart';
+import 'package:gyaanplant/views/HOD_role/overview/widgets/hod_leaderboard_section.dart';
 import 'package:provider/provider.dart';
 
 class MentorDashboardScreen extends StatelessWidget {
@@ -162,6 +163,8 @@ class MentorDashboardScreen extends StatelessWidget {
                               ),
                             ],
                           ),
+                          const SizedBox(height: 28),
+                          const HodLeaderboardSection(),
                         ],
                       ),
                     ),

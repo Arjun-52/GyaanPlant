@@ -144,7 +144,13 @@ class AppRouter {
       ),
 
       ///  HOD
-      GoRoute(path: '/overview', builder: (context, state) => const HODShell()),
+      GoRoute(
+        path: '/overview',
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => StudentViewModel(),
+          child: const HODShell(),
+        ),
+      ),
 
       ///  TPO
       GoRoute(

@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/notification_viewmodel.dart';
+import 'package:gyaanplant/views/HOD_role/overview/widgets/hod_leaderboard_section.dart';
 import 'package:gyaanplant/views/HOD_role/overview/widgets/stat_card.dart';
 import 'package:gyaanplant/views/HOD_role/overview/widgets/syllabus_card.dart';
 import 'package:provider/provider.dart';
 
 class OverViewScreen extends StatefulWidget {
-  const OverViewScreen({super.key});
+  final VoidCallback? onSettingsTap;
+  const OverViewScreen({super.key, this.onSettingsTap});
 
   @override
   State<OverViewScreen> createState() => _OverViewScreenState();
@@ -16,10 +21,23 @@ class _OverViewScreenState extends State<OverViewScreen> {
   void initState() {
     super.initState();
     // Dashboard data is automatically loaded by the global provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<NotificationViewModel>().initialize();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final userName = context.read<AuthViewModel>().userName ?? 'HOD';
+    final nameParts = userName.split(' ');
+    final initials = nameParts.length >= 2
+        ? '${nameParts[0][0]}${nameParts[1][0]}'.toUpperCase()
+        : nameParts.isNotEmpty
+            ? nameParts[0][0].toUpperCase()
+            : 'H';
+
     return Scaffold(
       backgroundColor: const Color(0xFF061A14),
       body: Consumer<HodDashboardViewModel>(
@@ -124,8 +142,101 @@ class _OverViewScreenState extends State<OverViewScreen> {
                                         : const Icon(
                                             Icons.refresh,
                                             color: Colors.white70,
+                                            size: 22,
                                           ),
                                     tooltip: 'Refresh Dashboard',
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                // Premium Notification Bell Icon
+                                Consumer<NotificationViewModel>(
+                                  builder: (context, notifVm, _) {
+                                    final int unreadCount = notifVm.unreadCount;
+                                    return GestureDetector(
+                                      onTap: () {
+                                        context.push('/notifications');
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.05),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white.withOpacity(0.1),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Stack(
+                                          clipBehavior: Clip.none,
+                                          children: [
+                                            const Icon(
+                                              Icons.notifications_none_rounded,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                            if (unreadCount > 0)
+                                              Positioned(
+                                                right: -4,
+                                                top: -4,
+                                                child: Container(
+                                                  padding: const EdgeInsets.all(4),
+                                                  decoration: const BoxDecoration(
+                                                    color: Colors.redAccent,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  constraints: const BoxConstraints(
+                                                    minWidth: 16,
+                                                    minHeight: 16,
+                                                  ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      unreadCount > 99 ? '99+' : '$unreadCount',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 9,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(width: 12),
+                                // Profile Avatar
+                                GestureDetector(
+                                  onTap: widget.onSettingsTap,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: const Color(0xFF00C853),
+                                        width: 1.5,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF00C853).withOpacity(0.2),
+                                          blurRadius: 8,
+                                          spreadRadius: 1,
+                                        ),
+                                      ],
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: 18,
+                                      backgroundColor: const Color(0xFF0C2D24),
+                                      child: Text(
+                                        initials,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -207,6 +318,9 @@ class _OverViewScreenState extends State<OverViewScreen> {
                           subtitle: '3/10 courses mapped to electives',
                           progress: 2,
                         ),
+                        const SizedBox(height: 28),
+                        const HodLeaderboardSection(),
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
