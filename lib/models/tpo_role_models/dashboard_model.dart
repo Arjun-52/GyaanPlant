@@ -117,25 +117,46 @@ class DashboardSummary {
 class UpcomingDrive {
   final String? id;
   final String? company;
+  final String? companyLogo;
   final String? role;
   final String? driveDate;
+  final String? status;
+  final int? registeredCount;
+  final int? shortlistedCount;
   final int? eligibleCount;
+  final String? package;
+  final String? jobType;
+  final bool? jdAvailable;
 
   UpcomingDrive({
     this.id,
     this.company,
+    this.companyLogo,
     this.role,
     this.driveDate,
+    this.status,
+    this.registeredCount,
+    this.shortlistedCount,
     this.eligibleCount,
+    this.package,
+    this.jobType,
+    this.jdAvailable,
   });
 
   factory UpcomingDrive.fromJson(Map<String, dynamic> json) {
     return UpcomingDrive(
-      id: json['_id']?.toString(), // FIXED
+      id: json['_id']?.toString() ?? json['id']?.toString(),
       company: json['company']?.toString(),
+      companyLogo: json['companyLogo']?.toString(),
       role: json['role']?.toString(),
-      driveDate: json['driveDate']?.toString(), // FIXED
-      eligibleCount: json['eligibleCount'] as int?, // FIXED
+      driveDate: json['driveDate']?.toString(),
+      status: json['status']?.toString(),
+      registeredCount: json['registeredCount'] as int?,
+      shortlistedCount: json['shortlistedCount'] as int?,
+      eligibleCount: json['eligibleCount'] as int?,
+      package: json['package']?.toString(),
+      jobType: json['jobType']?.toString(),
+      jdAvailable: json['jdAvailable'] as bool?,
     );
   }
 
@@ -143,9 +164,16 @@ class UpcomingDrive {
     return {
       '_id': id,
       'company': company,
+      'companyLogo': companyLogo,
       'role': role,
       'driveDate': driveDate,
+      'status': status,
+      'registeredCount': registeredCount,
+      'shortlistedCount': shortlistedCount,
       'eligibleCount': eligibleCount,
+      'package': package,
+      'jobType': jobType,
+      'jdAvailable': jdAvailable,
     };
   }
 }

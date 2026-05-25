@@ -1,4 +1,5 @@
 import '../models/learning/learning_model.dart';
+import '../models/learning/detailed_course_model.dart';
 import '../models/prep_pack_model.dart';
 import '../models/student_role_models/dashboard_model.dart';
 import '../network/api_endpoints.dart';
@@ -65,7 +66,7 @@ class LearningRepository {
   }
 
   /// ✅ Get single course by ID (matches Postman: /api/v1/learning/{id})
-  Future<CourseModel> getCourseById(String id) async {
+  Future<DetailedCourseModel> getCourseById(String id) async {
     final response = await _api.get<Map<String, dynamic>>(
       '${ApiEndpoints.learning}/$id',
       fromJson: (json) => json as Map<String, dynamic>,
@@ -74,7 +75,7 @@ class LearningRepository {
     print("📦 COURSE DETAILS RESPONSE: ${response.data}");
     print("📦 COURSE TITLE: ${response.data?['data']?['title']}");
 
-    return CourseModel.fromJson(response.data!['data']!);
+    return DetailedCourseModel.fromJson(response.data!['data']!);
   }
 
   /// Get Prep Packs (Test Packs)

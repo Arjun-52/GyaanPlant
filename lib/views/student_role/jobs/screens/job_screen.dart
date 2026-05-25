@@ -50,7 +50,7 @@ class _JobScreenState extends State<JobScreen> {
                 const JobFilterRow(),
                 const SizedBox(height: 20),
 
-                if (vm.jobs.isEmpty)
+                if (vm.filteredJobs.isEmpty)
                   Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -71,7 +71,7 @@ class _JobScreenState extends State<JobScreen> {
                   )
                 else
                   Column(
-                    children: vm.jobs.map((job) {
+                    children: vm.filteredJobs.map((job) {
                       return JobCard(
                         title: job.role ?? 'No Role',
                         company: job.companyName ?? 'Unknown Company',

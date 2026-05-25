@@ -12,6 +12,7 @@ class CourseProgressCard extends StatelessWidget {
   final Color? tagColor;
   final bool isEnrolled;
   final String courseId;
+  final String? thumbnail;
   const CourseProgressCard({
     super.key,
     required this.title,
@@ -24,6 +25,7 @@ class CourseProgressCard extends StatelessWidget {
     required this.isEnrolled,
     this.tag,
     this.tagColor,
+    this.thumbnail,
   });
 
   @override
@@ -46,15 +48,39 @@ class CourseProgressCard extends StatelessWidget {
           ///  Top Row
           Row(
             children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  width: 56,
+                  height: 56,
                   color: Colors.white10,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Center(
-                  child: Icon(Icons.menu_book, color: Colors.white),
+                  padding: const EdgeInsets.all(8),
+                  child: Image.network(
+                    (thumbnail != null && thumbnail!.isNotEmpty)
+                        ? thumbnail!
+                        : _getCourseImageUrl(title),
+                    fit: BoxFit.contain,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation(Color(0xFF00C853)),
+                          ),
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.menu_book,
+                        color: Colors.white38,
+                        size: 24,
+                      );
+                    },
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -188,5 +214,37 @@ class CourseProgressCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _getCourseImageUrl(String title) {
+    final t = title.toLowerCase();
+    if (t.contains('javascript') || t.contains('js')) {
+      return 'https://img.icons8.com/color/144/javascript--v1.png';
+    }
+    if (t.contains('flutter') || t.contains('dart')) {
+      return 'https://img.icons8.com/color/144/flutter.png';
+    }
+    if (t.contains('python')) {
+      return 'https://img.icons8.com/color/144/python--v1.png';
+    }
+    if (t.contains('sql') || t.contains('database') || t.contains('db')) {
+      return 'https://img.icons8.com/fluency/144/database.png';
+    }
+    if (t.contains('azure') || t.contains('cloud') || t.contains('aws')) {
+      return 'https://img.icons8.com/color/144/azure-1.png';
+    }
+    if (t.contains('dsa') || t.contains('data structure') || t.contains('algorithm') || t.contains('coding')) {
+      return 'https://img.icons8.com/fluency/144/code.png';
+    }
+    if (t.contains('aptitude') || t.contains('math') || t.contains('quant')) {
+      return 'https://img.icons8.com/fluency/144/math.png';
+    }
+    if (t.contains('verbal') || t.contains('english') || t.contains('communication')) {
+      return 'https://img.icons8.com/fluency/144/speech-bubble.png';
+    }
+    if (t.contains('hr') || t.contains('interview') || t.contains('career')) {
+      return 'https://img.icons8.com/color/144/briefcase.png';
+    }
+    return 'https://img.icons8.com/fluency/144/education.png';
   }
 }

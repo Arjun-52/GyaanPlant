@@ -11,17 +11,29 @@ class UpcomingDrivesSection extends StatelessWidget {
     if (drives.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Text(
+        children: [
+          const Text(
             "Upcoming Drives",
             style: TextStyle(
               color: Colors.white,
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 12),
-          Text("No upcoming drives", style: TextStyle(color: Colors.white54)),
+          const SizedBox(height: 20),
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                "No upcoming drives",
+                style: TextStyle(
+                  color: Colors.white38,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
         ],
       );
     }
@@ -34,7 +46,7 @@ class UpcomingDrivesSection extends StatelessWidget {
           "Upcoming Drives",
           style: TextStyle(
             color: Colors.white,
-            fontSize: 16,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),

@@ -105,6 +105,11 @@ class StudentViewModel extends ChangeNotifier {
 
   Future<void> refreshStudents() async => fetchStudents();
 
+  void addStudentLocal(Student student) {
+    _students.insert(0, student);
+    notifyListeners();
+  }
+
   void setSearch(String value) {
     if (_searchQuery != value) {
       _searchQuery = value;
@@ -132,7 +137,8 @@ class StudentViewModel extends ChangeNotifier {
     return _students.where((student) {
       final matchesSearch =
           student.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          student.email.toLowerCase().contains(_searchQuery.toLowerCase());
+          student.email.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          student.rollNo.toLowerCase().contains(_searchQuery.toLowerCase());
 
       bool matchesFilter = true;
       switch (_selectedFilter) {

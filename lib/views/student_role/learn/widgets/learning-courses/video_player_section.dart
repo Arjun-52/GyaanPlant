@@ -14,8 +14,11 @@ class VideoPlayerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if the lesson has a mock video url configured
-    final bool hasVideo = lesson.videoUrl.isNotEmpty;
+    // Use the lesson's video URL if available, otherwise fall back to a standard public Google API test video
+    final String videoUrl = lesson.videoUrl.isNotEmpty
+        ? lesson.videoUrl
+        : "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+    final bool hasVideo = videoUrl.isNotEmpty;
 
     return AspectRatio(
       aspectRatio: 16 / 9,

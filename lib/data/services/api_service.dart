@@ -13,6 +13,8 @@ import '../../repositories/hod_repository.dart';
 import '../../repositories/mentor_repository.dart';
 import '../../repositories/college_repository.dart';
 import '../../repositories/organization_repository.dart';
+import '../../repositories/assessment_repository.dart';
+import '../../repositories/tpo_notification_repository.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -36,6 +38,8 @@ class ApiService {
   late final MentorRepository _mentor = MentorRepository(_api);
   late final CollegeRepository _college = CollegeRepository(_api);
   late final OrganizationRepository _organization = OrganizationRepository(_api);
+  late final AssessmentRepository _assessment = AssessmentRepository(_api);
+  late final TpoNotificationRepository _tpoNotification = TpoNotificationRepository(_api);
 
   AuthRepository get auth => _auth;
   StudentRepository get student => _student;
@@ -48,6 +52,8 @@ class ApiService {
   MentorRepository get mentor => _mentor;
   CollegeRepository get college => _college;
   OrganizationRepository get organization => _organization;
+  AssessmentRepository get assessment => _assessment;
+  TpoNotificationRepository get tpoNotification => _tpoNotification;
 
   /// Pass-through used by registration flow to fetch the college dropdown list.
   Future<ApiResponse<List<CollegeDropdownModel>>> getColleges() =>

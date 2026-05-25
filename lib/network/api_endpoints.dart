@@ -118,9 +118,17 @@ class ApiEndpoints {
 
   // ── Notifications ────────────────────────────────────────────────────────
   static const String notifications = '/api/v1/notification';
+  static const String markAllReadNotifications = '/api/v1/notification/mark-all-read';
 
   // ── Payments ─────────────────────────────────────────────────────────────
   static const String createOrder = '/api/v1/payments/create-order';
   static const String verifyPayment = '/api/v1/payments/verify';
   static const String paymentHistory = '/api/v1/payments/my/history';
+
+  // ── Assessments & Preparation ─────────────────────────────────────────────
+  static const String preparationCompanies = '/api/v1/preparation/companies';
+  static const String assessmentStats = '/api/v1/assessment/stats';
+  static const String assessmentCurrent = '/api/v1/assessment/current';
+  static const String assessmentList = '/api/v1/assessment/list';
+  static const String preparationPacks = '/api/v1/preparation/packs';
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/models/prep_pack_model.dart';
+import 'package:gyaanplant/models/assessment/mock_test_models.dart';
 
 class TestPackCard extends StatelessWidget {
-  final PrepPack pack;
+  final PreparationPackModel pack;
 
   const TestPackCard({super.key, required this.pack});
 
@@ -49,10 +49,10 @@ class TestPackCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  pack.description,
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
-                  maxLines: 2,
+                const Text(
+                  "Targeted Preparation Pack",
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -67,7 +67,7 @@ class TestPackCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              "₹${pack.price.toStringAsFixed(0)}",
+              "₹${pack.price}",
               style: const TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,

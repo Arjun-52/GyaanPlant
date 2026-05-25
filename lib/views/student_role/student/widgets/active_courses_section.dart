@@ -80,24 +80,40 @@ class ActiveCoursesSection extends StatelessWidget {
               'Active Courses',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
               ),
             ),
             InkWell(
               onTap: () => context.read<StudentTabController>().switchTab(1),
-              child: const Text(
-                'See all →',
-                style: TextStyle(
-                  color: Color(0xFF00C853),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Text(
+                      'See all',
+                      style: TextStyle(
+                        color: Color(0xFF00C853),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(width: 4),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 16,
+                      color: Color(0xFF00C853),
+                    ),
+                  ],
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
         ...enrollments.map((enrollment) => CourseItem(enrollment: enrollment)),
       ],
     );
@@ -147,9 +163,9 @@ class CourseItem extends StatelessWidget {
 
   Color getIconBgColor() {
     final p = getProgress();
-    if (p >= 0.7) return const Color(0xFF0F2A22);
-    if (p >= 0.4) return const Color(0xFF1A2332);
-    return const Color(0xFF1E1E2F);
+    if (p >= 0.7) return const Color(0xFF00C853).withOpacity(0.12);
+    if (p >= 0.4) return const Color(0xFFFFA726).withOpacity(0.12);
+    return const Color(0xFFEF5350).withOpacity(0.12);
   }
 
   Color getProgressColor() {
@@ -197,61 +213,92 @@ class CourseItem extends StatelessWidget {
     final progress = getProgress();
     final progressColor = getProgressColor();
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF09241E), // Premium dark-teal card background
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF1FA463).withOpacity(0.15),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: iconBg,
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: progressColor.withOpacity(0.3),
+                width: 1,
+              ),
             ),
-            child: Text(icon, style: const TextStyle(fontSize: 18)),
+            child: Text(
+              icon,
+              style: const TextStyle(fontSize: 22),
+            ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(color: Colors.white54, fontSize: 12),
-                ),
-                const SizedBox(height: 10),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 6,
-                          backgroundColor: const Color(0xFF1A1A1A),
-                          valueColor: AlwaysStoppedAnimation(progressColor),
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Text(
                       '${(progress.isFinite ? (progress * 100).round() : 0)}%',
                       style: TextStyle(
                         color: progressColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 6,
+                    backgroundColor: const Color(0xFF041511),
+                    valueColor: AlwaysStoppedAnimation(progressColor),
+                  ),
                 ),
               ],
             ),
