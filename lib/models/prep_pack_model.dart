@@ -10,7 +10,6 @@ class PrepPack {
     required this.description,
     required this.price,
   });
-
   factory PrepPack.fromJson(Map<String, dynamic> json) {
     return PrepPack(
       id: json['_id'] ?? json['id'] ?? '',

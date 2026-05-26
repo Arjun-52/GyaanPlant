@@ -4,10 +4,10 @@ class ApiEndpoints {
   // ── Health ──────────────────────────────────────────────────────────────
   static const String health = '/api/v1/health';
 
-  // ── Uploads ─────────────────────────────────────────────────────────────
+  // ── Uploads 
   static const String presigned = '/api/v1/uploads/presigned';
 
-  // ── Auth ─────────────────────────────────────────────────────────────────
+  // ── Auth  
   static const String login = '/api/v1/auth/login';
   static const String register = '/api/v1/auth/register';
   static const String logout = '/api/v1/auth/logout';
@@ -18,23 +18,22 @@ class ApiEndpoints {
   static const String changePassword = '/api/v1/auth/change-password';
   static const String fcmToken = '/api/v1/auth/fcm-token';
 
-  // ── Users ────────────────────────────────────────────────────────────────
+  // ── Users 
   static const String users = '/api/v1/users';
   static const String updateMyProfile = '/api/v1/users/me';
 
-  // ── Colleges ─────────────────────────────────────────────────────────────
+  // ── Colleges 
   static const String colleges = '/api/v1/colleges';
   static const String college = '/api/v1/college';
-
-  // ── Students ─────────────────────────────────────────────────────────────
+  // ── Students 
   static const String students = '/api/v1/student';
   static const String studentMe = '/api/v1/student/me';
   static const String studentReadiness = '/api/v1/student/readiness';
 
-  // ── Organizations ────────────────────────────────────────────────────────
+  // ── Organizations 
   static const String organizations = '/api/v1/organization';
 
-  // ── Employees ────────────────────────────────────────────────────────────
+  // ── Employees 
   static const String employees = '/api/v1/employees';
   static const String employeeProfile = '/api/v1/employees/profile';
   static const String employeeMe = '/api/v1/employees/me';
@@ -43,24 +42,24 @@ class ApiEndpoints {
   static const String employeeDepartments = '/api/v1/employees/departments';
   static const String employeeAppraisals = '/api/v1/employees/appraisals';
 
-  // ── MOU ──────────────────────────────────────────────────────────────────
+  // MOU
   static const String mou = '/api/v1/mou';
   static const String mouStats = '/api/v1/mou/stats';
 
-  // ── Mentors ──────────────────────────────────────────────────────────────
+  // Mentors
   static const String mentors = '/api/v1/mentor';
   static const String mentorEarnings = '/api/v1/mentor/earnings';
 
-  // ── Sessions ─────────────────────────────────────────────────────────────
+  // Sessions
   static const String sessionMy = '/api/v1/session/my';
   static const String sessions = '/api/v1/session';
 
-  // ── Placement Drives ─────────────────────────────────────────────────────
+  // Placement Drives
   static const String drives = '/api/v1/drive';
   static const String driveShortlistSummary = '/api/v1/drive/shortlist-summary';
   static const String driveMyApplications = '/api/v1/drive/my-applications';
 
-  // ── Learning ─────────────────────────────────────────────────────────────
+  // Learning 
   static const String learning = '/api/v1/learning';
   static const String myEnrollments = '/api/v1/learning/my-courses';
   static const String bulkAssign = '/api/v1/learning/bulk-assign';
@@ -69,11 +68,11 @@ class ApiEndpoints {
   static const String myAssessmentHistory =
       '/api/v1/learning/assessments/my-history';
 
-  // ── Prep Packs ───────────────────────────────────────────────────────────
+  // Prep Packs
   static const String prepPacks = '/api/v1/prep-packs';
   static const String startAttempt = '/api/v1/prep-packs';
 
-  // ── Gamification ─────────────────────────────────────────────────────────
+  // Gamification 
   static const String gamificationProfile = '/api/v1/gamification/profile';
   static const String leaderboard = '/api/v1/gamification/leaderboard';
   static const String collarLeaderboard =
@@ -83,26 +82,26 @@ class ApiEndpoints {
   static const String awardPoints = '/api/v1/gamification/award';
   static const String gamificationOrgStats = '/api/v1/gamification/org-stats';
 
-  // ── Invites ──────────────────────────────────────────────────────────────
+  // Invites 
   static const String invites = '/api/v1/invites';
   static const String invitesBulk = '/api/v1/invites/bulk';
   static const String myInvites = '/api/v1/invites/my-invites';
   static const String invitesAccept = '/api/v1/invites/invites/accept';
   static const String invitesCleanup = '/api/v1/invites/cleanup';
 
-  // ── Problems ─────────────────────────────────────────────────────────────
+  //Problems
   static const String problems = '/api/v1/problems';
   static const String problemsRun = '/api/v1/problems/run';
   static const String mySubmissions = '/api/v1/problems/me/submissions';
 
-  // ── Departments ──────────────────────────────────────────────────────────
+  // Departments
   static const String departments = '/api/v1/departments';
   static const String departmentHods = '/api/v1/departments/hods';
 
-  // ── Syllabus ─────────────────────────────────────────────────────────────
+  // Syllabus
   static const String syllabus = '/api/v1/syllabus';
 
-  // ── Dashboard ────────────────────────────────────────────────────────────
+  //  Dashboard 
   static const String dashboardAdmin = '/api/v1/dashboard/admin';
   static const String dashboardCollegeAdmin = '/api/v1/dashboard/college-admin';
   static const String dashboardExecutive = '/api/v1/dashboard/executive';
@@ -116,16 +115,16 @@ class ApiEndpoints {
   static const String dashboardHod = '/api/v1/dashboard/hod';
   static const String dashboardAnalytics = '/api/v1/dashboard/analytics';
 
-  // ── Notifications ────────────────────────────────────────────────────────
+  // Notifications 
   static const String notifications = '/api/v1/notification';
   static const String markAllReadNotifications = '/api/v1/notification/mark-all-read';
 
-  // ── Payments ─────────────────────────────────────────────────────────────
+  // Payments
   static const String createOrder = '/api/v1/payments/create-order';
   static const String verifyPayment = '/api/v1/payments/verify';
   static const String paymentHistory = '/api/v1/payments/my/history';
 
-  // ── Assessments & Preparation ─────────────────────────────────────────────
+  //  Assessments & Preparation
   static const String preparationCompanies = '/api/v1/preparation/companies';
   static const String assessmentStats = '/api/v1/assessment/stats';
   static const String assessmentCurrent = '/api/v1/assessment/current';

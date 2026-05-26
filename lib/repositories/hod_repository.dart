@@ -106,10 +106,23 @@ class HodRepository {
 
           return departments;
         } else {
-          print("❌ HOD REPO: No 'data' key found in response");
-          return [];
         }
+        return [];
       },
     );
   }
+  // Fetch details for a single department by ID
+  Future<ApiResponse<Department>> getDepartmentDetails(String departmentId) {
+    final endpoint = "${ApiEndpoints.departments}/$departmentId";
+    print("🔍 HOD REPO: Fetching department details from $endpoint");
+    return _api.get<Department>(
+      endpoint,
+      fromJson: (json) {
+        final map = json as Map<String, dynamic>;
+        final data = map['data'] as Map<String, dynamic>? ?? {};
+        return Department.fromJson(data);
+      },
+    );
+  }
+
 }

@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/views/student_role/learn/screens/course_details_screen.dart';
 import 'package:gyaanplant/views/student_role/learn/screens/my_courses_screen.dart';
+import 'package:gyaanplant/views/HOD_role/depts/screens/department_details_screen.dart';
+import 'package:gyaanplant/viewmodels/HOD_viewmodel/department_details_viewmodel.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/student_notification_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -150,6 +152,17 @@ class AppRouter {
           create: (_) => StudentViewModel(),
           child: const HODShell(),
         ),
+      ),
+      // Department Details for HOD role
+      GoRoute(
+        path: '/department/:departmentId',
+        builder: (context, state) {
+          final departmentId = state.pathParameters['departmentId']!;
+          return ChangeNotifierProvider(
+            create: (_) => DepartmentDetailsViewModel(),
+            child: DepartmentDetailsScreen(departmentId: departmentId),
+          );
+        },
       ),
 
       ///  TPO

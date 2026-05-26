@@ -6,6 +6,14 @@ class Drive {
   final int registered;
   final int pending;
   final String status;
+  
+  final String? driveDate;
+  final int? registeredCount;
+  final int? shortlistedCount;
+  final String? package;
+  final String? salary;
+  final String? CTC;
+  final String? jdUrl;
 
   Drive({
     required this.company,
@@ -15,6 +23,13 @@ class Drive {
     required this.registered,
     required this.pending,
     required this.status,
+    this.driveDate,
+    this.registeredCount,
+    this.shortlistedCount,
+    this.package,
+    this.salary,
+    this.CTC,
+    this.jdUrl,
   });
 
   factory Drive.fromJson(Map<String, dynamic> json) {
@@ -26,6 +41,13 @@ class Drive {
       registered: json['registered'] ?? 0,
       pending: json['pending'] ?? 0,
       status: json['status'] ?? '',
+      driveDate: json['driveDate']?.toString(),
+      registeredCount: json['registeredCount'] as int?,
+      shortlistedCount: json['shortlistedCount'] as int?,
+      package: json['package']?.toString(),
+      salary: json['salary']?.toString(),
+      CTC: json['CTC']?.toString(),
+      jdUrl: json['jdUrl']?.toString(),
     );
   }
 }

@@ -10,15 +10,20 @@ class Head {
 
 class College {
   final String? name;
+  final String? city;
 
-  College({this.name});
+  College({this.name, this.city});
 
   factory College.fromJson(Map<String, dynamic> json) {
-    return College(name: json["name"]?.toString());
+    return College(
+      name: json["name"]?.toString(),
+      city: json["city"]?.toString(),
+    );
   }
 }
 
 class Department {
+  final String id;
   final String name;
   final String? code;
   final Head? head;
@@ -26,6 +31,7 @@ class Department {
   final String icon;
 
   Department({
+    required this.id,
     required this.name,
     this.code,
     this.head,
@@ -36,6 +42,10 @@ class Department {
   factory Department.fromJson(Map<String, dynamic> json) {
     print("🔍 DEPT MODEL PARSING JSON: $json");
     print("🔍 JSON KEYS: ${json.keys.toList()}");
+
+    // Parse department id (fallback to empty string)
+    final deptId = json["_id"]?.toString() ?? json["id"]?.toString() ?? "";
+    print("🔍 DEPARTMENT ID: $deptId");
 
     // Parse department name
     final deptName = json["name"]?.toString() ?? "Unknown Department";
@@ -82,6 +92,7 @@ class Department {
     );
 
     return Department(
+      id: deptId,
       name: deptName,
       code: deptCode,
       head: deptHead,
