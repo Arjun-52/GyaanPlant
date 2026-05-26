@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
-import 'package:gyaanplant/models/learning/learning_model.dart';
+import 'package:gyaanplant/models/learning/detailed_course_model.dart';
 
 class CourseDetailsViewModel extends ChangeNotifier {
   final _learning = ApiService().learning;
 
-  CourseModel? course;
+  DetailedCourseModel? course;
   bool isLoading = false;
   String? error;
 

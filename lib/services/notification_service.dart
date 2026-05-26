@@ -78,7 +78,13 @@ class NotificationService {
 
   /// Save FCM token to database
   static Future<void> saveFCMTokenToDatabase(String token) async {
+    if (!NetworkAPIManager.isInitialized) {
+      debugPrint("Skipping FCM save: NetworkAPIManager not initialized");
+      return;
+    }
+
     try {
+      debugPrint("Saving token");
       print("💾 Saving FCM token to database: $token");
 
       final response = await NetworkAPIManager.instance.post(

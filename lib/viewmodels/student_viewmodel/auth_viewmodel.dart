@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../data/services/local_storage_service.dart';
 import '../../data/services/api_service.dart';
 import '../../models/auth/auth_user_model.dart';
+import '../../models/auth/college_dropdown_model.dart';
 import '../../network/auth_cache.dart';
 import '../../core/utils/app_logger.dart';
 
@@ -10,6 +11,8 @@ class AuthViewModel extends ChangeNotifier {
   static const _tag = 'AuthViewModel';
 
   final _auth = ApiService().auth;
+  final _apiService = ApiService();
+
 
   bool _disposed = false;
 
@@ -22,6 +25,11 @@ class AuthViewModel extends ChangeNotifier {
   String branch = 'Select Branch';
   String careerPath = 'Select Career Path';
 
+  // COLLEGE DROPDOWN STATE
+  List<CollegeDropdownModel> colleges = [];
+  bool isCollegeLoading = false;
+  CollegeDropdownModel? selectedCollege;
+
   // STATE
   int currentStep = 1;
   bool isLoading = false;
@@ -32,6 +40,7 @@ class AuthViewModel extends ChangeNotifier {
 
   AuthViewModel() {
     _loadUser();
+    fetchColleges();
   }
 
   @override
@@ -60,6 +69,13 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Sets the selected college from the API-driven dropdown.
+  void setSelectedCollege(CollegeDropdownModel? v) {
+    selectedCollege = v;
+    college = v?.name ?? 'Select';
+    notifyListeners();
+  }
+
   void setBranch(String v) {
     branch = v;
     notifyListeners();
@@ -70,12 +86,41 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // COLLEGE FETCH
+  Future<void> fetchColleges() async {
+    AppLogger.info(_tag, 'fetchColleges() called');
+    isCollegeLoading = true;
+    notifyListeners();
+
+    try {
+      final result = await _apiService.getColleges();
+      if (result.isSuccess) {
+        colleges = result.data ?? [];
+        if (colleges.isEmpty) {
+          // Fallback placeholder to ensure UI remains interactive during dev/testing
+          colleges = [
+            const CollegeDropdownModel(id: 'sample1', name: 'Sample College', city: 'Demo City'),
+          ];
+          AppLogger.info(_tag, 'Using fallback sample college');
+        }
+        AppLogger.info(_tag, 'Loaded ${colleges.length} colleges');
+      } else {
+        AppLogger.warning(_tag, 'fetchColleges failed: ${result.error?.message}');
+      }
+    } catch (e, st) {
+      AppLogger.error(_tag, 'fetchColleges exception', e, st);
+    } finally {
+      isCollegeLoading = false;
+      notifyListeners();
+    }
+  }
+
   // LOGIN
   Future<void> login(BuildContext context) async {
     // 🚧 TEMPORARY DEVELOPMENT BYPASS: Set to true to bypass login validation and mock credentials
     const bool useDevBypass = false;
     if (useDevBypass) {
-      print("🚧 DEV BYPASS: Tapped login. Mocking login and moving to student dashboard.");
+      AppLogger.info(_tag, '🚧 DEV BYPASS: Tapped login. Mocking login and moving to student dashboard.');
       await LocalStorageService.saveToken("mock_dev_token");
       await LocalStorageService.saveRole("student");
       await LocalStorageService.saveUser({
@@ -192,9 +237,13 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     if (currentStep == 3) {
-      if (branch == 'Select Branch' || careerPath == 'Select Career Path') {
-        _showError(context, 'Please complete all fields');
-        return;
+      // Role-based validation: Branch and career path are only required for Students
+      final isStudent = role.toLowerCase() == 'student';
+      if (isStudent) {
+        if (branch == 'Select Branch' || careerPath == 'Select Career Path') {
+          _showError(context, 'Please complete all fields');
+          return;
+        }
       }
     }
 

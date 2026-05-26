@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/student_tab_controller.dart';
 
 class AiAdvisorSheet extends StatelessWidget {
   const AiAdvisorSheet({super.key});
@@ -250,7 +252,10 @@ class AiAdvisorSheet extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pop(context);
+                  context.read<StudentTabController>().switchTab(1);
+                },
                 child: const Text(
                   "Start My Roadmap →",
                   style: TextStyle(

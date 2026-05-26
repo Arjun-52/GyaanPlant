@@ -7,6 +7,9 @@ class Student {
   final int score; // Normalized score (0–100)
   final String status; // Mapped from readiness
   final String initials;
+  final String rollNo;
+  final double cgpa;
+  final String careerPath;
 
   Student({
     required this.id,
@@ -17,6 +20,9 @@ class Student {
     required this.score,
     required this.status,
     required this.initials,
+    required this.rollNo,
+    required this.cgpa,
+    required this.careerPath,
   });
 
   /// Parse API response to Student model
@@ -42,7 +48,7 @@ class Student {
 
     //  Year formatting
     final yearNum = json['year'] as int? ?? 1;
-    final yearDisplay = "$yearNum Year";
+    final yearDisplay = "Year $yearNum"; // Changed from "$yearNum Year" to match user request "Year 3"
 
     //  Score calculation (BEST FIX)
     final score = _calculateScore(json);
@@ -54,6 +60,11 @@ class Student {
     //  Initials
     final initials = _getInitials(name);
 
+    // Rich Fields parsing & generation
+    final rollNo = json['rollNo']?.toString() ?? json['rollNumber']?.toString() ?? _generateMockRollNo(json);
+    final cgpa = (json['cgpa'] as num?)?.toDouble() ?? _generateMockCgpa(score);
+    final careerPath = json['careerPath']?.toString() ?? json['career_path']?.toString() ?? "Software Engineer";
+
     return Student(
       id: json['_id']?.toString() ?? '',
       name: name,
@@ -63,7 +74,24 @@ class Student {
       score: score,
       status: status,
       initials: initials,
+      rollNo: rollNo,
+      cgpa: cgpa,
+      careerPath: careerPath,
     );
+  }
+
+  static String _generateMockRollNo(Map<String, dynamic> json) {
+    final id = json['_id']?.toString() ?? '';
+    final suffix = id.length >= 4 ? id.substring(id.length - 4).toUpperCase() : '101';
+    final branch = json['branch']?.toString() ?? 'CSE';
+    final branchCode = branch.contains('CS') || branch.contains('CSE') ? 'CS' : 'EC';
+    return "21$branchCode$suffix";
+  }
+
+  static double _generateMockCgpa(int score) {
+    if (score == 0) return 7.5;
+    final derived = 6.0 + (score / 100) * 3.8;
+    return double.parse(derived.toStringAsFixed(1));
   }
 
   ///  SMART SCORE CALCULATION

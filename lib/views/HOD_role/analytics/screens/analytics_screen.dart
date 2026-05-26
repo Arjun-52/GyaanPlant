@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/views/HOD_role/analytics/widegts/custom_card.dart';
 import 'package:gyaanplant/views/HOD_role/analytics/widegts/info_card.dart';
+import 'package:gyaanplant/views/HOD_role/analytics/widegts/analytics_extended.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
 
@@ -16,7 +17,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Widget build(BuildContext context) {
     return Consumer<HodDashboardViewModel>(
       builder: (context, vm, _) {
-        final overview = vm.data;
         return Scaffold(
           backgroundColor: const Color(0xFF061A14),
           body: SafeArea(
@@ -185,6 +185,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       ),
                     ],
                   ),
+
+                  const SizedBox(height: 24),
+
+                  // Extended analytics sections
+                  const HodAnalyticsExtended(),
                 ],
               ),
             ),

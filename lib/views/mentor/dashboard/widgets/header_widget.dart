@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/models/mentor_models/mentor_dashboard_model.dart';
 import 'package:gyaanplant/views/mentor/dashboard/widgets/stat_card.dart';
 
@@ -57,19 +58,22 @@ class HeaderWidget extends StatelessWidget {
               ),
 
               ///  AVATAR
-              Container(
-                height: 48,
-                width: 48,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.greenAccent,
-                ),
-                child: const Center(
-                  child: Text(
-                    "M",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
+              GestureDetector(
+                onTap: () => context.go('/mentor-profile'),
+                child: Container(
+                  height: 48,
+                  width: 48,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.greenAccent,
+                  ),
+                  child: const Center(
+                    child: Text(
+                      "M",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),

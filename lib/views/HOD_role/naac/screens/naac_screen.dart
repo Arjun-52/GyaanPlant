@@ -104,22 +104,57 @@ class _NaacScreenState extends State<NaacScreen> {
                                 ],
                               ),
                               const SizedBox(height: 16),
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    'Generate Full NAAC Report →',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
+                              GestureDetector(
+                                onTap: vm.isGeneratingReport
+                                    ? null
+                                    : () => vm.generateNaacReport(context),
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: vm.isGeneratingReport
+                                        ? Colors.green.withValues(alpha: 0.5)
+                                        : Colors.green,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Center(
+                                    child: vm.isGeneratingReport
+                                        ? const Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                          Color>(
+                                                    Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(width: 10),
+                                              Text(
+                                                'Generating Report...',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : const Text(
+                                            'Generate Full NAAC Report →',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
                                   ),
                                 ),
                               ),

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:printing/printing.dart';
 import 'package:gyaanplant/core/utils/app_logger.dart';
 
 /// Service for handling file downloads and opening
@@ -27,65 +28,90 @@ class DownloadHandler {
         return false;
       }
 
-      // Get the downloads directory
-      final directory = await getDownloadsDirectory();
-      if (directory == null) {
-        AppLogger.error(_tag, 'Failed to get downloads directory');
+      String? filePath;
+      bool savedSuccessfully = false;
+
+      // Try to save to Downloads directory first
+      try {
+        final directory = await getDownloadsDirectory();
+        if (directory != null) {
+          AppLogger.info(_tag, 'Attempting to save to downloads directory: ${directory.path}');
+          if (!await directory.exists()) {
+            await directory.create(recursive: true);
+          }
+          filePath = '${directory.path}/$fileName.pdf';
+          final file = File(filePath);
+          await file.writeAsBytes(pdfBytes);
+          savedSuccessfully = true;
+          AppLogger.info(_tag, 'PDF saved successfully to downloads folder: $filePath');
+        }
+      } catch (e) {
+        AppLogger.warning(_tag, 'Failed to save to downloads directory, trying app documents folder: $e');
+      }
+
+      // Fallback: save to application documents directory (always allowed without permission prompts)
+      if (!savedSuccessfully) {
+        try {
+          final directory = await getApplicationDocumentsDirectory();
+          AppLogger.info(_tag, 'Attempting to save to app documents directory: ${directory.path}');
+          filePath = '${directory.path}/$fileName.pdf';
+          final file = File(filePath);
+          await file.writeAsBytes(pdfBytes);
+          savedSuccessfully = true;
+          AppLogger.info(_tag, 'PDF saved successfully to app documents: $filePath');
+        } catch (e) {
+          AppLogger.error(_tag, 'Failed to save to app documents folder: $e');
+        }
+      }
+
+      if (!savedSuccessfully || filePath == null) {
+        AppLogger.error(_tag, 'Could not save PDF to any directory');
         return false;
       }
-
-      AppLogger.info(_tag, 'Downloads directory: ${directory.path}');
-
-      // Create file path
-      final filePath = '${directory.path}/$fileName.pdf';
-      final file = File(filePath);
-
-      // Check if directory exists
-      if (!await directory.exists()) {
-        AppLogger.info(_tag, 'Creating downloads directory');
-        await directory.create(recursive: true);
-      }
-
-      // Write PDF to file
-      await file.writeAsBytes(pdfBytes);
-      AppLogger.info(_tag, 'PDF saved to: $filePath');
-
-      // Verify file was created
-      if (!await file.exists()) {
-        AppLogger.error(_tag, 'Failed to create PDF file');
-        return false;
-      }
-
-      final fileSize = await file.length();
-      AppLogger.info(_tag, 'File size: $fileSize bytes');
-
-      // Open the file
-      AppLogger.info(_tag, 'Attempting to open file: $filePath');
 
       // Try to open the file using url_launcher
       final fileUri = Uri.parse('file://$filePath');
-
       try {
         if (await canLaunchUrl(fileUri)) {
           await launchUrl(fileUri);
-          AppLogger.info(
-            _tag,
-            'File opened successfully via system file manager',
-          );
-          return true;
-        } else {
-          AppLogger.warning(_tag, 'Cannot launch file URL: $fileUri');
-          // Return true since file was saved successfully
+          AppLogger.info(_tag, 'File opened successfully via url_launcher');
           return true;
         }
       } catch (e) {
-        AppLogger.warning(_tag, 'Failed to open file: $e');
-        // Return true since file was saved successfully
-        return true;
+        AppLogger.warning(_tag, 'url_launcher failed to open file: $e');
       }
+
+      // Safe open fallback via printing package (essential on Android/iOS due to file provider constraints)
+      try {
+        AppLogger.info(_tag, 'Attempting to share/open PDF via Printing.sharePdf');
+        await Printing.sharePdf(bytes: pdfBytes, filename: '$fileName.pdf');
+        return true;
+      } catch (e) {
+        AppLogger.error(_tag, 'Printing.sharePdf failed: $e');
+      }
+
+      return savedSuccessfully;
     } catch (e, st) {
       AppLogger.error(_tag, 'Failed to download and open PDF', e, st);
       return false;
+    }
+  }
+
+  /// Save PDF to temp directory and return the file path for sharing.
+  /// Use this when you want to share via share_plus (WhatsApp, Gmail, etc.)
+  static Future<String?> savePdfForSharing({
+    required Uint8List pdfBytes,
+    required String fileName,
+  }) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final path = '${dir.path}/$fileName.pdf';
+      await File(path).writeAsBytes(pdfBytes);
+      AppLogger.info(_tag, 'PDF saved for sharing at: $path');
+      return path;
+    } catch (e, st) {
+      AppLogger.error(_tag, 'Failed to save PDF for sharing', e, st);
+      return null;
     }
   }
 

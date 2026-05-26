@@ -18,31 +18,42 @@ import 'viewmodels/student_viewmodel/mentor_viewmodel.dart';
 import 'viewmodels/student_viewmodel/test_viewmodel.dart';
 import 'viewmodels/tpo_viewmodels/drives_viewmodel.dart';
 import 'viewmodels/tpo_viewmodels/tpo_dashboard_viewmodel.dart';
+import 'viewmodels/tpo_viewmodels/tpo_notification_viewmodel.dart';
 import 'viewmodels/student_viewmodel/notification_viewmodel.dart';
 import 'viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
+import 'viewmodels/student_viewmodel/organization_viewmodel.dart';
+import 'viewmodels/mentor_viewmodel/mentor_earnings_controller.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    // 1. Initialize Firebase
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Initialize notification service and request permissions
-  await NotificationService.initialize();
+    // 2. Initialize NetworkAPIManager
+    NetworkAPIManager.initialize();
+    debugPrint("Network initialized");
 
-  NetworkAPIManager.initialize();
+    // 3. Load token from LocalStorageService and populate AuthCache
+    final token = await LocalStorageService.getToken();
+    AuthCache.token = token;
+    print("🔑 TOKEN LOADED ON STARTUP: $token");
+    print("🔑 TOKEN IS NULL: ${token == null}");
 
-  // Load token from LocalStorageService and populate AuthCache
-  final token = await LocalStorageService.getToken();
-  AuthCache.token = token;
-  print("🔑 TOKEN LOADED ON STARTUP: $token");
-  print("🔑 TOKEN IS NULL: ${token == null}");
+    AuthInterceptor.onUnauthorized = () async {
+      await LocalStorageService.clearToken();
+      AuthCache.token = null;
+      AppRouter.router.go('/signin');
+    };
 
-  AuthInterceptor.onUnauthorized = () async {
-    await LocalStorageService.clearToken();
-    AuthCache.token = null;
-    AppRouter.router.go('/signin');
-  };
+    // 4. Initialize notification service (FCM setup)
+    await NotificationService.initialize();
+    debugPrint("FCM initialized");
+
+  } catch (e) {
+    debugPrint("❌ Error during startup initialization: $e");
+  }
 
   runApp(const MyApp());
 }
@@ -68,6 +79,9 @@ class MyApp extends StatelessWidget {
           create: (_) => HodDashboardViewModel()..loadDashboard(),
         ),
         ChangeNotifierProvider(create: (_) => NotificationViewModel()),
+        ChangeNotifierProvider(create: (_) => OrganizationViewModel()),
+        ChangeNotifierProvider(create: (_) => MentorEarningsController()),
+        ChangeNotifierProvider(create: (_) => TpoNotificationViewModel()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

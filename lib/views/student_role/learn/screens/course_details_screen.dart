@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../../../../data/services/api_service.dart';
+import 'package:gyaanplant/models/learning/detailed_course_model.dart';
 import '../../../../models/learning/learning_model.dart';
 import '../../../../models/payment/item_type.dart';
 import '../../../../models/payment/order_result.dart';
@@ -32,7 +33,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   final _apiService = ApiService();
   late Razorpay _razorpay;
 
-  CourseModel? course;
+  DetailedCourseModel? course;
   bool isLoading = true;
   String? error;
   bool isEnrolled = false;
@@ -70,13 +71,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     });
 
     try {
-      // `getCourseById` now returns `CourseModel` directly and throws on
-      // failure — no `ApiResponse` wrapper.
       course = await _learning.getCourseById(widget.courseId);
       if (mounted) {
-        isEnrolled = context.read<LearningViewModel>().isCourseEnrolled(
-          widget.courseId,
-        );
+        setState(() {
+          isEnrolled = (course!.enrollment != null || course!.hasAccess == true);
+        });
       }
     } catch (e) {
       error = e.toString();
@@ -396,9 +395,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         ),
       ),
       body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF00C853)),
-            )
+          ? const _DetailShimmer()
           : error != null
           ? ErrorRetryWidget(
               errorMessage: error!,
@@ -428,20 +425,55 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
                   const SizedBox(height: 16),
 
+                  /// Course Image Banner
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      width: double.infinity,
+                      height: 180,
+                      color: const Color(0xFF09241E),
+                      padding: const EdgeInsets.all(16),
+                      child: Image.network(
+                        (course!.thumbnail != null && course!.thumbnail!.isNotEmpty)
+                            ? course!.thumbnail!
+                            : _getCourseImageUrl(course!.title),
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation(Color(0xFF00C853)),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.menu_book,
+                            color: Colors.white38,
+                            size: 48,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
                   /// Info cards
                   Row(
                     children: [
                       InfoCard(title: "Modules", value: "${course!.totalModules}"),
                       const SizedBox(width: 10),
-                      InfoCard(title: "Duration", value: "${course!.durationMins}m"),
+                      InfoCard(title: "Duration", value: course!.duration ?? "0h 0m"),
                     ],
                   ),
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      InfoCard(title: "Points", value: "50"),
+                      InfoCard(title: "Points", value: "${course!.pointsReward}"),
                       const SizedBox(width: 10),
-                      InfoCard(title: "XP", value: "100"),
+                      InfoCard(title: "XP", value: "${course!.xpReward}"),
                     ],
                   ),
 
@@ -450,21 +482,56 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   /// Curriculum
                   SectionCard(
                     title: "Curriculum Overview",
-                    child: Column(
-                      children: const [
-                        ListTile(
-                          leading: Icon(Icons.lock, color: Colors.white),
-                          title: Text(
-                            "Intro",
-                            style: TextStyle(color: Colors.white),
+                    child: course!.modules.isEmpty
+                        ? const Center(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 20),
+                              child: Text(
+                                "No modules available yet.",
+                                style: TextStyle(color: Colors.white54, fontSize: 14),
+                              ),
+                            ),
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: course!.modules.map((module) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8, bottom: 4),
+                                    child: Text(
+                                      module.title,
+                                      style: const TextStyle(
+                                        color: Color(0xFF00C853),
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const Divider(color: Colors.white10),
+                                  ...module.lectures.map((lecture) {
+                                    return ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      leading: Icon(
+                                        isEnrolled ? Icons.play_arrow_rounded : Icons.lock,
+                                        color: isEnrolled ? const Color(0xFF00C853) : Colors.white54,
+                                      ),
+                                      title: Text(
+                                        lecture.title,
+                                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                                      ),
+                                      subtitle: Text(
+                                        "${lecture.durationMins} mins",
+                                        style: const TextStyle(color: Colors.white54, fontSize: 12),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  const SizedBox(height: 12),
+                                ],
+                              );
+                            }).toList(),
                           ),
-                          subtitle: Text(
-                            "10 mins",
-                            style: TextStyle(color: Colors.white54),
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
 
                   const SizedBox(height: 16),
@@ -473,9 +540,14 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   SectionCard(
                     title: "Requirements",
                     child: Column(
-                      children: const [
-                        RowItem(title: "Passing Score", value: "70%"),
-                        RowItem(title: "Target Audience", value: "Student"),
+                      children: [
+                        RowItem(title: "Passing Score", value: "${course!.passingScore}%"),
+                        RowItem(
+                          title: "Target Audience",
+                          value: course!.targetAudience.isNotEmpty
+                              ? course!.targetAudience[0]
+                              : "Student",
+                        ),
                       ],
                     ),
                   ),
@@ -485,9 +557,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   /// Students
                   SectionCard(
                     title: "Enrolled Students",
-                    child: const Text(
-                      "0 Learners",
-                      style: TextStyle(color: Colors.white),
+                    child: Text(
+                      "${course!.enrolled} Learners",
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
 
@@ -495,7 +567,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
                   /// Price + enroll
                   PriceEnrollCard(
-                    priceText: course!.category ?? "Free",
+                    priceText: isEnrolled
+                        ? "Enrolled"
+                        : (course!.price == 0 ? "Free" : "₹${course!.price}"),
                     isEnrolled: isEnrolled,
                     isPaymentProcessing: isPaymentProcessing,
                     onEnroll: _startPayment,
@@ -504,6 +578,189 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 ],
               ),
             ),
+    );
+  }
+
+  String _getCourseImageUrl(String title) {
+    final t = title.toLowerCase();
+    if (t.contains('javascript') || t.contains('js')) {
+      return 'https://img.icons8.com/color/144/javascript--v1.png';
+    }
+    if (t.contains('flutter') || t.contains('dart')) {
+      return 'https://img.icons8.com/color/144/flutter.png';
+    }
+    if (t.contains('python')) {
+      return 'https://img.icons8.com/color/144/python--v1.png';
+    }
+    if (t.contains('sql') || t.contains('database') || t.contains('db')) {
+      return 'https://img.icons8.com/fluency/144/database.png';
+    }
+    if (t.contains('azure') || t.contains('cloud') || t.contains('aws')) {
+      return 'https://img.icons8.com/color/144/azure-1.png';
+    }
+    if (t.contains('dsa') || t.contains('data structure') || t.contains('algorithm') || t.contains('coding')) {
+      return 'https://img.icons8.com/fluency/144/code.png';
+    }
+    if (t.contains('aptitude') || t.contains('math') || t.contains('quant')) {
+      return 'https://img.icons8.com/fluency/144/math.png';
+    }
+    if (t.contains('verbal') || t.contains('english') || t.contains('communication')) {
+      return 'https://img.icons8.com/fluency/144/speech-bubble.png';
+    }
+    if (t.contains('hr') || t.contains('interview') || t.contains('career')) {
+      return 'https://img.icons8.com/color/144/briefcase.png';
+    }
+    return 'https://img.icons8.com/fluency/144/education.png';
+  }
+}
+
+class _DetailShimmer extends StatefulWidget {
+  const _DetailShimmer();
+
+  @override
+  State<_DetailShimmer> createState() => _DetailShimmerState();
+}
+
+class _DetailShimmerState extends State<_DetailShimmer> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final opacity = 0.3 + (_controller.value * 0.35);
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title block
+              Opacity(
+                opacity: opacity,
+                child: Container(
+                  width: 250,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Colors.white12,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Course Image block
+              Opacity(
+                opacity: opacity,
+                child: Container(
+                  width: double.infinity,
+                  height: 180,
+                  decoration: BoxDecoration(
+                    color: Colors.white12,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Info card row 1
+              Opacity(
+                opacity: opacity,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.white12,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Container(
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.white12,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              // Info card row 2
+              Opacity(
+                opacity: opacity,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.white12,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Container(
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.white12,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Sectioncard placeholder
+              Opacity(
+                opacity: opacity,
+                child: Container(
+                  width: double.infinity,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.white10,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Price block placeholder
+              Opacity(
+                opacity: opacity,
+                child: Container(
+                  width: double.infinity,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    color: Colors.white10,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

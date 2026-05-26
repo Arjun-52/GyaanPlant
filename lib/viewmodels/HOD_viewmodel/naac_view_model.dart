@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/models/HOD_models/naac_model.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
+import 'package:gyaanplant/views/tpo_role/reports/services/report_service.dart';
+import 'package:gyaanplant/views/tpo_role/reports/services/report_type.dart';
+import 'package:gyaanplant/views/tpo_role/reports/services/download_handler.dart';
+import 'package:gyaanplant/views/tpo_role/reports/services/pdf_generator_service.dart';
+import 'package:gyaanplant/core/utils/helpers.dart';
+import 'package:share_plus/share_plus.dart';
 
 class NaacViewModel extends ChangeNotifier {
   static const _tag = 'NaacViewModel';
@@ -10,6 +17,9 @@ class NaacViewModel extends ChangeNotifier {
   bool isLoaded = false;
   String? errorMessage;
   bool _disposed = false;
+
+  String collegeName = 'Unknown College';
+  bool isGeneratingReport = false;
 
   @override
   void dispose() {
@@ -30,6 +40,15 @@ class NaacViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
+      try {
+        final response = await ApiService().auth.getCurrentUser();
+        if (response.success && response.data != null) {
+          collegeName = response.data!.college?.name ?? 'Unknown College';
+        }
+      } catch (e) {
+        AppLogger.warning(_tag, 'Failed to fetch user college name: $e');
+      }
+
       // TODO: replace with real API call
       await Future.delayed(const Duration(seconds: 1));
 
@@ -52,6 +71,68 @@ class NaacViewModel extends ChangeNotifier {
       AppLogger.error(_tag, 'Failed to load NAAC data', e, st);
     } finally {
       isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> generateNaacReport(BuildContext context) async {
+    if (isGeneratingReport) return;
+    isGeneratingReport = true;
+    notifyListeners();
+
+    Helpers.showInfoSnackBar(context, 'Generating NAAC Report...');
+
+    try {
+      // Step 1: Generate PDF bytes
+      final reportData = ReportService.getMockNaacData();
+      final pdfBytes = await PdfGeneratorService.generateReport(
+        reportType: ReportType.naac,
+        collegeName: collegeName,
+        reportData: reportData,
+      );
+
+      // Step 2: Save to a shareable file path
+      final fileName = DownloadHandler.generateFileName(
+        reportType: ReportType.naac.name,
+        collegeName: collegeName,
+      );
+      final filePath = await DownloadHandler.savePdfForSharing(
+        pdfBytes: pdfBytes,
+        fileName: fileName,
+      );
+
+      if (filePath == null) {
+        if (context.mounted) {
+          Helpers.showErrorSnackBar(context, 'Failed to save report file.');
+        }
+        return;
+      }
+
+      // Step 3: Open system share sheet (WhatsApp, Facebook, Gmail, Drive…)
+      final result = await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(filePath, mimeType: 'application/pdf')],
+          subject: 'NAAC Accreditation Report — $collegeName',
+          text: 'Please find the NAAC Accreditation Report for $collegeName attached.',
+        ),
+      );
+
+      if (context.mounted) {
+        if (result.status == ShareResultStatus.success) {
+          Helpers.showSuccessSnackBar(context, 'Report shared successfully!');
+        } else if (result.status == ShareResultStatus.dismissed) {
+          // User dismissed — silently ignore
+        } else {
+          Helpers.showInfoSnackBar(context, 'Report saved to app documents.');
+        }
+      }
+    } catch (e, st) {
+      AppLogger.error(_tag, 'Error generating NAAC Report', e, st);
+      if (context.mounted) {
+        Helpers.showErrorSnackBar(context, 'Error generating report: $e');
+      }
+    } finally {
+      isGeneratingReport = false;
       notifyListeners();
     }
   }

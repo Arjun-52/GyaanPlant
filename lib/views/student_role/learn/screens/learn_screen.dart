@@ -140,6 +140,7 @@ class _LearnScreenState extends State<LearnScreen> {
                             tag: 'New',
                             tagColor: Colors.green,
                             isEnrolled: false,
+                            thumbnail: course.thumbnail,
                           );
                         }).toList(),
 

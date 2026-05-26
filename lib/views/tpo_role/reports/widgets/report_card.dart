@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/tpo_role_models/report_model.dart';
+import 'package:provider/provider.dart';
+import 'package:gyaanplant/viewmodels/tpo_viewmodels/reports_viewmodel.dart';
 
 class ReportCard extends StatelessWidget {
   final Report report;
@@ -8,6 +10,9 @@ class ReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final vm = Provider.of<ReportsViewModel>(context);
+    final isDownloading = vm.isDownloading(report.type);
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: report.isPrimary ? 0 : 3),
       padding: EdgeInsets.all(report.isPrimary ? 8 : 9),
@@ -82,18 +87,35 @@ class ReportCard extends StatelessWidget {
             ),
 
             /// DOWNLOAD BUTTON
-            Container(
-              padding: EdgeInsets.all(report.isPrimary ? 12 : 10),
-              decoration: BoxDecoration(
-                color: report.isPrimary
-                    ? const Color(0xFF00C853)
-                    : Colors.white10,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.download,
-                color: report.isPrimary ? Colors.black : Colors.white70,
-                size: report.isPrimary ? 20 : 18,
+            InkWell(
+              onTap: isDownloading
+                  ? null
+                  : () => vm.downloadReport(report, context),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: EdgeInsets.all(report.isPrimary ? 12 : 10),
+                decoration: BoxDecoration(
+                  color: report.isPrimary
+                      ? const Color(0xFF00C853)
+                      : Colors.white10,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: isDownloading
+                    ? SizedBox(
+                        width: report.isPrimary ? 20 : 18,
+                        height: report.isPrimary ? 20 : 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.0,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            report.isPrimary ? Colors.black : Colors.greenAccent,
+                          ),
+                        ),
+                      )
+                    : Icon(
+                        Icons.download,
+                        color: report.isPrimary ? Colors.black : Colors.white70,
+                        size: report.isPrimary ? 20 : 18,
+                      ),
               ),
             ),
           ],

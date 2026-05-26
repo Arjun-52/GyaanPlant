@@ -17,7 +17,11 @@ class _HODShellState extends State<HODShell> {
   int _currentIndex = 0;
 
   late final List<Widget> _pages = [
-    const OverViewScreen(),
+    OverViewScreen(
+      onSettingsTap: () {
+        setState(() => _currentIndex = 4);
+      },
+    ),
     const DepartmentsScreen(),
     AnalyticsScreen(),
     const NaacScreen(),

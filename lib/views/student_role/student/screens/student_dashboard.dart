@@ -179,22 +179,17 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   const BotCard(),
                   const SizedBox(height: 20),
 
-                  Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 350),
-                      child: Consumer<LearningViewModel>(
-                        builder: (context, lvm, _) {
-                          if (lvm.isLoading) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                          return ActiveCoursesSection(
-                            enrollments: lvm.enrollments,
-                          );
-                        },
-                      ),
-                    ),
+                  Consumer<LearningViewModel>(
+                    builder: (context, lvm, _) {
+                      if (lvm.isLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+                      return ActiveCoursesSection(
+                        enrollments: lvm.enrollments,
+                      );
+                    },
                   ),
                   const SizedBox(height: 20),
                   UpcomingDrivesSection(drives: data.drives ?? const []),

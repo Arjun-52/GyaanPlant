@@ -1,4 +1,7 @@
+import '../../models/auth/college_dropdown_model.dart';
+import '../../models/mentor_models/mentor_earnings_model.dart';
 import '../../network/api_manager.dart';
+import '../../network/api_response.dart';
 import '../../repositories/auth_repository.dart';
 import '../../repositories/drive_repository.dart';
 import '../../repositories/gamification_repository.dart';
@@ -9,6 +12,9 @@ import '../../repositories/tpo_repository.dart';
 import '../../repositories/hod_repository.dart';
 import '../../repositories/mentor_repository.dart';
 import '../../repositories/college_repository.dart';
+import '../../repositories/organization_repository.dart';
+import '../../repositories/assessment_repository.dart';
+import '../../repositories/tpo_notification_repository.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -31,6 +37,9 @@ class ApiService {
   late final HodRepository _hod = HodRepository(_api);
   late final MentorRepository _mentor = MentorRepository(_api);
   late final CollegeRepository _college = CollegeRepository(_api);
+  late final OrganizationRepository _organization = OrganizationRepository(_api);
+  late final AssessmentRepository _assessment = AssessmentRepository(_api);
+  late final TpoNotificationRepository _tpoNotification = TpoNotificationRepository(_api);
 
   AuthRepository get auth => _auth;
   StudentRepository get student => _student;
@@ -42,4 +51,15 @@ class ApiService {
   HodRepository get hod => _hod;
   MentorRepository get mentor => _mentor;
   CollegeRepository get college => _college;
+  OrganizationRepository get organization => _organization;
+  AssessmentRepository get assessment => _assessment;
+  TpoNotificationRepository get tpoNotification => _tpoNotification;
+
+  /// Pass-through used by registration flow to fetch the college dropdown list.
+  Future<ApiResponse<List<CollegeDropdownModel>>> getColleges() =>
+      _college.getColleges();
+
+  /// Pass-through to fetch mentor earnings details.
+  Future<ApiResponse<MentorEarningsModel>> getMentorEarnings() =>
+      _mentor.getMentorEarnings();
 }

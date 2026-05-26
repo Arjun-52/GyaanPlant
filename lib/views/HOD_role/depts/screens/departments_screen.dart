@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/viewmodels/HOD_viewmodel/departments_viewmodel.dart';
+import 'package:gyaanplant/views/HOD_role/depts/screens/add_college_department_screen.dart';
 import 'package:gyaanplant/views/HOD_role/depts/widgets/department_card.dart';
 
 class DepartmentsScreen extends StatefulWidget {
@@ -12,22 +13,22 @@ class DepartmentsScreen extends StatefulWidget {
 
 class _DepartmentsScreenState extends State<DepartmentsScreen> {
   late final DepartmentsViewModel _vm;
+  late final TextEditingController _searchController;
 
   @override
   void initState() {
     super.initState();
     _vm = DepartmentsViewModel();
+    _searchController = TextEditingController();
 
-    // Wrap API call in addPostFrameCallback to prevent setState during build error
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _vm.loadDepartments();
-      }
+      if (mounted) _vm.loadDepartments();
     });
   }
 
   @override
   void dispose() {
+    _searchController.dispose();
     _vm.dispose();
     super.dispose();
   }
@@ -40,10 +41,12 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
         backgroundColor: const Color(0xFF061A14),
         body: Consumer<DepartmentsViewModel>(
           builder: (context, vm, _) {
+            // ── Loading ────────────────────────────────────────────────────
             if (vm.isLoading) {
               return const Center(child: CircularProgressIndicator());
             }
 
+            // ── Error ──────────────────────────────────────────────────────
             if (vm.error != null) {
               return Center(
                 child: Text(
@@ -53,6 +56,7 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
               );
             }
 
+            // ── Empty (no data at all, before any search) ──────────────────
             if (vm.departments.isEmpty) {
               return Center(
                 child: Column(
@@ -118,35 +122,156 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
               );
             }
 
+            final displayed = vm.filteredDepartments;
+
             return SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Departments',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    // ── Header Row ──────────────────────────────────────────
+                    Row(
+                      children: [
+                        const Text(
+                          'Departments',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Spacer(),
+                        // ── Add College Dept button ─────────────────────────
+                        _AddDeptButton(
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const AddCollegeDepartmentScreen(),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
-                    Expanded(
-                      child: ListView.separated(
-                        itemCount: vm.departments.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (_, i) =>
-                            DepartmentCard(dept: vm.departments[i]),
-                      ),
+
+                    // ── Search + Apply Row ──────────────────────────────────
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            style: const TextStyle(color: Colors.white),
+                            onChanged: vm.updateQuery,
+                            decoration: InputDecoration(
+                              hintText: 'Filter units by name or code...',
+                              hintStyle:
+                                  const TextStyle(color: Colors.white38),
+                              prefixIcon: const Icon(Icons.search,
+                                  color: Colors.white38),
+                              filled: true,
+                              fillColor: const Color(0xFF0F3D34),
+                              contentPadding:
+                                  const EdgeInsets.symmetric(vertical: 12),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                    color: Color(0xFF00C853), width: 1.2),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        // ── APPLY button ────────────────────────────────────
+                        ElevatedButton(
+                          onPressed: vm.applyFilter,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 18, vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.15)),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'APPLY',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 16),
+
+                    // ── No Results (after filter applied) ───────────────────
+                    if (displayed.isEmpty && vm.searchQuery.isNotEmpty)
+                      const Expanded(
+                        child: Center(
+                          child: Text(
+                            'NO RESULTS FOUND',
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: 16,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ),
+                      )
+
+                    // ── Department List ─────────────────────────────────────
+                    else
+                      Expanded(
+                        child: ListView.separated(
+                          itemCount: displayed.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 12),
+                          itemBuilder: (_, i) =>
+                              DepartmentCard(dept: displayed[i]),
+                        ),
+                      ),
                   ],
                 ),
               ),
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+// ── "Add College Dept" rounded black button ─────────────────────────────────────
+class _AddDeptButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AddDeptButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton.icon(
+      onPressed: onTap,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+        ),
+        elevation: 0,
+      ),
+      icon: const Icon(Icons.add, size: 16),
+      label: const Text(
+        'Add College Dept',
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
       ),
     );
   }

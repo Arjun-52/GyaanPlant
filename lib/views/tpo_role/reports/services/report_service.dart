@@ -68,6 +68,10 @@ class ReportService {
     }
   }
 
+  /// Public shortcut for NAAC mock data (used by NaacViewModel).
+  static Map<String, dynamic> getMockNaacData() =>
+      _getMockReportData(ReportType.naac);
+
   /// Get mock data for different report types
   static Map<String, dynamic> _getMockReportData(ReportType reportType) {
     switch (reportType) {

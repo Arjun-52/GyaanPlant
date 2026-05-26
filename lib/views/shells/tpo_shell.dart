@@ -16,21 +16,27 @@ class TPOShell extends StatefulWidget {
 class _TPOShellState extends State<TPOShell> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    TPODashboard(),
-    StudentScreen(),
-    DrivesScreen(),
-    ReportsScreen(),
-    tpo.SettingsScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      TPODashboard(
+        onProfileTap: () {
+          setState(() {
+            _currentIndex = 4; // Switch to settings tab
+          });
+        },
+      ),
+      const StudentScreen(),
+      const DrivesScreen(),
+      const ReportsScreen(),
+      const tpo.SettingsScreen(),
+    ];
+
     return Scaffold(
       extendBody: true,
       body: IndexedStack(
         index: _currentIndex,
-        children: _pages,
+        children: pages,
       ),
       bottomNavigationBar: TpoBottomNav(
         currentIndex: _currentIndex,

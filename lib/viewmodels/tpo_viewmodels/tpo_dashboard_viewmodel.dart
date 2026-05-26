@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
+import 'package:gyaanplant/models/tpo_role_models/dashboard_model.dart';
 import 'package:gyaanplant/network/auth_cache.dart';
 import 'dart:math' as math;
 
@@ -21,7 +22,7 @@ class TpoDashboardViewModel extends ChangeNotifier {
   int offersExtended = 0;
   int weeklyOffers = 0;
   int studentsPlaced = 0;
-  List<Map<String, dynamic>> drives = [];
+  List<UpcomingDrive> drives = [];
 
   // College information
   String collegeName = "Loading...";
@@ -153,7 +154,7 @@ class TpoDashboardViewModel extends ChangeNotifier {
           // SAFE DRIVES PARSING - Type-safe list mapping
           drives = upcomingDrives
               .where((e) => e is Map<String, dynamic>)
-              .map((e) => Map<String, dynamic>.from(e))
+              .map((e) => UpcomingDrive.fromJson(e as Map<String, dynamic>))
               .toList();
 
           print("✅ STORED VALUES:");

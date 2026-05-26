@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
 
 class TotalEarningsCard extends StatelessWidget {
-  const TotalEarningsCard({super.key});
+  final double totalEarnings;
+  final int sessionsCompleted;
+  final double monthlyEarnings;
+
+  const TotalEarningsCard({
+    super.key,
+    required this.totalEarnings,
+    required this.sessionsCompleted,
+    required this.monthlyEarnings,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +32,9 @@ class TotalEarningsCard extends StatelessWidget {
 
           const SizedBox(height: 10),
 
-          const Text(
-            "₹28,400",
-            style: TextStyle(
+          Text(
+            "₹${totalEarnings.toStringAsFixed(0)}",
+            style: const TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.bold,
               color: Color(0xFFB388FF),
@@ -34,9 +43,9 @@ class TotalEarningsCard extends StatelessWidget {
 
           const SizedBox(height: 6),
 
-          const Text(
-            "Since joining · 24 sessions",
-            style: TextStyle(color: Colors.white38),
+          Text(
+            "Since joining · $sessionsCompleted sessions",
+            style: const TextStyle(color: Colors.white38),
           ),
 
           const SizedBox(height: 14),
@@ -54,9 +63,9 @@ class TotalEarningsCard extends StatelessWidget {
                   color: const Color(0xFF16C47F).withOpacity(0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text(
-                  "↑ ₹9,600 this month",
-                  style: TextStyle(color: Color(0xFF16C47F)),
+                child: Text(
+                  "↑ ₹${monthlyEarnings.toStringAsFixed(0)} this month",
+                  style: const TextStyle(color: Color(0xFF16C47F)),
                 ),
               ),
 
