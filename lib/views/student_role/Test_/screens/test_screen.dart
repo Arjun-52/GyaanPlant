@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/test_viewmodel.dart';
+import 'package:gyaanplant/models/assessment/problem_model.dart';
+import 'package:gyaanplant/views/student_role/Test_/screens/problem_details_screen.dart';
 
 import 'package:gyaanplant/views/student_role/Test_/widgets/test_header.dart';
 import 'package:gyaanplant/views/student_role/Test_/widgets/stats_row.dart';
@@ -18,6 +20,8 @@ class TestScreen extends StatefulWidget {
 }
 
 class _TestScreenState extends State<TestScreen> {
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -26,6 +30,12 @@ class _TestScreenState extends State<TestScreen> {
         context.read<TestViewModel>().fetchTests();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -90,14 +100,8 @@ class _TestScreenState extends State<TestScreen> {
                                 },
                               );
                             }).toList(),
-                          )
-                        else
-                          const Text(
-                            "No filters available",
-                            style: TextStyle(color: Colors.white38, fontSize: 12),
                           ),
 
-                        const SizedBox(height: 20),
 
                         /// STATS
                         const StatsRow(),
@@ -124,7 +128,12 @@ class _TestScreenState extends State<TestScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
+
+                        /// SEARCH BAR & FILTERS
+                        _buildSearchAndFilters(context, vm),
+
+                        const SizedBox(height: 16),
 
                         _buildAvailableTestsSection(vm),
 
@@ -323,7 +332,20 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   Widget _buildAvailableTestsSection(TestViewModel vm) {
-    if (vm.availableTests.isEmpty) {
+    final problemsList = vm.filteredProblems;
+
+    if (vm.isProblemsLoading && vm.problems.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 20),
+        child: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00C853)),
+          ),
+        ),
+      );
+    }
+
+    if (problemsList.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 20),
         child: Center(
@@ -335,95 +357,486 @@ class _TestScreenState extends State<TestScreen> {
       );
     }
 
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: vm.availableTests.length,
-      itemBuilder: (context, index) {
-        final test = vm.availableTests[index];
-        final isActive = vm.currentTestIndex == index;
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0F2A22),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isActive ? const Color(0xFF00C853) : Colors.transparent,
-              width: 1,
+    return Column(
+      children: [
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: problemsList.length,
+          itemBuilder: (context, index) {
+            final problem = problemsList[index];
+            return _buildProblemCard(context, problem);
+          },
+        ),
+        if (vm.totalPages > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  onPressed: vm.currentPage > 1
+                      ? () => vm.changeProblemsPage(vm.currentPage - 1)
+                      : null,
+                  icon: const Icon(Icons.arrow_back_ios_new, size: 16),
+                  color: const Color(0xFF00C853),
+                  disabledColor: Colors.white24,
+                ),
+                Text(
+                  "Page ${vm.currentPage} of ${vm.totalPages}",
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  onPressed: vm.currentPage < vm.totalPages
+                      ? () => vm.changeProblemsPage(vm.currentPage + 1)
+                      : null,
+                  icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                  color: const Color(0xFF00C853),
+                  disabledColor: Colors.white24,
+                ),
+              ],
             ),
           ),
-          child: Row(
+      ],
+    );
+  }
+
+  Widget _buildProblemCard(BuildContext context, ProblemModel problem) {
+    Color difficultyColor;
+    switch (problem.difficulty.toLowerCase()) {
+      case 'easy':
+        difficultyColor = Colors.green;
+        break;
+      case 'medium':
+        difficultyColor = Colors.orange;
+        break;
+      case 'hard':
+        difficultyColor = Colors.red;
+        break;
+      default:
+        difficultyColor = Colors.green;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F2A22),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF00C853).withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header: Difficulty and Points badge
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      test.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: difficultyColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: difficultyColor.withValues(alpha: 0.5),
+                    width: 0.8,
+                  ),
+                ),
+                child: Text(
+                  problem.difficulty.toUpperCase(),
+                  style: TextStyle(
+                    color: difficultyColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00C853).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  "+${problem.points}",
+                  style: const TextStyle(
+                    color: Color(0xFF00E676),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Title
+          Text(
+            problem.title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 6),
+
+          // Description
+          Text(
+            problem.description,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white54,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Tags Row
+          if (problem.tags.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: problem.tags.map((tag) {
+                    return Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(8),
                       ),
+                      child: Text(
+                        tag,
+                        style: const TextStyle(color: Colors.white70, fontSize: 11),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+
+          // Divider
+          Container(
+            height: 0.8,
+            color: Colors.white.withValues(alpha: 0.08),
+          ),
+          const SizedBox(height: 12),
+
+          // Metadata row: cases, solved state
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "${problem.totalTestCases} / ${problem.totalTestCases} CASES",
+                style: const TextStyle(
+                  color: Colors.white38,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Row(
+                children: [
+                  Icon(
+                    problem.solved ? Icons.check_circle : Icons.radio_button_unchecked,
+                    color: problem.solved ? const Color(0xFF00E676) : Colors.white30,
+                    size: 14,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    problem.solved ? "Solved ✓" : "Unsolved",
+                    style: TextStyle(
+                      color: problem.solved ? const Color(0xFF00E676) : Colors.white30,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "${test.questions} questions • ${test.duration}",
-                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Progress line
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("Progress", style: TextStyle(color: Colors.white54, fontSize: 11)),
+                  Text(
+                    problem.solved ? "100%" : "0%",
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: LinearProgressIndicator(
+                  value: problem.solved ? 1.0 : 0.0,
+                  minHeight: 4,
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  valueColor: const AlwaysStoppedAnimation(Color(0xFF00E676)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Start Solving button
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProblemDetailsScreen(problemId: problem.id),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00C853),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                elevation: 0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Text(
+                    "Start Solving",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  SizedBox(width: 6),
+                  Icon(Icons.arrow_forward, size: 16),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchAndFilters(BuildContext context, TestViewModel vm) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Search bar row
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F2A22),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFF00C853).withValues(alpha: 0.15),
+                    width: 1,
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: Row(
+                  children: [
+                    const Icon(Icons.search, color: Colors.white38, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        decoration: const InputDecoration(
+                          hintText: "Find a challenge...",
+                          hintStyle: TextStyle(color: Colors.white38, fontSize: 14),
+                          border: InputBorder.none,
+                          isDense: true,
+                        ),
+                        onChanged: (val) {
+                          vm.setSearchQuery(val);
+                        },
+                        onSubmitted: (val) {
+                          vm.searchProblems(val);
+                        },
+                      ),
                     ),
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: isActive ? const Color(0xFF00C853) : Colors.white54,
-                size: 16,
+            ),
+            const SizedBox(width: 10),
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: () {
+                  vm.searchProblems(_searchController.text);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: const Color(0xFF00E676),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: Color(0xFF00C853), width: 1.2),
+                  ),
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+                child: const Text(
+                  "SEARCH",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.8),
+                ),
               ),
-            ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+
+        // Difficulty chips row
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: ['ALL', 'EASY', 'MEDIUM', 'HARD'].map((diff) {
+              final isSelected = vm.selectedDifficulty == diff;
+              return Container(
+                margin: const EdgeInsets.only(right: 10),
+                child: InkWell(
+                  onTap: () {
+                    vm.setSelectedDifficulty(diff);
+                  },
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    height: 38,
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    decoration: BoxDecoration(
+                      color: isSelected ? const Color(0xFF00C853) : const Color(0xFF0F2A22),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isSelected ? const Color(0xFF00C853) : const Color(0xFF00C853).withValues(alpha: 0.15),
+                        width: 1,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        diff,
+                        style: TextStyle(
+                          color: isSelected ? Colors.black : Colors.white70,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
   Widget _buildPrepPacksSection(TestViewModel vm) {
-    if (vm.packs.isEmpty) {
+    if (vm.isPrepPacksLoading && vm.packs.isEmpty) {
+      return const _PrepPacksShimmer();
+    }
+
+    if (vm.errorMessage != null && vm.packs.isEmpty) {
       return Center(
+        child: Column(
+          children: [
+            const Icon(Icons.cloud_off, size: 40, color: Colors.white38),
+            const SizedBox(height: 8),
+            const Text("Failed to load prep packs", style: TextStyle(color: Colors.white70)),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () => vm.fetchPrepPacks(page: 1),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00C853),
+                foregroundColor: Colors.black,
+              ),
+              child: const Text("Retry"),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (vm.packs.isEmpty) {
+      return const Center(
         child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: const [
-              Icon(
-                Icons.quiz,
-                size: 50,
-                color: Colors.white38,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'No test packs available',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
-              ),
-              SizedBox(height: 6),
-              Text(
-                'Check back later for new test packs',
-                style: TextStyle(color: Colors.white54),
-              ),
-            ],
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: Text(
+            "No preparation packs available",
+            style: TextStyle(color: Colors.white38, fontSize: 14),
           ),
         ),
       );
     }
 
     return Column(
-      children: vm.packs.map((pack) {
-        return TestPackCard(pack: pack);
-      }).toList(),
+      children: [
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: vm.packs.length,
+          itemBuilder: (context, index) {
+            final pack = vm.packs[index];
+            return TestPackCard(pack: pack);
+          },
+        ),
+        if (vm.totalPrepPackPages > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  onPressed: vm.currentPrepPackPage > 1
+                      ? () => vm.changePrepPacksPage(vm.currentPrepPackPage - 1)
+                      : null,
+                  icon: const Icon(Icons.arrow_back_ios_new, size: 16),
+                  color: const Color(0xFF00C853),
+                  disabledColor: Colors.white24,
+                ),
+                Text(
+                  "Page ${vm.currentPrepPackPage} of ${vm.totalPrepPackPages}",
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  onPressed: vm.currentPrepPackPage < vm.totalPrepPackPages
+                      ? () => vm.changePrepPacksPage(vm.currentPrepPackPage + 1)
+                      : null,
+                  icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                  color: const Color(0xFF00C853),
+                  disabledColor: Colors.white24,
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }
@@ -529,6 +942,58 @@ class _TestShimmerState extends State<_TestShimmer> with SingleTickerProviderSta
                 ),
               ),
             ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PrepPacksShimmer extends StatefulWidget {
+  const _PrepPacksShimmer();
+
+  @override
+  State<_PrepPacksShimmer> createState() => _PrepPacksShimmerState();
+}
+
+class _PrepPacksShimmerState extends State<_PrepPacksShimmer> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final opacity = 0.3 + (_controller.value * 0.35);
+        return Column(
+          children: List.generate(
+            2,
+            (index) => Opacity(
+              opacity: opacity,
+              child: Container(
+                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                height: 180,
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
           ),
         );
       },

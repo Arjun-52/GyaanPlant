@@ -1,8 +1,7 @@
-// ============================================================================
-// DATA MODELS FOR THE COURSE PLAYER
-// ============================================================================
 
-/// Model representing a Course inside the player.
+// DATA MODELS FOR THE COURSE PLAYER
+
+
 class PlayerCourse {
   final String id;
   final String title;
@@ -16,7 +15,6 @@ class PlayerCourse {
     required this.sections,
   });
 
-  /// Factory constructor to initialize with mock data.
   factory PlayerCourse.mock(String title) {
     return PlayerCourse(
       id: "course_101",
@@ -32,7 +30,7 @@ class PlayerCourse {
               id: "les_1",
               title: "Course Overview & Learning Strategy",
               description: "Welcome to the course! In this lesson, we will outline our journey, map out key outcomes, and discuss the roadmap to success.",
-              videoUrl: "https://example.com/videos/overview.mp4",
+              videoUrl: "assets/videos/test.mp4",
               durationMins: 12,
               isCompleted: true,
             ),
@@ -40,7 +38,7 @@ class PlayerCourse {
               id: "les_2",
               title: "Environment Setup & Hello World",
               description: "Learn how to configure your local IDE, setup debugging tools, and write your very first running program from scratch.",
-              videoUrl: "",
+              videoUrl: "assets/videos/test.mp4",
               durationMins: 18,
               isCompleted: false,
             ),
@@ -55,7 +53,7 @@ class PlayerCourse {
               id: "les_3",
               title: "Data Types and Memory Allocation",
               description: "Deep dive into primitive data types, reference memory layouts, heap vs stack allocation, and performance optimization.",
-              videoUrl: "https://example.com/videos/datatypes.mp4",
+              videoUrl: "assets/videos/test.mp4",
               durationMins: 25,
               isCompleted: false,
             ),
@@ -63,7 +61,7 @@ class PlayerCourse {
               id: "les_4",
               title: "Control Flows & Logical Operators",
               description: "Explore advanced looping paradigms, switch statements, short-circuit evaluation, and conditional branching syntax.",
-              videoUrl: "",
+              videoUrl: "assets/videos/test.mp4",
               durationMins: 15,
               isCompleted: false,
             ),
@@ -71,7 +69,7 @@ class PlayerCourse {
               id: "les_5",
               title: "Functions, Parameters, and Scope",
               description: "Learn to design modular, reusable code units. Understand global vs local scoping, return types, and closure mechanics.",
-              videoUrl: "",
+              videoUrl: "assets/videos/test.mp4",
               durationMins: 20,
               isCompleted: false,
             ),
@@ -86,7 +84,7 @@ class PlayerCourse {
               id: "les_6",
               title: "Introduction to Complexity & Big O",
               description: "An essential architectural primer on Time and Space complexity. Learn to evaluate algorithm efficiency and optimize performance.",
-              videoUrl: "https://example.com/videos/bigo.mp4",
+              videoUrl: "assets/videos/test.mp4",
               durationMins: 30,
               isCompleted: false,
             ),
@@ -94,7 +92,7 @@ class PlayerCourse {
               id: "les_7",
               title: "Array Manipulation & Search Mechanics",
               description: "Learn core operations on contiguous data structures, binary search algorithms, sorting complexities, and practical problems.",
-              videoUrl: "",
+              videoUrl: "assets/videos/test.mp4",
               durationMins: 22,
               isCompleted: false,
             ),
@@ -104,7 +102,7 @@ class PlayerCourse {
     );
   }
 }
-
+  
 /// Model representing a Section within a Course.
 class PlayerSection {
   final String id;

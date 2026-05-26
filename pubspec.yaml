@@ -12,6 +12,9 @@ dependencies:
 
   cupertino_icons: ^1.0.8
 
+  # Video playback
+  video_player: ^2.8.6
+
   # Navigation
   go_router: ^14.2.7
 
@@ -26,21 +29,30 @@ dependencies:
   shared_preferences: ^2.5.5
   flutter_secure_storage: ^9.2.4
 
+  # Payments
   razorpay_flutter: ^1.4.5
+
+  # Firebase
   firebase_core: ^4.7.0
   firebase_messaging: ^16.2.0
+
+  # Sharing
   share_plus: ^12.0.2
+
+  # Calendar
   table_calendar: ^3.2.0
 
-  # Mentor/calendar deep-links and report downloads
+  # URL launcher
   url_launcher: ^6.3.1
 
-  # File picking (drive JD uploads)
+  # File picker
   file_picker: ^8.1.6
 
-  # PDF report generation + sharing
+  # PDF generation
   pdf: ^3.11.1
   printing: ^5.13.3
+
+  # SVG
   flutter_svg: ^2.3.0
 
 dev_dependencies:
@@ -48,6 +60,7 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+
   flutter_launcher_icons: ^0.14.4
 
 flutter_launcher_icons:
@@ -60,3 +73,4 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/videos/
