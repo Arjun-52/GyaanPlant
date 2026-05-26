@@ -122,7 +122,8 @@ class ApiEndpoints {
   // Payments
   static const String createOrder = '/api/v1/payments/create-order';
   static const String verifyPayment = '/api/v1/payments/verify';
-  static const String paymentHistory = '/api/v1/payments/my/history';
+  static const String paymentStats = '/api/v1/payments/tenant/stats';
+  static const String tenantPayments = '/api/v1/payments/tenant/payments';
 
   //  Assessments & Preparation
   static const String preparationCompanies = '/api/v1/preparation/companies';

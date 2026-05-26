@@ -147,7 +147,7 @@ class PaymentRepository {
     int limit = 20,
   }) {
     return _api.get<List<Map<String, dynamic>>>(
-      ApiEndpoints.paymentHistory,
+      ApiEndpoints.tenantPayments,
       queryParameters: {'page': page, 'limit': limit},
       fromJson: (json) {
         final map = json as Map<String, dynamic>;

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/HOD_viewmodel/naac_view_model.dart';
+import 'package:gyaanplant/viewmodels/HOD_viewmodel/student_purchase_viewmodel.dart';
+import 'package:gyaanplant/views/HOD_role/naac/widgets/student_purchases_section.dart';
 import 'package:provider/provider.dart';
 
 class NaacScreen extends StatefulWidget {
@@ -11,16 +13,19 @@ class NaacScreen extends StatefulWidget {
 
 class _NaacScreenState extends State<NaacScreen> {
   late final NaacViewModel _vm;
+  late final StudentPurchaseViewModel _studentVm;
 
   @override
   void initState() {
     super.initState();
     _vm = NaacViewModel();
+    _studentVm = StudentPurchaseViewModel();
 
     // Wrap API call in addPostFrameCallback to prevent setState during build error
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _vm.fetchNaac();
+      _studentVm.fetchAll();
       }
     });
   }
@@ -28,6 +33,7 @@ class _NaacScreenState extends State<NaacScreen> {
   @override
   void dispose() {
     _vm.dispose();
+    _studentVm.dispose();
     super.dispose();
   }
 
@@ -48,9 +54,10 @@ class _NaacScreenState extends State<NaacScreen> {
                       style: TextStyle(color: Colors.white54),
                     ),
                   )
-                : Padding(
+                : SingleChildScrollView(
                     padding: const EdgeInsets.all(16),
-                    child: ListView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           'NAAC Accreditation',
@@ -115,8 +122,8 @@ class _NaacScreenState extends State<NaacScreen> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: vm.isGeneratingReport
-                                        ? Colors.green.withValues(alpha: 0.5)
-                                        : Colors.green,
+                                         ? Colors.green.withOpacity(0.5)
+                                         : Colors.green,
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Center(
@@ -164,54 +171,63 @@ class _NaacScreenState extends State<NaacScreen> {
                         const SizedBox(height: 16),
                         ...List.generate(vm.naac!.criteria.length, (i) {
                           final item = vm.naac!.criteria[i];
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0F3D34),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
+                          return Column(
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0F3D34),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      'Criterion ${i + 1}',
-                                      style: const TextStyle(
-                                        color: Colors.white54,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        item.title,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w900,
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'Criterion ${i + 1}',
+                                          style: const TextStyle(
+                                            color: Colors.white54,
+                                            fontSize: 12,
+                                          ),
                                         ),
-                                      ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            item.title,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
+                                        ),
+                                        Text(
+                                          '${item.score}/4',
+                                          style: const TextStyle(
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    Text(
-                                      '${item.score}/4',
-                                      style: const TextStyle(
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.bold,
+                                    const SizedBox(height: 8),
+                                    LinearProgressIndicator(
+                                      value: item.score / 4,
+                                      backgroundColor: Colors.white12,
+                                      valueColor: const AlwaysStoppedAnimation(
+                                        Colors.green,
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 8),
-                                LinearProgressIndicator(
-                                  value: item.score / 4,
-                                  backgroundColor: Colors.white12,
-                                  valueColor: const AlwaysStoppedAnimation(
-                                    Colors.green,
-                                  ),
+                              ),
+                              if (item.title == 'Governance')
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: StudentPurchasesSection(viewModel: _studentVm),
                                 ),
-                              ],
-                            ),
+                            ],
                           );
                         }),
                       ],

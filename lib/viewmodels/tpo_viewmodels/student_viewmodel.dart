@@ -110,6 +110,55 @@ class StudentViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> onboardStudent({
+    required String name,
+    required String email,
+    required String branch,
+    required String year,
+    required String rollNo,
+    required double cgpa,
+    required String careerPath,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final userRes = await ApiService().auth.getCurrentUser();
+      final collegeId = userRes.data?.college?.id;
+
+      if (collegeId == null) {
+        throw Exception('No college assigned to TPO');
+      }
+
+      // Convert "Year 3" -> 3
+      final yearNum = int.tryParse(year.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
+
+      final result = await _tpo.onboardStudent(
+        name: name,
+        email: email,
+        branch: branch,
+        year: yearNum,
+        rollNo: rollNo,
+        cgpa: cgpa,
+        careerPath: careerPath,
+        collegeId: collegeId,
+      );
+
+      if (result.isSuccess && result.data != null) {
+        _students.insert(0, result.data!);
+      } else {
+        throw Exception(result.error?.message ?? 'Failed to onboard student');
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   void setSearch(String value) {
     if (_searchQuery != value) {
       _searchQuery = value;

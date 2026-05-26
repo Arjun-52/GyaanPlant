@@ -45,7 +45,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     return name[0].toUpperCase();
   }
 
-  void _saveForm() {
+  Future<void> _saveForm() async {
     if (_formKey.currentState!.validate()) {
       final name = _nameController.text.trim();
       final email = _emailController.text.trim();
@@ -53,36 +53,70 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       final cgpa = double.tryParse(_cgpaController.text) ?? 8.0;
       final careerPath = _careerController.text.trim().isEmpty ? "Software Engineer" : _careerController.text.trim();
 
-      int score = 75;
-      if (_status == 'MNC Ready') {
-        score = 90;
-      } else if (_status == 'At Risk') {
-        score = 55;
-      }
-
-      final newStudent = Student(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: name,
-        email: email,
-        branch: _branch,
-        year: _year,
-        score: score,
-        status: _status,
-        initials: _getInitials(name),
-        rollNo: rollNo,
-        cgpa: cgpa,
-        careerPath: careerPath,
-      );
-
-      context.read<StudentViewModel>().addStudentLocal(newStudent);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Student onboarded successfully!'),
-          backgroundColor: Color(0xFF00C853),
+      // Show professional glassmorphic loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Center(
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F3D34),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.greenAccent.withOpacity(0.2)),
+            ),
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00C853))),
+                SizedBox(height: 16),
+                Text(
+                  'Onboarding Student...',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, decoration: TextDecoration.none, fontSize: 16),
+                ),
+              ],
+            ),
+          ),
         ),
       );
-      Navigator.pop(context);
+
+      try {
+        await context.read<StudentViewModel>().onboardStudent(
+          name: name,
+          email: email,
+          branch: _branch,
+          year: _year,
+          rollNo: rollNo,
+          cgpa: cgpa,
+          careerPath: careerPath,
+        );
+
+        if (mounted) {
+          // Pop loading dialog
+          Navigator.pop(context);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Student onboarded successfully!'),
+              backgroundColor: Color(0xFF00C853),
+            ),
+          );
+          // Go back to the student list screen
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        if (mounted) {
+          // Pop loading dialog
+          Navigator.pop(context);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Onboarding failed: $e'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      }
     }
   }
 
