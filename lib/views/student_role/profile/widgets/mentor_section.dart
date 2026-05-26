@@ -40,13 +40,6 @@ class _MentorSectionState extends State<MentorSection> {
                   ),
                 ),
 
-                Text(
-                  "Find more",
-                  style: TextStyle(
-                    color: Color(0xFF00C853),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
               ],
             ),
 

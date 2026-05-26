@@ -119,4 +119,15 @@ class AssessmentRepository {
       },
     );
   }
+
+  Future<ApiResponse<PrepPackDetailsModel>> getPrepPackDetails(String id) {
+    return _api.get<PrepPackDetailsModel>(
+      "${ApiEndpoints.prepPacks}/$id",
+      fromJson: (json) {
+        final map = json as Map<String, dynamic>;
+        final data = map['data'] as Map<String, dynamic>? ?? {};
+        return PrepPackDetailsModel.fromJson(data);
+      },
+    );
+  }
 }

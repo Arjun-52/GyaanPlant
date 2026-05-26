@@ -266,7 +266,7 @@ class NetworkAPIManager {
   }) {
     final statusCode = response.statusCode ?? 500;
 
-    if (statusCode >= 200 && statusCode < 300) {
+    if ((statusCode >= 200 && statusCode < 300) || statusCode == 402) {
       final raw = response.data;
       T? parsed;
       if (fromJson != null && raw != null) {
