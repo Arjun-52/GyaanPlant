@@ -25,6 +25,14 @@ class TestViewModel extends ChangeNotifier {
   int currentPage = 1;
   int totalPages = 1;
   int totalProblemsCount = 0;
+
+  /// Locally solved problem IDs — used when backend list doesn't return updated solved status
+  final Set<String> localSolvedIds = {};
+
+  void markSolved(String problemId) {
+    localSolvedIds.add(problemId);
+    notifyListeners();
+  }
   
   String searchQuery = '';
   String selectedDifficulty = 'ALL';

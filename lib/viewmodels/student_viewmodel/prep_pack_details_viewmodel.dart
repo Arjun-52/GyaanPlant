@@ -78,16 +78,38 @@ class PrepPackDetailsViewModel extends ChangeNotifier {
             razorpaySignature: result.razorpaySignature,
           );
 
-          // Re-fetch details to confirm unlock status
-          final response = await _apiService.assessment.getPrepPackDetails(packId);
-          if (response.isSuccess && response.data != null && response.statusCode == 200) {
-            _state = PreparationUnlocked(response.data!);
+          // Payment verified — try re-fetching details with retries
+          // Backend may have a sync delay before the pack details endpoint
+          // reflects the new access record written by verifyPayment.
+          PrepPackDetailsModel? unlockedPack;
+          for (int attempt = 0; attempt < 3; attempt++) {
+            if (attempt > 0) {
+              // Wait 1.5s before each retry to allow backend sync
+              await Future.delayed(const Duration(milliseconds: 1500));
+            }
+            final response = await _apiService.assessment.getPrepPackDetails(packId);
+            if (response.isSuccess && response.data != null && response.statusCode == 200) {
+              unlockedPack = response.data!;
+              break;
+            }
+          }
+
+          if (unlockedPack != null) {
+            // Backend confirmed unlock
+            _state = PreparationUnlocked(unlockedPack);
             notifyListeners();
-            showSuccess("Pack unlocked successfully");
+            showSuccess("Pack unlocked successfully! 🎉");
           } else {
-            _state = PreparationLocked(previewPack);
+            // Backend still returning 402 after retries — backend sync lag.
+            // Trust the verified payment and force unlock locally using preview data.
+            // The sections will be empty until backend syncs, but the user
+            // can use the refresh button (↻) in the app bar to re-fetch.
+            final forcedUnlock = _copyWithAccess(previewPack);
+            _state = PreparationUnlocked(forcedUnlock);
             notifyListeners();
-            showError("Payment completed. Access sync pending. Pull to refresh.");
+            showSuccess(
+              "Pack unlocked! ✓ Tap ↻ to refresh if content isn't visible yet.",
+            );
           }
         } catch (e) {
           _state = PreparationLocked(previewPack);
@@ -106,6 +128,35 @@ class PrepPackDetailsViewModel extends ChangeNotifier {
       notifyListeners();
       showError("An error occurred during purchase: $e");
     }
+  }
+
+  /// Creates a copy of [pack] with [hasAccess] forced to true.
+  /// Used as a frontend workaround when the backend pack-details endpoint
+  /// returns 402 immediately after payment verification (sync lag).
+  PrepPackDetailsModel _copyWithAccess(PrepPackDetailsModel pack) {
+    return PrepPackDetailsModel(
+      id: pack.id,
+      title: pack.title,
+      description: pack.description,
+      price: pack.price,
+      discountedPrice: pack.discountedPrice,
+      discountPercentage: pack.discountPercentage,
+      difficulty: pack.difficulty,
+      targetType: pack.targetType,
+      isPremium: pack.isPremium,
+      hasAccess: true, // Force unlocked
+      totalQuestions: pack.totalQuestions,
+      totalDurationMins: pack.totalDurationMins,
+      attempts: pack.attempts,
+      completions: pack.completions,
+      avgScore: pack.avgScore,
+      passingScore: pack.passingScore,
+      targetCompanies: pack.targetCompanies,
+      targetRoles: pack.targetRoles,
+      industries: pack.industries,
+      markingScheme: pack.markingScheme,
+      sections: pack.sections, // May be empty — user should refresh
+    );
   }
 
   @override

@@ -4,8 +4,9 @@ import 'package:gyaanplant/views/student_role/Test_/screens/prep_pack_details_sc
 
 class TestPackCard extends StatelessWidget {
   final PreparationPackModel pack;
+  final VoidCallback? onReturn;
 
-  const TestPackCard({super.key, required this.pack});
+  const TestPackCard({super.key, required this.pack, this.onReturn});
 
   @override
   Widget build(BuildContext context) {
@@ -258,25 +259,41 @@ class TestPackCard extends StatelessWidget {
             width: double.infinity,
             height: 46,
             child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => PrepPackDetailsScreen(packId: pack.id),
                   ),
                 );
+                // Refresh pack list so hasAccess reflects completed payment
+                onReturn?.call();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00C853),
-                foregroundColor: Colors.black,
+                backgroundColor: pack.hasAccess
+                    ? const Color(0xFF1B5E20)
+                    : const Color(0xFF00C853),
+                foregroundColor: pack.hasAccess ? const Color(0xFF00E676) : Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
+                  side: pack.hasAccess
+                      ? const BorderSide(color: Color(0xFF00E676), width: 1)
+                      : BorderSide.none,
                 ),
                 elevation: 0,
               ),
-              child: Text(
-                pack.hasAccess ? "CONTINUE" : "UNLOCK PACK",
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (pack.hasAccess) ...[
+                    const Icon(Icons.play_arrow_rounded, size: 18),
+                    const SizedBox(width: 6),
+                  ],
+                  Text(
+                    pack.hasAccess ? "START" : "UNLOCK PACK",
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.8),
+                  ),
+                ],
               ),
             ),
           ),

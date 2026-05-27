@@ -30,6 +30,7 @@ class _ProblemDetailsScreenState extends State<ProblemDetailsScreen>
   String _selectedLanguage = 'JS';
   final TextEditingController _codeController = TextEditingController();
   bool _isSubmitting = false;
+  bool _isSolved = false;
 
   // Console state variables
   String _consoleOutput = "Terminal initialized. Ready to execute code.\n";
@@ -151,6 +152,20 @@ class _ProblemDetailsScreenState extends State<ProblemDetailsScreen>
     _codeController.addListener(_onCodeChanged);
   }
 
+  /// Maps the dropdown display label to the API-expected language identifier.
+  String _apiLanguage(String displayLang) {
+    switch (displayLang) {
+      case 'JS':
+        return 'javascript';
+      case 'Python':
+        return 'python';
+      case 'Java':
+        return 'java';
+      default:
+        return displayLang.toLowerCase();
+    }
+  }
+
   // Call the real execution sandbox API
   Future<void> _runCode() async {
     if (_problem == null) return;
@@ -165,7 +180,7 @@ class _ProblemDetailsScreenState extends State<ProblemDetailsScreen>
         ApiEndpoints.problemsRun,
         data: {
           "problemId": widget.problemId,
-          "language": _selectedLanguage.toLowerCase(),
+          "language": _apiLanguage(_selectedLanguage),
           "code": _codeController.text,
         },
       );
@@ -206,7 +221,7 @@ class _ProblemDetailsScreenState extends State<ProblemDetailsScreen>
         "${ApiEndpoints.problems}/${widget.problemId}/submit",
         data: {
           "problemId": widget.problemId,
-          "language": _selectedLanguage.toLowerCase(),
+          "language": _apiLanguage(_selectedLanguage),
           "code": _codeController.text,
         },
       );
@@ -215,25 +230,58 @@ class _ProblemDetailsScreenState extends State<ProblemDetailsScreen>
         _isSubmitting = false;
       });
 
+      // Logging
+      print("Question submitted");
+      print("API response: ${res.data}");
+
       if (res.isSuccess) {
+        // Mark locally as solved and refresh problem list
+        setState(() {
+          _isSolved = true;
+        });
+        try {
+          await _fetchDetails();
+          print("Solved status: true (submission accepted by backend)");
+        } catch (e) {
+          // ignore errors if fetch fails
+        }
         _showDialog(
           title: "Submission Passed! 🎉",
           message: "All test cases executed successfully.\nPoints earned: +${_problem!.points} PTS!",
           isSuccess: true,
         );
       } else {
-        // Handle unavailable backend endpoint gracefully with a simple placeholder warning
-        _showDialog(
-          title: "Submission Offline",
-          message: "The backend submission endpoint returned: ${res.error?.message ?? 'Service Unavailable.'}\n\n"
-              "Submission service is currently offline.",
-          isSuccess: false,
-        );
+        final errorMsg = res.error?.message ?? '';
+
+        // "hash already exists" = this code was already submitted and accepted
+        if (errorMsg.toLowerCase().contains('hash already exists') ||
+            errorMsg.toLowerCase().contains('already submitted') ||
+            errorMsg.toLowerCase().contains('already exists')) {
+          setState(() {
+            _isSolved = true;
+          });
+          try {
+            await _fetchDetails();
+          } catch (_) {}
+          _showDialog(
+            title: "Already Solved ✓",
+            message: "You have already submitted this problem successfully.\nIt is marked as solved.",
+            isSuccess: true,
+          );
+        } else {
+          _showDialog(
+            title: "Submission Failed",
+            message: "Backend returned: $errorMsg",
+            isSuccess: false,
+          );
+        }
       }
     } catch (e) {
       setState(() {
         _isSubmitting = false;
       });
+      // Logging error
+      print("Solved status: false");
       _showDialog(
         title: "Connection Error",
         message: "Failed to connect to the submission server:\n$e\n\nSubmission service is currently offline.",
@@ -298,7 +346,7 @@ class _ProblemDetailsScreenState extends State<ProblemDetailsScreen>
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, _isSolved),
           ),
         ),
         body: Center(
@@ -335,7 +383,7 @@ class _ProblemDetailsScreenState extends State<ProblemDetailsScreen>
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, _isSolved),
           ),
         ),
         body: Center(
@@ -387,7 +435,7 @@ class _ProblemDetailsScreenState extends State<ProblemDetailsScreen>
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context, _isSolved),
         ),
         title: Text(
           problem.title,
@@ -488,13 +536,37 @@ class _ProblemDetailsScreenState extends State<ProblemDetailsScreen>
             style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Text(
-            problem.description,
-            style: const TextStyle(color: Colors.white70, fontSize: 14, height: 1.5),
-          ),
+          // Show a warning banner if description is missing/very short
+          if (problem.description.trim().isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.3), width: 0.8),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.orange, size: 14),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "Description not available for this problem yet. Please check back later.",
+                      style: TextStyle(color: Colors.orange, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Text(
+              problem.description,
+              style: const TextStyle(color: Colors.white70, fontSize: 14, height: 1.5),
+            ),
           const SizedBox(height: 24),
 
-          // Examples section
+          // Examples section — only show if at least one has data
           if (problem.examples.isNotEmpty) ...[
             const Text(
               "Examples",
@@ -504,6 +576,13 @@ class _ProblemDetailsScreenState extends State<ProblemDetailsScreen>
             ...problem.examples.asMap().entries.map((entry) {
               final idx = entry.key + 1;
               final ex = entry.value;
+              final hasInput = ex.input.trim().isNotEmpty;
+              final hasOutput = ex.output.trim().isNotEmpty;
+
+              // Skip rendering this example if both input and output are empty
+              if (!hasInput && !hasOutput && (ex.explanation == null || ex.explanation!.trim().isEmpty)) {
+                return const SizedBox.shrink();
+              }
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
@@ -670,6 +749,7 @@ class _ProblemDetailsScreenState extends State<ProblemDetailsScreen>
   }
 
   Widget _buildCodeField(String label, String code) {
+    final isEmpty = code.trim().isEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -682,15 +762,19 @@ class _ProblemDetailsScreenState extends State<ProblemDetailsScreen>
           width: double.infinity,
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.black26,
+            color: isEmpty ? Colors.white.withValues(alpha: 0.02) : Colors.black26,
             borderRadius: BorderRadius.circular(6),
+            border: isEmpty
+                ? Border.all(color: Colors.white.withValues(alpha: 0.05), width: 0.5)
+                : null,
           ),
           child: Text(
-            code,
-            style: const TextStyle(
-              color: Colors.white70,
+            isEmpty ? '(not provided)' : code,
+            style: TextStyle(
+              color: isEmpty ? Colors.white24 : Colors.white70,
               fontFamily: 'monospace',
               fontSize: 12,
+              fontStyle: isEmpty ? FontStyle.italic : FontStyle.normal,
             ),
           ),
         ),
@@ -802,18 +886,35 @@ class _ProblemDetailsScreenState extends State<ProblemDetailsScreen>
                 child: SizedBox(
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: _submitCode,
+                    onPressed: _isSolved ? null : _submitCode,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00C853),
-                      foregroundColor: Colors.black,
+                      backgroundColor: _isSolved
+                          ? const Color(0xFF1B5E20)
+                          : const Color(0xFF00C853),
+                      foregroundColor: _isSolved ? const Color(0xFF00E676) : Colors.black,
+                      disabledBackgroundColor: const Color(0xFF1B5E20),
+                      disabledForegroundColor: const Color(0xFF00E676),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
+                        side: _isSolved
+                            ? const BorderSide(color: Color(0xFF00E676), width: 1)
+                            : BorderSide.none,
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      "SUBMIT",
-                      style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (_isSolved) ...
+                          const [
+                            Icon(Icons.check_circle, size: 16, color: Color(0xFF00E676)),
+                            SizedBox(width: 6),
+                          ],
+                        Text(
+                          _isSolved ? "SOLVED" : "SUBMIT",
+                          style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.8),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -912,7 +1013,7 @@ class _ProblemDetailsShimmerState extends State<_ProblemDetailsShimmer> with Sin
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white24, size: 20),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(context, false),
             ),
             title: Opacity(
               opacity: opacity,

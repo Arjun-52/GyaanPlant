@@ -99,7 +99,7 @@ class CurriculumPanel extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? const Color(0xFF0F362A) // Green accent highlights active selection
+                                ? const Color(0xFF0F362A)
                                 : Colors.transparent,
                             border: Border(
                               bottom: BorderSide(

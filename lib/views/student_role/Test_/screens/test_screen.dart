@@ -598,40 +598,86 @@ class _TestScreenState extends State<TestScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Start Solving button
-          SizedBox(
-            width: double.infinity,
-            height: 44,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProblemDetailsScreen(problemId: problem.id),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00C853),
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+          // Start Solving / Solved button
+          Builder(builder: (context) {
+            final vm = context.read<TestViewModel>();
+            final isSolved = problem.solved || vm.localSolvedIds.contains(problem.id);
+
+            Future<void> openProblem() async {
+              final result = await Navigator.push<bool>(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      ProblemDetailsScreen(problemId: problem.id),
                 ),
-                elevation: 0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text(
-                    "Start Solving",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                  SizedBox(width: 6),
-                  Icon(Icons.arrow_forward, size: 16),
-                ],
-              ),
-            ),
-          ),
+              );
+              if (context.mounted) {
+                if (result == true) {
+                  // Immediately mark solved locally so the card flips right away
+                  context.read<TestViewModel>().markSolved(problem.id);
+                }
+                // Also refresh backend list in background
+                context.read<TestViewModel>().fetchProblems(page: 1);
+              }
+            }
+
+            return SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: isSolved
+                  ? Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1B5E20),
+                        borderRadius: BorderRadius.circular(10),
+                        border:
+                            Border.all(color: const Color(0xFF00E676), width: 1),
+                      ),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: openProblem,
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.check_circle,
+                                size: 16, color: Color(0xFF00E676)),
+                            SizedBox(width: 6),
+                            Text(
+                              "Solved ✓",
+                              style: TextStyle(
+                                color: Color(0xFF00E676),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : ElevatedButton(
+                      onPressed: openProblem,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00C853),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Start Solving",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          SizedBox(width: 6),
+                          Icon(Icons.arrow_forward, size: 16),
+                        ],
+                      ),
+                    ),
+            );
+          }),
         ],
       ),
     );
@@ -800,7 +846,10 @@ class _TestScreenState extends State<TestScreen> {
           itemCount: vm.packs.length,
           itemBuilder: (context, index) {
             final pack = vm.packs[index];
-            return TestPackCard(pack: pack);
+            return TestPackCard(
+              pack: pack,
+              onReturn: () => vm.fetchPrepPacks(page: vm.currentPrepPackPage),
+            );
           },
         ),
         if (vm.totalPrepPackPages > 1)
