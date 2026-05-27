@@ -450,6 +450,7 @@ class DriveCard extends StatelessWidget {
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 12,
                                 ),
                               ),
                             ),
