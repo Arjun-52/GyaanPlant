@@ -60,21 +60,28 @@ class TpoRepository {
     required String careerPath,
     required String collegeId,
   }) {
+    final payload = {
+      'name': name,
+      'email': email,
+      'branch': branch,
+      'year': year,
+      'rollNo': rollNo,
+      'rollNumber': rollNo,
+      'cgpa': cgpa,
+      'careerPath': careerPath,
+      'college': collegeId,
+    };
+
+    print('🔀 TPO.onboardStudent -> POST ${ApiEndpoints.students}');
+    print('📨 Request payload: $payload');
+
     return _api.post<Student>(
       ApiEndpoints.students,
-      data: {
-        'name': name,
-        'email': email,
-        'branch': branch,
-        'year': year,
-        'rollNo': rollNo,
-        'cgpa': cgpa,
-        'careerPath': careerPath,
-        'college': collegeId,
-      },
+      data: payload,
       fromJson: (json) {
         final map = json as Map<String, dynamic>;
         final data = map['data'] as Map<String, dynamic>;
+        print('📦 Raw onboard response: $json');
         return Student.fromJson(data);
       },
     );

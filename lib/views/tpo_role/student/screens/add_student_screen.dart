@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
+import 'package:gyaanplant/models/HOD_models/department_model.dart';
 import 'package:gyaanplant/models/tpo_role_models/student_model.dart';
 import 'package:gyaanplant/viewmodels/tpo_viewmodels/student_viewmodel.dart';
 import 'package:provider/provider.dart';
+
+class BranchOption {
+  final String id;
+  final String name;
+
+  BranchOption({required this.id, required this.name});
+}
 
 class AddStudentScreen extends StatefulWidget {
   const AddStudentScreen({super.key});
@@ -19,12 +28,60 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   final _careerController = TextEditingController();
   
   String _branch = 'CSE';
+  String _branchId = '';
   String _year = 'Year 3';
   String _status = 'Average';
+  bool _isBranchLoading = true;
+  bool _isSaving = false;
+  String? _branchLoadError;
 
-  final List<String> _branches = ['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT'];
+  final List<BranchOption> _branchOptions = [];
   final List<String> _years = ['Year 1', 'Year 2', 'Year 3', 'Year 4'];
   final List<String> _statuses = ['MNC Ready', 'Average', 'At Risk'];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBranchOptions();
+  }
+
+  Future<void> _loadBranchOptions() async {
+    setState(() {
+      _isBranchLoading = true;
+      _branchLoadError = null;
+    });
+
+    try {
+      final result = await ApiService().hod.getDepartments();
+      if (result.isSuccess && result.data != null && result.data!.isNotEmpty) {
+        final options = result.data!
+            .map((dept) => BranchOption(id: dept.id, name: dept.name))
+            .toList();
+
+        final selected = options.firstWhere(
+          (option) => option.name == _branch,
+          orElse: () => options.first,
+        );
+
+        setState(() {
+          _branchOptions.clear();
+          _branchOptions.addAll(options);
+          _branch = selected.name;
+          _branchId = selected.id;
+        });
+      } else {
+        throw Exception(result.error?.message ?? 'No branch data available');
+      }
+    } catch (e) {
+      setState(() {
+        _branchLoadError = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isBranchLoading = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -47,11 +104,22 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
   Future<void> _saveForm() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isSaving = true;
+      });
+
       final name = _nameController.text.trim();
       final email = _emailController.text.trim();
       final rollNo = _rollController.text.trim();
       final cgpa = double.tryParse(_cgpaController.text) ?? 8.0;
       final careerPath = _careerController.text.trim().isEmpty ? "Software Engineer" : _careerController.text.trim();
+
+      if (_branchId.isEmpty) {
+        setState(() {
+          _isSaving = false;
+        });
+        throw Exception('Branch data not loaded. Please try again.');
+      }
 
       // Show professional glassmorphic loading dialog
       showDialog(
@@ -84,7 +152,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         await context.read<StudentViewModel>().onboardStudent(
           name: name,
           email: email,
-          branch: _branch,
+          branch: _branchId,
           year: _year,
           rollNo: rollNo,
           cgpa: cgpa,
@@ -115,6 +183,12 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
               backgroundColor: Colors.redAccent,
             ),
           );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isSaving = false;
+          });
         }
       }
     }
@@ -165,9 +239,40 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: _buildDropdown('Branch', _branch, _branches, (val) {
-                      setState(() => _branch = val!);
-                    }),
+                    child: _isBranchLoading
+                        ? Container(
+                            height: 56,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F2A22),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.greenAccent.withOpacity(0.1)),
+                            ),
+                            child: const CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00C853)),
+                            ),
+                          )
+                        : _branchLoadError != null
+                            ? Text(
+                                'Branch load failed',
+                                style: const TextStyle(color: Colors.redAccent),
+                              )
+                            : _buildDropdown(
+                                'Branch',
+                                _branch,
+                                _branchOptions.map((option) => option.name).toList(),
+                                (val) {
+                                  if (val == null) return;
+                                  final selected = _branchOptions.firstWhere(
+                                    (option) => option.name == val,
+                                    orElse: () => BranchOption(id: '', name: val),
+                                  );
+                                  setState(() {
+                                    _branch = selected.name;
+                                    _branchId = selected.id;
+                                  });
+                                },
+                              ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -206,7 +311,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _saveForm,
+                      onPressed: (_isSaving || _isBranchLoading || _branchId.isEmpty) ? null : _saveForm,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF00C853),
                         foregroundColor: Colors.black,
@@ -270,10 +375,16 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
   Widget _buildDropdown(String label, String value, List<String> items, ValueChanged<String?> onChanged) {
     return DropdownButtonFormField<String>(
+      isExpanded: true,
       value: value,
       items: items.map((item) => DropdownMenuItem(
         value: item,
-        child: Text(item, style: const TextStyle(color: Colors.white)),
+        child: Text(
+          item,
+          style: const TextStyle(color: Colors.white),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
       )).toList(),
       onChanged: onChanged,
       dropdownColor: const Color(0xFF071E17),

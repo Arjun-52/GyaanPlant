@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:gyaanplant/models/tpo_role_models/student_model.dart';
+import 'package:gyaanplant/viewmodels/tpo_viewmodels/student_viewmodel.dart';
 
 class EditStudentScreen extends StatefulWidget {
   final Student student;
@@ -20,10 +22,22 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
   late String _branch;
   late String _year;
   late String _status;
+  bool _isSaving = false;
 
-  final List<String> _branches = ['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT'];
+  final List<String> _branches = ['CSE', 'ECE', 'EEE', 'Mechanical', 'Civil', 'IT'];
   final List<String> _years = ['Year 1', 'Year 2', 'Year 3', 'Year 4'];
   final List<String> _statuses = ['MNC Ready', 'Average', 'At Risk'];
+
+  String _normalizeBranch(String branch) {
+    switch (branch.trim().toUpperCase()) {
+      case 'MECH':
+        return 'Mechanical';
+      case 'CIVIL':
+        return 'Civil';
+      default:
+        return branch.trim();
+    }
+  }
 
   @override
   void initState() {
@@ -34,7 +48,8 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     _cgpaController = TextEditingController(text: widget.student.cgpa.toString());
     _careerController = TextEditingController(text: widget.student.careerPath);
     
-    _branch = _branches.contains(widget.student.branch) ? widget.student.branch : 'CSE';
+    final normalizedBranch = _normalizeBranch(widget.student.branch);
+    _branch = _branches.contains(normalizedBranch) ? normalizedBranch : 'CSE';
     _year = _years.contains(widget.student.year) ? widget.student.year : 'Year 3';
     _status = _statuses.contains(widget.student.status) ? widget.student.status : 'Average';
   }
@@ -49,8 +64,47 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     super.dispose();
   }
 
-  void _saveForm() {
-    if (_formKey.currentState!.validate()) {
+  Future<void> _saveForm() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final rollNo = _rollController.text.trim();
+    final cgpa = double.tryParse(_cgpaController.text.trim()) ?? 0.0;
+    final careerPath = _careerController.text.trim();
+    final yearNum = int.tryParse(_year.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
+
+    final payload = {
+      'name': name,
+      'email': email,
+      'branch': _branch,
+      'year': yearNum,
+      'rollNo': rollNo,
+      'cgpa': cgpa,
+      'careerPath': careerPath,
+    };
+
+    print('Student ID: ${widget.student.id}');
+    print('Payload: $payload');
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final studentVm = context.read<StudentViewModel>();
+      await studentVm.updateStudent(
+        currentStudent: widget.student,
+        id: widget.student.id,
+        name: name,
+        email: email,
+        branch: _branch,
+        year: yearNum,
+        rollNo: rollNo,
+        cgpa: cgpa,
+        careerPath: careerPath,
+      );
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Changes saved successfully!'),
@@ -58,6 +112,19 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
         ),
       );
       Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save changes: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
   }
 
@@ -147,7 +214,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _saveForm,
+                      onPressed: _isSaving ? null : _saveForm,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF00C853),
                         foregroundColor: Colors.black,
@@ -157,9 +224,9 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                         ),
                         elevation: 4,
                       ),
-                      child: const Text(
-                        'Save Changes',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      child: Text(
+                        _isSaving ? 'Saving...' : 'Save Changes',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                     ),
                   ),

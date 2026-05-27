@@ -110,6 +110,86 @@ class StudentViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateStudentLocal(Student student) {
+    final index = _students.indexWhere((s) => s.id == student.id);
+    if (index != -1) {
+      _students[index] = student;
+      notifyListeners();
+    }
+  }
+
+  String _generateInitials(String fullName) {
+    final parts = fullName.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    if (parts.isNotEmpty) {
+      return parts[0][0].toUpperCase();
+    }
+    return '?';
+  }
+
+  String _normalizeBranch(String branch) {
+    final value = branch.trim();
+    switch (value.toUpperCase()) {
+      case 'MECH':
+        return 'Mechanical';
+      case 'CIVIL':
+        return 'Civil';
+      default:
+        return value;
+    }
+  }
+
+  Future<void> updateStudent({
+    required Student currentStudent,
+    required String id,
+    required String name,
+    required String email,
+    required String branch,
+    required int year,
+    required String rollNo,
+    required double cgpa,
+    required String careerPath,
+  }) async {
+    final normalizedBranch = _normalizeBranch(branch);
+    final payload = {
+      'name': name,
+      'email': email,
+      'branch': normalizedBranch,
+      'year': year,
+      'rollNo': rollNo,
+      'rollNumber': rollNo,
+      'cgpa': cgpa,
+      'careerPath': careerPath,
+    };
+
+    print('Student ID: $id');
+    print('Payload: $payload');
+
+    final response = await ApiService().student.updateStudent(id, payload);
+    print('Update response: ${response.data}');
+
+    if (response.isSuccess && response.data != null) {
+      final updatedStudent = Student(
+        id: currentStudent.id,
+        name: name,
+        email: email,
+        branch: branch,
+        year: 'Year $year',
+        score: currentStudent.score,
+        status: currentStudent.status,
+        initials: _generateInitials(name),
+        rollNo: rollNo,
+        cgpa: cgpa,
+        careerPath: careerPath,
+      );
+      updateStudentLocal(updatedStudent);
+    } else {
+      throw Exception(response.error?.message ?? 'Failed to update student.');
+    }
+  }
+
   Future<void> onboardStudent({
     required String name,
     required String email,
@@ -125,6 +205,9 @@ class StudentViewModel extends ChangeNotifier {
 
     try {
       final userRes = await ApiService().auth.getCurrentUser();
+      final currentUserId = userRes.data?.id;
+      print('🔐 Current user (auth) response: $userRes');
+      print('🔑 Current user id: $currentUserId');
       final collegeId = userRes.data?.college?.id;
 
       if (collegeId == null) {
@@ -133,17 +216,22 @@ class StudentViewModel extends ChangeNotifier {
 
       // Convert "Year 3" -> 3
       final yearNum = int.tryParse(year.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
+      final normalizedBranch = _normalizeBranch(branch);
+
+      print('📨 Onboard payload preview: {name: $name, email: $email, branch: $normalizedBranch, year: $yearNum, rollNo: $rollNo, cgpa: $cgpa, careerPath: $careerPath, college: $collegeId}');
 
       final result = await _tpo.onboardStudent(
         name: name,
         email: email,
-        branch: branch,
+        branch: normalizedBranch,
         year: yearNum,
         rollNo: rollNo,
         cgpa: cgpa,
         careerPath: careerPath,
         collegeId: collegeId,
       );
+
+      print('📥 Onboard API result: isSuccess=${result.isSuccess}, error=${result.error}, data=${result.data}');
 
       if (result.isSuccess && result.data != null) {
         _students.insert(0, result.data!);

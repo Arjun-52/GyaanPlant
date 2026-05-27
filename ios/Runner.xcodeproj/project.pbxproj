@@ -135,7 +135,7 @@
 			);
 			dependencies = (
 				331C8086294A63A400263BE5 /* PBXTargetDependency */,
-			);
+			);                  
 			name = RunnerTests;
 			productName = RunnerTests;
 			productReference = 331C8081294A63A400263BE5 /* RunnerTests.xctest */;
