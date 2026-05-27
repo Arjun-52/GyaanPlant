@@ -3,6 +3,7 @@ class Student {
   final String name;
   final String email;
   final String branch;
+  final String branchId;
   final String year;
   final int score; // Normalized score (0–100)
   final String status; // Mapped from readiness
@@ -16,6 +17,7 @@ class Student {
     required this.name,
     required this.email,
     required this.branch,
+    required this.branchId,
     required this.year,
     required this.score,
     required this.status,
@@ -38,13 +40,20 @@ class Student {
         ? "No email"
         : user['email'];
 
-    //  Branch handling (avoid showing ID)
+    //  Branch handling
     final branchRaw = json['branch'];
+    String branchDisplay = "N/A";
+    String branchId = "";
 
-    final branchDisplay =
-        (branchRaw == null || branchRaw.toString().length > 10)
-        ? "N/A"
-        : branchRaw.toString();
+    if (branchRaw != null) {
+      if (branchRaw is Map<String, dynamic>) {
+        branchDisplay = branchRaw['name']?.toString() ?? "N/A";
+        branchId = branchRaw['_id']?.toString() ?? branchRaw['id']?.toString() ?? "";
+      } else if (branchRaw is String) {
+        branchId = branchRaw;
+        branchDisplay = branchRaw.length > 10 ? "N/A" : branchRaw;
+      }
+    }
 
     //  Year formatting
     final yearNum = json['year'] as int? ?? 1;
@@ -70,6 +79,7 @@ class Student {
       name: name,
       email: email,
       branch: branchDisplay,
+      branchId: branchId,
       year: yearDisplay,
       score: score,
       status: status,
