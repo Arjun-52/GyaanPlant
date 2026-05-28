@@ -76,7 +76,13 @@ class LearningRepository {
     );
 
     AppLogger.debug(_tag, 'Course details response: ${response.data}');
-    final courseData = (response.data!['data'] as List<dynamic>)[0] as Map<String, dynamic>;
+    final rawData = response.data!['data'];
+    final Map<String, dynamic> courseData;
+    if (rawData is List) {
+      courseData = rawData[0] as Map<String, dynamic>;
+    } else {
+      courseData = rawData as Map<String, dynamic>;
+    }
     AppLogger.debug(_tag, 'Course title: ${courseData['title']}');
 
     return DetailedCourseModel.fromJson(courseData);
@@ -84,10 +90,11 @@ class LearningRepository {
 
   /// ✅ Update course progress (PUT /api/v1/learning/{courseId}/progress)
   ///
-  /// Sends completed lecture IDs to the backend and receives updated progress.
+  /// Sends completed lecture IDs and the active lectureId to the backend.
   Future<ApiResponse<CourseProgressModel>> updateProgress(
     String courseId, {
     required List<String> completedLectures,
+    String? lectureId,
   }) {
     // Validate courseId to prevent malformed URLs
     if (courseId.isEmpty) {
@@ -109,12 +116,15 @@ class LearningRepository {
     AppLogger.info(
       _tag,
       'Updating progress for course $courseId: '
-      '${completedLectures.length} lectures completed',
+      '${completedLectures.length} lectures completed, lectureId: $lectureId',
     );
 
     return _api.put<CourseProgressModel>(
       ApiEndpoints.learningProgress(courseId),
-      data: {'completedLectures': completedLectures},
+      data: {
+        'completedLectures': completedLectures,
+        if (lectureId != null) 'lectureId': lectureId,
+      },
       fromJson: (json) {
         final map = json as Map<String, dynamic>;
         AppLogger.debug(_tag, 'Progress response: $map');

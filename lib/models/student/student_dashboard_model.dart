@@ -56,6 +56,7 @@ class StudentDashboard {
   final int xpProgress;
   final int rank;
   final List<RecentPoint> recentPoints;
+  final List<dynamic> drives;
 
   const StudentDashboard({
     this.student,
@@ -65,6 +66,7 @@ class StudentDashboard {
     required this.xpProgress,
     required this.rank,
     required this.recentPoints,
+    required this.drives,
   });
 
   factory StudentDashboard.fromJson(Map<String, dynamic> json) {
@@ -117,6 +119,7 @@ class StudentDashboard {
                     })
                     .toList()
                 : [],
+        drives: json['drives'] as List<dynamic>? ?? [],
       );
       print("🧩 [StudentDashboard.fromJson] ✅ Parsing completed successfully");
       print("🧩 [StudentDashboard.fromJson] Result: xp=${parsedDashboard.xp}, rank=${parsedDashboard.rank}, student=${parsedDashboard.student != null ? 'present' : 'null'}");

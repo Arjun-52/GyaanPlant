@@ -143,6 +143,7 @@ class LearningViewModel extends ChangeNotifier {
   Future<ProgressUpdateResult> updateCourseProgress(
     String courseId, {
     required List<String> completedLectures,
+    String? lectureId,
   }) async {
     // Validate courseId
     if (courseId.isEmpty) {
@@ -166,13 +167,14 @@ class LearningViewModel extends ChangeNotifier {
     AppLogger.info(
       _tag,
       'Updating progress for course $courseId: '
-      '${completedLectures.length} completed lectures',
+      '${completedLectures.length} completed lectures, lectureId: $lectureId',
     );
 
     try {
       final result = await _learning.updateProgress(
         courseId,
         completedLectures: completedLectures,
+        lectureId: lectureId,
       );
 
       if (result.isSuccess && result.data != null) {

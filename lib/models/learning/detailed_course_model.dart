@@ -116,13 +116,22 @@ class DetailedLecture {
 class DetailedEnrollment {
   final String status;
   final int progress;
+  final List<String> completedLectures;
 
-  DetailedEnrollment({required this.status, required this.progress});
+  DetailedEnrollment({
+    required this.status,
+    required this.progress,
+    required this.completedLectures,
+  });
 
   factory DetailedEnrollment.fromJson(Map<String, dynamic> json) {
     return DetailedEnrollment(
       status: json['status'] as String? ?? '',
       progress: json['progress'] as int? ?? 0,
+      completedLectures: (json['completedLectures'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
     );
   }
 }

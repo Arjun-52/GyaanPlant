@@ -82,17 +82,8 @@ class _CourseLearningScreenState extends State<CourseLearningScreen> {
 
       // Determine completed lectures from enrollment data
       _completedLectureIds = {};
-
-      // Try to get progress data to identify completed lectures
-      try {
-        final progressResult = await _learningRepo.updateProgress(
-          widget.courseId,
-          completedLectures: [], // Empty call to just fetch current progress — won't modify
-        );
-        // Actually we shouldn't send empty — let's instead use the enrollment data
-        // The enrollment on the DetailedCourseModel has progress percentage
-      } catch (_) {
-        // Progress fetch optional — continue with no completed data
+      if (detailed.enrollment != null) {
+        _completedLectureIds = detailed.enrollment!.completedLectures.toSet();
       }
 
       // Build PlayerCourse from DetailedCourseModel
@@ -186,6 +177,7 @@ class _CourseLearningScreenState extends State<CourseLearningScreen> {
       final result = await context.read<LearningViewModel>().updateCourseProgress(
         widget.courseId,
         completedLectures: completedIds,
+        lectureId: lessonId,
       );
 
       if (!mounted) return;

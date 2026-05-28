@@ -29,12 +29,12 @@ class ActiveCoursesSection extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(20), // Premium rounded corners
               border: Border.all(
-                color: const Color(0xFF00E676).withOpacity(0.12),
+                color: const Color(0xFF00E676).withValues(alpha: 0.12),
                 width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.25),
+                  color: Colors.black.withValues(alpha: 0.25),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -46,15 +46,15 @@ class ActiveCoursesSection extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00E676).withOpacity(0.06),
+                    color: const Color(0xFF00E676).withValues(alpha: 0.06),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: const Color(0xFF00E676).withOpacity(0.15),
+                      color: const Color(0xFF00E676).withValues(alpha: 0.15),
                       width: 1.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF00E676).withOpacity(0.04),
+                        color: const Color(0xFF00E676).withValues(alpha: 0.04),
                         blurRadius: 12,
                         spreadRadius: 2,
                       ),
@@ -109,7 +109,7 @@ class ActiveCoursesSection extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF00E676).withOpacity(0.25),
+                            color: const Color(0xFF00E676).withValues(alpha: 0.25),
                             blurRadius: 16,
                             offset: const Offset(0, 4),
                           ),
@@ -155,9 +155,9 @@ class ActiveCoursesSection extends StatelessWidget {
               'Active Courses',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
+                letterSpacing: 0.3,
               ),
             ),
             InkWell(
@@ -172,13 +172,13 @@ class ActiveCoursesSection extends StatelessWidget {
                       'See all',
                       style: TextStyle(
                         color: Color(0xFF00C853),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     SizedBox(width: 4),
                     Icon(
-                      Icons.arrow_forward_rounded,
+                      Icons.keyboard_arrow_right_rounded,
                       size: 16,
                       color: Color(0xFF00C853),
                     ),
@@ -195,44 +195,41 @@ class ActiveCoursesSection extends StatelessWidget {
   }
 }
 
-class CourseItem extends StatelessWidget {
-  final dynamic enrollment; // Can be Enrollment or Map for backward compatibility
+class CourseItem extends StatefulWidget {
+  final dynamic enrollment;
 
   const CourseItem({super.key, required this.enrollment});
 
+  @override
+  State<CourseItem> createState() => _CourseItemState();
+}
+
+class _CourseItemState extends State<CourseItem> {
+  bool _isPressed = false;
+
   String getCourseIcon() {
-    // Handle both Enrollment object and Map format
     String title;
     String category;
 
-    if (enrollment is Map<String, dynamic>) {
-      final course = enrollment['course'] as Map<String, dynamic>? ?? {};
+    if (widget.enrollment is Map<String, dynamic>) {
+      final course = widget.enrollment['course'] as Map<String, dynamic>? ?? {};
       title = (course['title'] as String? ?? '').toLowerCase();
       category = (course['category'] as String? ?? '').toLowerCase();
     } else {
-      // Enrollment object
-      title = enrollment.course.title.toLowerCase();
-      category = (enrollment.course.category ?? '').toLowerCase();
+      title = widget.enrollment.course.title.toLowerCase();
+      category = (widget.enrollment.course.category ?? '').toLowerCase();
     }
 
-    if (category.contains('data') ||
-        title.contains('data') ||
-        title.contains('algorithm')) {
+    if (category.contains('data') || title.contains('data') || title.contains('algorithm')) {
       return '📊';
     }
-    if (category.contains('quant') ||
-        title.contains('quant') ||
-        title.contains('aptitude')) {
+    if (category.contains('quant') || title.contains('quant') || title.contains('aptitude')) {
       return '🧮';
     }
-    if (category.contains('verbal') ||
-        title.contains('verbal') ||
-        title.contains('communication')) {
+    if (category.contains('verbal') || title.contains('verbal') || title.contains('communication')) {
       return '💬';
     }
-    if (category.contains('coding') ||
-        title.contains('programming') ||
-        title.contains('code')) {
+    if (category.contains('coding') || title.contains('programming') || title.contains('code')) {
       return '💻';
     }
     if (category.contains('hr') || title.contains('interview')) {
@@ -244,12 +241,12 @@ class CourseItem extends StatelessWidget {
   Color getIconBgColor() {
     final p = getProgress();
     if (p >= 0.7) {
-      return const Color(0xFF00C853).withOpacity(0.12);
+      return const Color(0xFF00C853).withValues(alpha: 0.1);
     }
     if (p >= 0.4) {
-      return const Color(0xFFFFA726).withOpacity(0.12);
+      return const Color(0xFFFFA726).withValues(alpha: 0.1);
     }
-    return const Color(0xFFEF5350).withOpacity(0.12);
+    return const Color(0xFFEF5350).withValues(alpha: 0.1);
   }
 
   Color getProgressColor() {
@@ -265,11 +262,10 @@ class CourseItem extends StatelessWidget {
 
   double getProgress() {
     int progress;
-    if (enrollment is Map<String, dynamic>) {
-      progress = enrollment['progress'] as int? ?? 0;
+    if (widget.enrollment is Map<String, dynamic>) {
+      progress = widget.enrollment['progress'] as int? ?? 0;
     } else {
-      // Enrollment object
-      progress = enrollment.progress ?? 0;
+      progress = widget.enrollment.progress ?? 0;
     }
     return (progress / 100.0).clamp(0.0, 1.0);
   }
@@ -283,16 +279,15 @@ class CourseItem extends StatelessWidget {
     int totalModules;
     int completedModules;
 
-    if (enrollment is Map<String, dynamic>) {
-      final course = enrollment['course'] as Map<String, dynamic>? ?? {};
+    if (widget.enrollment is Map<String, dynamic>) {
+      final course = widget.enrollment['course'] as Map<String, dynamic>? ?? {};
       title = course['title'] as String? ?? 'Unknown Course';
       totalModules = course['totalModules'] as int? ?? 0;
-      completedModules = enrollment['completedModules'] as int? ?? 0;
+      completedModules = widget.enrollment['completedModules'] as int? ?? 0;
     } else {
-      // Enrollment object
-      title = enrollment.course.title;
-      totalModules = enrollment.course.totalModules;
-      completedModules = enrollment.completedModules ?? 0;
+      title = widget.enrollment.course.title;
+      totalModules = widget.enrollment.course.totalModules;
+      completedModules = widget.enrollment.completedModules ?? 0;
     }
 
     final subtitle = completedModules > 0
@@ -301,16 +296,18 @@ class CourseItem extends StatelessWidget {
     final progress = getProgress();
     final progressColor = getProgressColor();
 
-    return InkWell(
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
       onTap: () {
-        // Navigate to course details using the course id
         String courseId;
-        if (enrollment is Map<String, dynamic>) {
-          final course = enrollment['course'] as Map<String, dynamic>? ?? {};
+        if (widget.enrollment is Map<String, dynamic>) {
+          final course = widget.enrollment['course'] as Map<String, dynamic>? ?? {};
           final idVal = course['_id'] ?? course['id'] ?? '';
           courseId = idVal.toString();
         } else {
-          courseId = enrollment.course.id;
+          courseId = widget.enrollment.course.id;
         }
         if (courseId.isNotEmpty) {
           Navigator.push(
@@ -321,98 +318,134 @@ class CourseItem extends StatelessWidget {
           );
         }
       },
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 14),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF09241E), // Premium dark-teal card background
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: const Color(0xFF1FA463).withOpacity(0.15),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+      child: AnimatedScale(
+        duration: const Duration(milliseconds: 150),
+        scale: _isPressed ? 0.98 : 1.0,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 14),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF0C251F), Color(0xFF02110D)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-          ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: iconBg,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: progressColor.withOpacity(0.3),
-                  width: 1,
+            border: Border.all(
+              color: const Color(0xFF00E676).withValues(alpha: 0.12),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Glowing icon block
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: progressColor.withValues(alpha: 0.25),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: progressColor.withValues(alpha: 0.05),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: Text(
+                  icon,
+                  style: const TextStyle(fontSize: 22),
                 ),
               ),
-              child: Text(
-                icon,
-                style: const TextStyle(fontSize: 22),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
+              const SizedBox(width: 16),
+              // Middle details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.1,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${(progress.isFinite ? (progress * 100).round() : 0)}%',
-                        style: TextStyle(
-                          color: progressColor,
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
+                        const SizedBox(width: 8),
+                        Text(
+                          '${(progress.isFinite ? (progress * 100).round() : 0)}%',
+                          style: TextStyle(
+                            color: progressColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              Shadow(
+                                color: progressColor.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      minHeight: 6,
-                      backgroundColor: const Color(0xFF041511),
-                      valueColor: AlwaysStoppedAnimation(progressColor),
+                    const SizedBox(height: 10),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 6,
+                        backgroundColor: const Color(0xFF041511),
+                        valueColor: AlwaysStoppedAnimation(progressColor),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: 12),
+              // Play/Continue learning Chevron
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: progressColor.withValues(alpha: 0.1),
+                ),
+                child: Icon(
+                  Icons.play_arrow_rounded,
+                  color: progressColor,
+                  size: 18,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

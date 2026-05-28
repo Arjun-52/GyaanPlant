@@ -429,7 +429,7 @@ class _PrepPackDetailsScreenContent extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            pack.difficulty.toUpperCase(),
+                            pack.difficulty.toUpperCase()   ,
                             style: TextStyle(
                               color: _getDifficultyColor(pack.difficulty),
                               fontSize: 10,

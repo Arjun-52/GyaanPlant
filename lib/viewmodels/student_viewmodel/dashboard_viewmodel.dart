@@ -71,7 +71,7 @@ class DashboardViewModel extends ChangeNotifier {
               rank: data.rank,
               xpProgress: data.xpProgress,
               enrollments: const [],
-              drives: const [],
+              drives: data.drives,
               student: studentInfo,
             );
 
