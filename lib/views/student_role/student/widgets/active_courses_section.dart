@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/student_tab_controller.dart';
+import 'package:gyaanplant/views/student_role/learn/screens/course_details_screen.dart';
 
 class ActiveCoursesSection extends StatelessWidget {
   final List enrollments;
@@ -28,12 +29,12 @@ class ActiveCoursesSection extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(20), // Premium rounded corners
               border: Border.all(
-                color: const Color(0xFF00E676).withValues(alpha: 0.12),
+                color: const Color(0xFF00E676).withOpacity(0.12),
                 width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.25),
+                  color: Colors.black.withOpacity(0.25),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -45,15 +46,15 @@ class ActiveCoursesSection extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00E676).withValues(alpha: 0.06),
+                    color: const Color(0xFF00E676).withOpacity(0.06),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: const Color(0xFF00E676).withValues(alpha: 0.15),
+                      color: const Color(0xFF00E676).withOpacity(0.15),
                       width: 1.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF00E676).withValues(alpha: 0.04),
+                        color: const Color(0xFF00E676).withOpacity(0.04),
                         blurRadius: 12,
                         spreadRadius: 2,
                       ),
@@ -108,7 +109,7 @@ class ActiveCoursesSection extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF00E676).withValues(alpha: 0.25),
+                            color: const Color(0xFF00E676).withOpacity(0.25),
                             blurRadius: 16,
                             offset: const Offset(0, 4),
                           ),
@@ -188,15 +189,14 @@ class ActiveCoursesSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        ...enrollments.map((enrollment) => CourseItem(enrollment: enrollment)),
+        ...enrollments.map((enrollment) => CourseItem(enrollment: enrollment)).toList(),
       ],
     );
   }
 }
 
 class CourseItem extends StatelessWidget {
-  final dynamic
-  enrollment; // Can be Enrollment or Map for backward compatibility
+  final dynamic enrollment; // Can be Enrollment or Map for backward compatibility
 
   const CourseItem({super.key, required this.enrollment});
 
@@ -244,12 +244,12 @@ class CourseItem extends StatelessWidget {
   Color getIconBgColor() {
     final p = getProgress();
     if (p >= 0.7) {
-      return const Color(0xFF00C853).withValues(alpha: 0.12);
+      return const Color(0xFF00C853).withOpacity(0.12);
     }
     if (p >= 0.4) {
-      return const Color(0xFFFFA726).withValues(alpha: 0.12);
+      return const Color(0xFFFFA726).withOpacity(0.12);
     }
-    return const Color(0xFFEF5350).withValues(alpha: 0.12);
+    return const Color(0xFFEF5350).withOpacity(0.12);
   }
 
   Color getProgressColor() {
@@ -301,97 +301,119 @@ class CourseItem extends StatelessWidget {
     final progress = getProgress();
     final progressColor = getProgressColor();
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF09241E), // Premium dark-teal card background
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF1FA463).withValues(alpha: 0.15),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return InkWell(
+      onTap: () {
+        // Navigate to course details using the course id
+        String courseId;
+        if (enrollment is Map<String, dynamic>) {
+          final course = enrollment['course'] as Map<String, dynamic>? ?? {};
+          final idVal = course['_id'] ?? course['id'] ?? '';
+          courseId = idVal.toString();
+        } else {
+          courseId = enrollment.course.id;
+        }
+        if (courseId.isNotEmpty) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CourseDetailsScreen(courseId: courseId),
+            ),
+          );
+        }
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF09241E), // Premium dark-teal card background
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFF1FA463).withOpacity(0.15),
+            width: 1,
           ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: progressColor.withValues(alpha: 0.3),
-                width: 1,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: iconBg,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: progressColor.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                icon,
+                style: const TextStyle(fontSize: 22),
               ),
             ),
-            child: Text(
-              icon,
-              style: const TextStyle(fontSize: 22),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${(progress.isFinite ? (progress * 100).round() : 0)}%',
+                        style: TextStyle(
+                          color: progressColor,
+                          fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${(progress.isFinite ? (progress * 100).round() : 0)}%',
-                      style: TextStyle(
-                        color: progressColor,
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: Colors.white54,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                    ],
                   ),
-                ),
-                const SizedBox(height: 10),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    minHeight: 6,
-                    backgroundColor: const Color(0xFF041511),
-                    valueColor: AlwaysStoppedAnimation(progressColor),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 10),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 6,
+                      backgroundColor: const Color(0xFF041511),
+                      valueColor: AlwaysStoppedAnimation(progressColor),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

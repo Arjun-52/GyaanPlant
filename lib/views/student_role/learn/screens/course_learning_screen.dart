@@ -157,6 +157,13 @@ class _CourseLearningScreenState extends State<CourseLearningScreen> {
 
   /// Send completion progress update to backend API.
   Future<void> _updateProgress(String lessonId, bool isCompleted) async {
+    // Guard against empty courseId
+    if (widget.courseId.isEmpty) {
+      AppLogger.error(_tag, 'Cannot update progress: courseId is empty');
+      _showErrorSnackBar('Error: Course ID is invalid');
+      return;
+    }
+
     // Guard against duplicate simultaneous requests
     if (_isProgressUpdating) {
       AppLogger.warning(_tag, 'Progress update already in progress — skipping');

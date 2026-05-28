@@ -141,7 +141,7 @@ class Course {
     print("🔧 PARSING COURSE: $json");
 
     final course = Course(
-      id: json['id'] ?? '',
+      id: json['_id'] ?? json['id'] ?? '',
       title: json['title'] ?? '',
       thumbnail: json['thumbnail'],
       description: json['description'],

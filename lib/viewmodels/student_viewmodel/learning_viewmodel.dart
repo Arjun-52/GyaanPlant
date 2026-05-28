@@ -144,6 +144,15 @@ class LearningViewModel extends ChangeNotifier {
     String courseId, {
     required List<String> completedLectures,
   }) async {
+    // Validate courseId
+    if (courseId.isEmpty) {
+      AppLogger.error(_tag, 'Cannot update progress: courseId is empty');
+      return const ProgressUpdateResult(
+        success: false,
+        message: 'Error: Course ID is invalid',
+      );
+    }
+
     // Prevent duplicate concurrent requests
     if (_isProgressUpdating) {
       AppLogger.warning(_tag, 'Progress update already in progress — skipping duplicate');

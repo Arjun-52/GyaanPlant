@@ -76,9 +76,10 @@ class LearningRepository {
     );
 
     AppLogger.debug(_tag, 'Course details response: ${response.data}');
-    AppLogger.debug(_tag, 'Course title: ${response.data?['data']?['title']}');
+    final courseData = (response.data!['data'] as List<dynamic>)[0] as Map<String, dynamic>;
+    AppLogger.debug(_tag, 'Course title: ${courseData['title']}');
 
-    return DetailedCourseModel.fromJson(response.data!['data']!);
+    return DetailedCourseModel.fromJson(courseData);
   }
 
   /// ✅ Update course progress (PUT /api/v1/learning/{courseId}/progress)
@@ -88,6 +89,23 @@ class LearningRepository {
     String courseId, {
     required List<String> completedLectures,
   }) {
+    // Validate courseId to prevent malformed URLs
+    if (courseId.isEmpty) {
+      AppLogger.error(
+        _tag,
+        'Cannot update progress: courseId is empty',
+      );
+      return Future.value(
+        ApiResponse<CourseProgressModel>.failure(
+          error: const ApiError(
+            code: 'INVALID_COURSE_ID',
+            message: 'Course ID cannot be empty',
+          ),
+          statusCode: 400,
+        ),
+      );
+    }
+
     AppLogger.info(
       _tag,
       'Updating progress for course $courseId: '
