@@ -74,6 +74,9 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
   bool _showControls = true;
   Timer? _controlsTimer;
 
+  // Debounce timer for transient ExoPlayer errors that resolve on their own.
+  Timer? _errorDebounceTimer;
+
   // Race-condition guard – tracks which URL *this* init cycle was requested
   // for; a slow previous init will abort if a newer one started.
   String? _initializingUrl;
@@ -98,6 +101,7 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
   @override
   void dispose() {
     _controlsTimer?.cancel();
+    _errorDebounceTimer?.cancel();
     _disposeController();
     super.dispose();
   }
@@ -136,6 +140,9 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
     // Race-condition token
     final token = rawUrl.isEmpty ? 'empty_${DateTime.now().millisecondsSinceEpoch}' : rawUrl;
     _initializingUrl = token;
+
+    // Cancel any pending error debounce from a previous initialization cycle.
+    _errorDebounceTimer?.cancel();
 
     // Reset to loading state; tear down old controller.
     if (mounted) {
@@ -225,10 +232,37 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
     final value = _controller?.value;
     if (value == null) return;
 
+    // If the video is actually playing, clear any pending/showing error –
+    // this means a transient ExoPlayer error resolved on its own.
+    if (value.isPlaying && !value.hasError) {
+      _errorDebounceTimer?.cancel();
+      if (_isError) {
+        setState(() {
+          _isError = false;
+          _isLoading = false;
+          _errorMessage = '';
+        });
+      }
+    }
+
     // Catch ExoPlayer errors surfaced through the value notifier.
+    // Use a debounce to avoid flashing the error UI for transient errors
+    // that resolve on their own within ~1.5 seconds.
     if (value.hasError && !_isError) {
-      debugPrint('[VideoPlayer] Listener error: ${value.errorDescription}');
-      _setError(value.errorDescription ?? 'Playback error');
+      debugPrint('[VideoPlayer] Listener error (debouncing): ${value.errorDescription}');
+      _errorDebounceTimer?.cancel();
+      _errorDebounceTimer = Timer(const Duration(milliseconds: 1500), () {
+        // Re-check: only show error if the controller still has an error
+        // and the video is not playing.
+        if (!mounted) return;
+        final currentValue = _controller?.value;
+        if (currentValue != null &&
+            currentValue.hasError &&
+            !currentValue.isPlaying) {
+          debugPrint('[VideoPlayer] Listener error confirmed: ${currentValue.errorDescription}');
+          _setError(currentValue.errorDescription ?? 'Playback error');
+        }
+      });
       return;
     }
 
