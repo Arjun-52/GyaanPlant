@@ -825,7 +825,6 @@ class _TestScreenState extends State<TestScreen> {
         ),
       );
     }
-
     if (vm.packs.isEmpty) {
       return const Center(
         child: Padding(

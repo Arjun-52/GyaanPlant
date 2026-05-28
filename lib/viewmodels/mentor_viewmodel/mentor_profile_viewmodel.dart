@@ -57,6 +57,10 @@ class MentorProfileViewModel extends ChangeNotifier {
 
   /// UPDATE EXPERTISE
   void toggleExpertise(String skill) {
+    if (_expertise.isEmpty) {
+      _expertise = List.from(expertise);
+    }
+
     if (_expertise.contains(skill)) {
       _expertise.remove(skill);
     } else {
@@ -69,6 +73,13 @@ class MentorProfileViewModel extends ChangeNotifier {
 
   /// UPDATE AVAILABILITY
   void toggleTime(String day, String time) {
+    if (_availability.isEmpty) {
+      _availability = {
+        "Mon": ["3 PM"],
+        "Tue": ["4 PM"],
+      };
+    }
+
     _availability.putIfAbsent(day, () => []);
 
     if (_availability[day]!.contains(time)) {
@@ -92,10 +103,29 @@ class MentorProfileViewModel extends ChangeNotifier {
       final result = await _mentor.updateProfile({
         "skills": _expertise,
         "availability": _availability,
+        "mentor": {
+          "skills": _expertise,
+          "availability": _availability,
+        }
       });
 
       if (result.isSuccess) {
         _hasChanges = false;
+        
+        // Sync local dashboard state to avoid needing a full screen reload
+        if (dashboard != null) {
+          dashboard = MentorDashboardModel(
+            name: dashboard!.name,
+            role: dashboard!.role,
+            sessionsDone: dashboard!.sessionsDone,
+            earnings: dashboard!.earnings,
+            rating: dashboard!.rating,
+            skills: List.from(_expertise),
+            availability: Map.from(_availability),
+            upcomingSessions: dashboard!.upcomingSessions,
+            recentSessions: dashboard!.recentSessions,
+          );
+        }
       }
     } catch (e) {
       debugPrint("Save error: $e");

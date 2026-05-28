@@ -239,7 +239,9 @@ class StudentViewModel extends ChangeNotifier {
       } else {
         throw Exception(result.error?.message ?? 'Failed to onboard student');
       }
-    } catch (e) {
+    } catch (e, stack) {
+      print('❌ Error in onboardStudent: $e');
+      print(stack);
       _errorMessage = e.toString();
       rethrow;
     } finally {

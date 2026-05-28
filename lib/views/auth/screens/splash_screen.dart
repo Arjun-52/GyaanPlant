@@ -27,26 +27,31 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF020B08),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Spacer to push the content slightly above center
-            const Spacer(flex: 3),
-            
-            // Logo
-            SvgPicture.asset(
-              'assets/images/gyaanplant_svg_logo.svg',
-              width: 180,
-              height: 180,
-            ),
-            
-            const SizedBox(height: 24),
-            
-           
-            
-            // Spacer to keep the balance
-            const Spacer(flex: 4),
-          ],
+        child: TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 1200),
+          tween: Tween(begin: 0.0, end: 1.0),
+          curve: Curves.easeOutCubic,
+          builder: (context, value, child) {
+            return Opacity(
+              opacity: value,
+              child: Transform.translate(
+                offset: Offset(0, 20 * (1 - value)),
+                child: child,
+              ),
+            );
+          },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Logo
+              SvgPicture.asset(
+                'assets/images/gyaanplant_svg_logo.svg',
+                width: 180,
+                height: 180,
+              ),
+            ],
+          ),
         ),
       ),
     );

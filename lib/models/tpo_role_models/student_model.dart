@@ -29,16 +29,17 @@ class Student {
 
   /// Parse API response to Student model
   factory Student.fromJson(Map<String, dynamic> json) {
-    //  Extract nested user
-    final user = json['user'] as Map<String, dynamic>? ?? {};
+    //  Extract nested user safely
+    final userRaw = json['user'];
+    final Map<String, dynamic> user = userRaw is Map<String, dynamic> ? userRaw : {};
 
-    final name = (user['name'] ?? '').toString().trim().isEmpty
+    final name = (user['name'] ?? json['name'] ?? '').toString().trim().isEmpty
         ? "Unknown Student"
-        : user['name'];
+        : (user['name'] ?? json['name']).toString();
 
-    final email = (user['email'] ?? '').toString().isEmpty
+    final email = (user['email'] ?? json['email'] ?? '').toString().trim().isEmpty
         ? "No email"
-        : user['email'];
+        : (user['email'] ?? json['email']).toString();
 
     //  Branch handling
     final branchRaw = json['branch'];
@@ -55,15 +56,23 @@ class Student {
       }
     }
 
-    //  Year formatting
-    final yearNum = json['year'] as int? ?? 1;
-    final yearDisplay = "Year $yearNum"; // Changed from "$yearNum Year" to match user request "Year 3"
+    //  Year formatting safely
+    final yearRaw = json['year'];
+    int yearNum = 1;
+    if (yearRaw is int) {
+      yearNum = yearRaw;
+    } else if (yearRaw is num) {
+      yearNum = yearRaw.toInt();
+    } else if (yearRaw is String) {
+      yearNum = int.tryParse(yearRaw.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
+    }
+    final yearDisplay = "Year $yearNum";
 
     //  Score calculation (BEST FIX)
     final score = _calculateScore(json);
 
     //  Status mapping
-    final readiness = json['readiness'] as String?;
+    final readiness = json['readiness']?.toString();
     final status = _mapReadinessToStatus(readiness);
 
     //  Initials
@@ -71,7 +80,18 @@ class Student {
 
     // Rich Fields parsing & generation
     final rollNo = json['rollNo']?.toString() ?? json['rollNumber']?.toString() ?? _generateMockRollNo(json);
-    final cgpa = (json['cgpa'] as num?)?.toDouble() ?? _generateMockCgpa(score);
+    
+    final cgpaRaw = json['cgpa'];
+    double cgpa = 0.0;
+    if (cgpaRaw is num) {
+      cgpa = cgpaRaw.toDouble();
+    } else if (cgpaRaw is String) {
+      cgpa = double.tryParse(cgpaRaw) ?? 0.0;
+    }
+    if (cgpa <= 0.0) {
+      cgpa = _generateMockCgpa(score);
+    }
+    
     final careerPath = json['careerPath']?.toString() ?? json['career_path']?.toString() ?? "Software Engineer";
 
     return Student(

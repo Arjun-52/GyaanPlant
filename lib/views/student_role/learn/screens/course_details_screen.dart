@@ -5,7 +5,6 @@ import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../../../../data/services/api_service.dart';
 import 'package:gyaanplant/models/learning/detailed_course_model.dart';
-import '../../../../models/learning/learning_model.dart';
 import '../../../../models/payment/item_type.dart';
 import '../../../../models/payment/order_result.dart';
 import '../../../../viewmodels/student_viewmodel/learning_viewmodel.dart';
@@ -431,7 +430,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     child: Container(
                       width: double.infinity,
                       height: 180,
-                      color: const Color(0xFF09241E),
+                      color: (course!.thumbnail != null && course!.thumbnail!.isNotEmpty)
+                          ? const Color(0xFFD9D9D9)
+                          : const Color(0xFF09241E),
                       padding: const EdgeInsets.all(16),
                       child: Image.network(
                         (course!.thumbnail != null && course!.thumbnail!.isNotEmpty)
@@ -448,6 +449,20 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                           );
                         },
                         errorBuilder: (context, error, stackTrace) {
+                          final hasThumbnail = course!.thumbnail != null && course!.thumbnail!.isNotEmpty;
+                          if (hasThumbnail) {
+                            return Image.network(
+                              _getCourseImageUrl(course!.title),
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, e, st) {
+                                return const Icon(
+                                  Icons.menu_book,
+                                  color: Colors.white38,
+                                  size: 48,
+                                );
+                              },
+                            );
+                          }
                           return const Icon(
                             Icons.menu_book,
                             color: Colors.white38,
@@ -526,7 +541,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                                         style: const TextStyle(color: Colors.white54, fontSize: 12),
                                       ),
                                     );
-                                  }).toList(),
+                                  }),
                                   const SizedBox(height: 12),
                                 ],
                               );
@@ -583,6 +598,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
   String _getCourseImageUrl(String title) {
     final t = title.toLowerCase();
+    if (t.contains('rust')) {
+      return 'https://img.icons8.com/color/144/rust.png';
+    }
     if (t.contains('javascript') || t.contains('js')) {
       return 'https://img.icons8.com/color/144/javascript--v1.png';
     }

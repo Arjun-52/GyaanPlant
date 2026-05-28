@@ -53,7 +53,9 @@ class CourseProgressCard extends StatelessWidget {
                 child: Container(
                   width: 56,
                   height: 56,
-                  color: Colors.white10,
+                  color: (thumbnail != null && thumbnail!.isNotEmpty)
+                      ? const Color(0xFFD9D9D9)
+                      : Colors.white10,
                   padding: const EdgeInsets.all(8),
                   child: Image.network(
                     (thumbnail != null && thumbnail!.isNotEmpty)
@@ -74,6 +76,20 @@ class CourseProgressCard extends StatelessWidget {
                       );
                     },
                     errorBuilder: (context, error, stackTrace) {
+                      final hasThumbnail = thumbnail != null && thumbnail!.isNotEmpty;
+                      if (hasThumbnail) {
+                        return Image.network(
+                          _getCourseImageUrl(title),
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, e, st) {
+                            return const Icon(
+                              Icons.menu_book,
+                              color: Colors.white38,
+                              size: 24,
+                            );
+                          },
+                        );
+                      }
                       return const Icon(
                         Icons.menu_book,
                         color: Colors.white38,
@@ -120,7 +136,7 @@ class CourseProgressCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: (tagColor ?? Colors.white).withOpacity(0.6),
+                      color: (tagColor ?? Colors.white).withValues(alpha: 0.6),
                       width: 1,
                     ),
                   ),
@@ -182,7 +198,7 @@ class CourseProgressCard extends StatelessWidget {
                   if (isEnrolled) {
                     // resume logic
                   } else {
-                    context.push('/course-details/${courseId}');
+                    context.push('/course-details/$courseId');
                   }
                 },
                 child: Container(
@@ -218,6 +234,9 @@ class CourseProgressCard extends StatelessWidget {
 
   String _getCourseImageUrl(String title) {
     final t = title.toLowerCase();
+    if (t.contains('rust')) {
+      return 'https://img.icons8.com/color/144/rust.png';
+    }
     if (t.contains('javascript') || t.contains('js')) {
       return 'https://img.icons8.com/color/144/javascript--v1.png';
     }

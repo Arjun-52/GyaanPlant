@@ -15,51 +15,125 @@ class ActiveCoursesSection extends StatelessWidget {
         children: [
           const SizedBox(height: 16),
           Container(
-            padding: const EdgeInsets.all(24),
+            width: double.infinity, // Occupies the whole row width
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
             decoration: BoxDecoration(
-              color: const Color(0xFF0A1F1A),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFF1FA463).withValues(alpha: 0.3),
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF092922), // Sleek deep glass-teal
+                  Color(0xFF031612), // Deep black-green
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
+              borderRadius: BorderRadius.circular(20), // Premium rounded corners
+              border: Border.all(
+                color: const Color(0xFF00E676).withValues(alpha: 0.12),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Icon(Icons.menu_book, size: 40, color: Colors.white38),
-                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00E676).withValues(alpha: 0.06),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF00E676).withValues(alpha: 0.15),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF00E676).withValues(alpha: 0.04),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.auto_stories_outlined,
+                    size: 32,
+                    color: Color(0xFF00E676),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 const Text(
-                  'No active courses yet',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                  'No Active Courses Yet',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.3,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 const Text(
-                  'Start learning to see your courses',
-                  style: TextStyle(color: Colors.white54, fontSize: 14),
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: () =>
-                      context.read<StudentTabController>().switchTab(1),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    side: const BorderSide(
-                      color: Color(0xFF00C853),
-                      width: 1.5,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
+                  'Start learning to see your courses here.',
+                  style: TextStyle(
+                    color: Colors.white60,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
                   ),
-                  child: const Text(
-                    'Explore Courses',
-                    style: TextStyle(
-                      color: Color(0xFF00C853),
-                      fontWeight: FontWeight.w600,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => context.read<StudentTabController>().switchTab(1),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 28,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF00E676),
+                            Color(0xFF00C853),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF00E676).withValues(alpha: 0.25),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Explore Courses',
+                            style: TextStyle(
+                              color: Color(0xFF031B15), // Deep contrast text
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 16,
+                            color: Color(0xFF031B15),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -143,35 +217,49 @@ class CourseItem extends StatelessWidget {
 
     if (category.contains('data') ||
         title.contains('data') ||
-        title.contains('algorithm'))
+        title.contains('algorithm')) {
       return '📊';
+    }
     if (category.contains('quant') ||
         title.contains('quant') ||
-        title.contains('aptitude'))
+        title.contains('aptitude')) {
       return '🧮';
+    }
     if (category.contains('verbal') ||
         title.contains('verbal') ||
-        title.contains('communication'))
+        title.contains('communication')) {
       return '💬';
+    }
     if (category.contains('coding') ||
         title.contains('programming') ||
-        title.contains('code'))
+        title.contains('code')) {
       return '💻';
-    if (category.contains('hr') || title.contains('interview')) return '👔';
+    }
+    if (category.contains('hr') || title.contains('interview')) {
+      return '👔';
+    }
     return '📚';
   }
 
   Color getIconBgColor() {
     final p = getProgress();
-    if (p >= 0.7) return const Color(0xFF00C853).withOpacity(0.12);
-    if (p >= 0.4) return const Color(0xFFFFA726).withOpacity(0.12);
-    return const Color(0xFFEF5350).withOpacity(0.12);
+    if (p >= 0.7) {
+      return const Color(0xFF00C853).withValues(alpha: 0.12);
+    }
+    if (p >= 0.4) {
+      return const Color(0xFFFFA726).withValues(alpha: 0.12);
+    }
+    return const Color(0xFFEF5350).withValues(alpha: 0.12);
   }
 
   Color getProgressColor() {
     final p = getProgress();
-    if (p >= 0.7) return const Color(0xFF00C853);
-    if (p >= 0.4) return const Color(0xFFFFA726);
+    if (p >= 0.7) {
+      return const Color(0xFF00C853);
+    }
+    if (p >= 0.4) {
+      return const Color(0xFFFFA726);
+    }
     return const Color(0xFFEF5350);
   }
 
@@ -220,12 +308,12 @@ class CourseItem extends StatelessWidget {
         color: const Color(0xFF09241E), // Premium dark-teal card background
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF1FA463).withOpacity(0.15),
+          color: const Color(0xFF1FA463).withValues(alpha: 0.15),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -240,7 +328,7 @@ class CourseItem extends StatelessWidget {
               color: iconBg,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: progressColor.withOpacity(0.3),
+                color: progressColor.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),

@@ -79,10 +79,15 @@ class TpoRepository {
       ApiEndpoints.students,
       data: payload,
       fromJson: (json) {
-        final map = json as Map<String, dynamic>;
-        final data = map['data'] as Map<String, dynamic>;
         print('📦 Raw onboard response: $json');
-        return Student.fromJson(data);
+        if (json is Map<String, dynamic>) {
+          final data = json['data'];
+          if (data is Map<String, dynamic>) {
+            return Student.fromJson(data);
+          }
+          return Student.fromJson(json);
+        }
+        throw Exception('Invalid JSON response format for student onboarding');
       },
     );
   }

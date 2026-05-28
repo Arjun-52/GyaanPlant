@@ -236,12 +236,27 @@ class AuthViewModel extends ChangeNotifier {
       }
     }
 
+    if (currentStep == 2) {
+      if (selectedCollege == null) {
+        _showError(context, 'Please select your college');
+        return;
+      }
+      if (selectedCollege?.id == 'other_college' && (college.isEmpty || college.trim() == 'Other' || college.trim().isEmpty)) {
+        _showError(context, 'Please enter your custom college name');
+        return;
+      }
+    }
+
     if (currentStep == 3) {
       // Role-based validation: Branch and career path are only required for Students
       final isStudent = role.toLowerCase() == 'student';
       if (isStudent) {
-        if (branch == 'Select Branch' || careerPath == 'Select Career Path') {
-          _showError(context, 'Please complete all fields');
+        if (branch == 'Select Branch' || branch.isEmpty || branch == 'Other (Type custom)') {
+          _showError(context, 'Please enter or select your branch');
+          return;
+        }
+        if (careerPath == 'Select Career Path' || careerPath.isEmpty || careerPath == 'Other (Type custom)') {
+          _showError(context, 'Please enter or select your career path');
           return;
         }
       }

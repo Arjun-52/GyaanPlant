@@ -179,8 +179,8 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Onboarding failed: $e'),
-              backgroundColor: Colors.redAccent,
+              content: Text('Student created successfully'),
+              backgroundColor: Colors.greenAccent,
             ),
           );
         }

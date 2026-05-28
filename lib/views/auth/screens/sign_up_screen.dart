@@ -9,7 +9,6 @@ import 'package:gyaanplant/views/auth/widgets/step_indicator.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/auth/college_dropdown_model.dart';
-
 import '../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -21,6 +20,9 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   bool _isPasswordVisible = false;
+  late TextEditingController _customBranchController;
+  late TextEditingController _customPathController;
+  late TextEditingController _customCollegeController;
 
   ///  THEME COLORS
   static const bgColor = Color(0xFF020B08);
@@ -31,10 +33,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void initState() {
     super.initState();
-    // Ensure colleges are fetched when the screen loads
+    _customBranchController = TextEditingController();
+    _customPathController = TextEditingController();
+    _customCollegeController = TextEditingController();
+    
+    // Ensure colleges are fetched and initial controller values are set
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AuthViewModel>(context, listen: false).fetchColleges();
+      final vm = Provider.of<AuthViewModel>(context, listen: false);
+      _customBranchController.text = vm.branch;
+      _customPathController.text = vm.careerPath;
+      if (vm.selectedCollege?.id == 'other_college') {
+        _customCollegeController.text = vm.college;
+      }
+      vm.fetchColleges();
     });
+  }
+
+  @override
+  void dispose() {
+    _customBranchController.dispose();
+    _customPathController.dispose();
+    _customCollegeController.dispose();
+    super.dispose();
   }
 
   @override
@@ -160,9 +180,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-
-
-
   ///  STEP CONTENT
   Widget _buildStepContent(AuthViewModel vm) {
     switch (vm.currentStep) {
@@ -194,8 +211,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
               suffix: IconButton(
                 icon: Icon(
                   _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  size: 18,
-                  color: Colors.black,
+                  size: 20,
+                  color: const Color(0x9900E676), // Brand matching themed icon color
                 ),
                 onPressed: () {
                   setState(() {
@@ -208,6 +225,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         );
 
       case 2:
+        final dropdownColleges = List<CollegeDropdownModel>.from(vm.colleges);
+
+        if (!dropdownColleges.any((c) => c.id == 'other_college')) {
+          dropdownColleges.add(const CollegeDropdownModel(id: 'other_college', name: 'Other', city: ''));
+        }
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -219,14 +242,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               items: const [
                 "Student",
                 "Mentor",
-                "TPO",
-                "HOD",
-                "College Admin",
                 "Employee / Staff",
-                "HR Manager",
-                "L&D Manager",
-                "Department Head",
-                "Executive",
               ],
               onChanged: vm.setRole,
             ),
@@ -240,36 +256,122 @@ class _SignUpScreenState extends State<SignUpScreen> {
             vm.isCollegeLoading
                 ? const Padding(
                     padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Center(child: CircularProgressIndicator()),
+                    child: Center(child: CircularProgressIndicator(color: accentGreen)),
                   )
                 : Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    height: 52, // Same premium height as other fields
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF3F3F3),
-                      borderRadius: BorderRadius.circular(8),
+                      color: const Color(0xFF061410).withOpacity(0.85),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFF132B22),
+                        width: 1.0,
+                      ),
                     ),
-                    child: DropdownButton<CollegeDropdownModel?>(
-                      isExpanded: true,
-                      hint: const Text('Select College'),
-                      value: vm.selectedCollege,
-                      underline: const SizedBox(),
-                      items: vm.colleges
-                          .map((c) => DropdownMenuItem<CollegeDropdownModel?>(
-                                value: c,
-                                child: Text(c.name),
-                              ))
-                          .toList(),
-                      onChanged: (CollegeDropdownModel? c) => vm.setSelectedCollege(c),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<CollegeDropdownModel?>(
+                        isExpanded: true,
+                        icon: const Icon(
+                          Icons.keyboard_arrow_down,
+                          color: Color(0x9900E676), // Opacity-reduced accent green
+                          size: 24,
+                        ),
+                        dropdownColor: const Color(0xFF0D1F1A), // Premium dark surface
+                        hint: const Text(
+                          'Select College',
+                          style: TextStyle(
+                            color: Color(0xFF4A6B5D), // Soft gray-green hint text
+                            fontSize: 14,
+                          ),
+                        ),
+                        value: vm.selectedCollege,
+                        items: dropdownColleges
+                            .map((c) => DropdownMenuItem<CollegeDropdownModel?>(
+                                  value: c,
+                                  child: Text(
+                                    c.name,
+                                    style: const TextStyle(
+                                      color: Color(0xE6FFFFFF),
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ))
+                            .toList(),
+                        onChanged: (CollegeDropdownModel? c) {
+                          vm.setSelectedCollege(c);
+                          if (c?.id == 'other_college') {
+                            _customCollegeController.text = "";
+                            vm.setCollege(""); // Reset typed college to blank
+                          }
+                        },
+                      ),
                     ),
                   ),
+
+            if (vm.selectedCollege?.id == 'other_college') ...[
+              const SizedBox(height: 16),
+              const FormLabel(text: "COLLEGE NAME", color: Colors.white70),
+              const SizedBox(height: 6),
+              CustomTextField(
+                hint: "Enter name",
+                controller: _customCollegeController,
+                onChanged: (val) {
+                  vm.setCollege(val);
+                },
+              ),
+            ],
           ],
         );
 
       case 3:
-        
         final isStudent = vm.role.toLowerCase() == 'student';
 
         if (isStudent) {
+          final standardBranches = [
+            "Select Branch",
+            "CSE",
+            "ECE",
+            "EEE",
+            "Mechanical",
+            "Civil",
+            "Other (Type custom)",
+          ];
+
+          final standardPaths = [
+            "Select Career Path",
+            "Software",
+            "Core Engineering",
+            "Management",
+            "Research",
+            "Other (Type custom)",
+          ];
+
+          // Determine current selected dropdown branch value
+          final isBranchCustom = vm.branch.isNotEmpty && 
+              !["Select Branch", "CSE", "ECE", "EEE", "Mechanical", "Civil"].contains(vm.branch) &&
+              vm.branch != "Other (Type custom)";
+          
+          final dropdownBranchValue = isBranchCustom ? vm.branch : (vm.branch.isEmpty ? "Select Branch" : vm.branch);
+
+          final dropdownBranchItems = List<String>.from(standardBranches);
+          if (isBranchCustom && !dropdownBranchItems.contains(vm.branch)) {
+            dropdownBranchItems.insert(dropdownBranchItems.length - 1, vm.branch);
+          }
+
+          // Determine current selected dropdown career path value
+          final isPathCustom = vm.careerPath.isNotEmpty && 
+              !["Select Career Path", "Software", "Core Engineering", "Management", "Research"].contains(vm.careerPath) &&
+              vm.careerPath != "Other (Type custom)";
+
+          final dropdownPathValue = isPathCustom ? vm.careerPath : (vm.careerPath.isEmpty ? "Select Career Path" : vm.careerPath);
+
+          final dropdownPathItems = List<String>.from(standardPaths);
+          if (isPathCustom && !dropdownPathItems.contains(vm.careerPath)) {
+            dropdownPathItems.insert(dropdownPathItems.length - 1, vm.careerPath);
+          }
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -277,17 +379,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
               const SizedBox(height: 6),
 
               CustomDropdown(
-                value: vm.branch,
-                items: const [
-                  "Select Branch",
-                  "CSE",
-                  "ECE",
-                  "EEE",
-                  "Mechanical",
-                  "Civil",
-                ],
-                onChanged: vm.setBranch,
+                value: dropdownBranchValue,
+                items: dropdownBranchItems,
+                onChanged: (val) {
+                  if (val == "Other (Type custom)") {
+                    _customBranchController.text = "";
+                    vm.setBranch(""); // Require user to type something
+                  } else {
+                    vm.setBranch(val);
+                  }
+                },
               ),
+
+              if (vm.branch == "Other (Type custom)" || isBranchCustom || vm.branch.isEmpty) ...[
+                const SizedBox(height: 10),
+                CustomTextField(
+                  hint: "Type your Branch / Stream",
+                  controller: _customBranchController,
+                  onChanged: (val) {
+                    vm.setBranch(val);
+                  },
+                ),
+              ],
 
               const SizedBox(height: 16),
 
@@ -298,16 +411,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
               const SizedBox(height: 6),
 
               CustomDropdown(
-                value: vm.careerPath,
-                items: const [
-                  "Select Career Path",
-                  "Software",
-                  "Core Engineering",
-                  "Management",
-                  "Research",
-                ],
-                onChanged: vm.setCareerPath,
+                value: dropdownPathValue,
+                items: dropdownPathItems,
+                onChanged: (val) {
+                  if (val == "Other (Type custom)") {
+                    _customPathController.text = "";
+                    vm.setCareerPath(""); // Require user to type something
+                  } else {
+                    vm.setCareerPath(val);
+                  }
+                },
               ),
+
+              if (vm.careerPath == "Other (Type custom)" || isPathCustom || vm.careerPath.isEmpty) ...[
+                const SizedBox(height: 10),
+                CustomTextField(
+                  hint: "Type your Career Path / Interest",
+                  controller: _customPathController,
+                  onChanged: (val) {
+                    vm.setCareerPath(val);
+                  },
+                ),
+              ],
 
               const SizedBox(height: 16),
 
@@ -323,7 +448,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
           return const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              
               SizedBox(
                 height: 200,
                 child: Center(
