@@ -60,7 +60,7 @@ class RoleCard extends StatelessWidget {
                   Text(
                     role.title,
                     style: const TextStyle(
-                      fontFamily: 'Poppins',
+                      fontFamily: 'Gilroy-Semibold',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -70,7 +70,7 @@ class RoleCard extends StatelessWidget {
                   Text(
                     role.subtitle,
                     style: const TextStyle(
-                      fontFamily: 'Poppins',
+                      fontFamily: 'Gilroy-Semibold',
                       fontSize: 13,
                       color: Color(0xFF9E9E9E),
                     ),

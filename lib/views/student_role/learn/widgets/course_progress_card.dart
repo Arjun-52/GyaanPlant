@@ -1,7 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class CourseProgressCard extends StatelessWidget {
+class CourseProgressCard extends StatefulWidget {
   final String title;
   final String subtitle;
   final String percentText;
@@ -13,6 +14,7 @@ class CourseProgressCard extends StatelessWidget {
   final bool isEnrolled;
   final String courseId;
   final String? thumbnail;
+
   const CourseProgressCard({
     super.key,
     required this.title,
@@ -29,205 +31,365 @@ class CourseProgressCard extends StatelessWidget {
   });
 
   @override
+  State<CourseProgressCard> createState() => _CourseProgressCardState();
+}
+
+class _CourseProgressCardState extends State<CourseProgressCard> with SingleTickerProviderStateMixin {
+  bool _isHovered = false;
+  late AnimationController _progressController;
+  late Animation<double> _progressAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _progressController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    _progressAnimation = Tween<double>(
+      begin: 0.0,
+      end: widget.progress,
+    ).animate(CurvedAnimation(
+      parent: _progressController,
+      curve: Curves.easeOutCubic,
+    ));
+    _progressController.forward();
+  }
+
+  @override
+  void didUpdateWidget(covariant CourseProgressCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.progress != widget.progress) {
+      _progressAnimation = Tween<double>(
+        begin: oldWidget.progress,
+        end: widget.progress,
+      ).animate(CurvedAnimation(
+        parent: _progressController,
+        curve: Curves.easeOutCubic,
+      ));
+      _progressController.reset();
+      _progressController.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _progressController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0D1F1A), Color(0xFF0A2E25)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        border: Border.all(color: const Color(0xFF1F5A4A)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ///  Top Row
-          Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  width: 56,
-                  height: 56,
-                  color: (thumbnail != null && thumbnail!.isNotEmpty)
-                      ? const Color(0xFFD9D9D9)
-                      : Colors.white10,
-                  padding: const EdgeInsets.all(8),
-                  child: Image.network(
-                    (thumbnail != null && thumbnail!.isNotEmpty)
-                        ? thumbnail!
-                        : _getCourseImageUrl(title),
-                    fit: BoxFit.contain,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(Color(0xFF00C853)),
-                          ),
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      final hasThumbnail = thumbnail != null && thumbnail!.isNotEmpty;
-                      if (hasThumbnail) {
-                        return Image.network(
-                          _getCourseImageUrl(title),
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, e, st) {
-                            return const Icon(
-                              Icons.menu_book,
-                              color: Colors.white38,
-                              size: 24,
-                            );
-                          },
-                        );
-                      }
-                      return const Icon(
-                        Icons.menu_book,
-                        color: Colors.white38,
-                        size: 24,
-                      );
-                    },
+    final hasActiveProgress = widget.progress > 0;
+    
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isHovered = true),
+      onTapUp: (_) => setState(() => _isHovered = false),
+      onTapCancel: () => setState(() => _isHovered = false),
+      onTap: () {
+        Feedback.forTap(context);
+        if (widget.isEnrolled) {
+          // Navigating to course progress/learning screen is handled by the parent
+        } else {
+          context.push('/course-details/${widget.courseId}');
+        }
+      },
+      child: AnimatedScale(
+        scale: _isHovered ? 0.98 : 1.0,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: _isHovered 
+                  ? const Color(0xFF00E676).withValues(alpha: 0.5) 
+                  : const Color(0xFF163E33).withValues(alpha: 0.6),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF020B08).withValues(alpha: 0.5),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+              if (_isHovered)
+                BoxShadow(
+                  color: const Color(0xFF00E676).withValues(alpha: 0.08),
+                  blurRadius: 20,
+                  spreadRadius: 1,
+                ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF061411).withValues(alpha: 0.8),
+                      const Color(0xFF0B211B).withValues(alpha: 0.7),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-
-              /// Title + subtitle
-              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
+                    /// Top Section: Thumbnail + Text + New Badge
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Glassmorphic Image Container
+                        Container(
+                          width: 58,
+                          height: 58,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            color: const Color(0xFF122C25).withValues(alpha: 0.5),
+                            border: Border.all(
+                              color: const Color(0xFF1F5A4A).withValues(alpha: 0.4),
+                              width: 1,
+                            ),
+                          ),
+                          padding: const EdgeInsets.all(10),
+                          child: Image.network(
+                            (widget.thumbnail != null && widget.thumbnail!.isNotEmpty)
+                                ? widget.thumbnail!
+                                : _getCourseImageUrl(widget.title),
+                            fit: BoxFit.contain,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Center(
+                                child: SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation(Color(0xFF00E676)),
+                                  ),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(
+                                Icons.menu_book_rounded,
+                                color: Color(0xFF00E676),
+                                size: 24,
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+
+                        // Title & Subtitle Info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'Gilroy-Semibold',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  height: 1.3,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                widget.subtitle,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.5),
+                                  fontFamily: 'Gilroy-Semibold',
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // Animated Glowing New Badge
+                        if (widget.tag != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF00E676).withValues(alpha: 0.2),
+                                  const Color(0xFF00B0FF).withValues(alpha: 0.1),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: const Color(0xFF00E676).withValues(alpha: 0.6),
+                                width: 1,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF00E676).withValues(alpha: 0.2),
+                                  blurRadius: 6,
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              widget.tag!.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 9,
+                                fontFamily: 'Gilroy-Semibold',
+                                color: Color(0xFF00E676),
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        color: Colors.white54,
-                        fontSize: 13,
-                      ),
+
+                    const SizedBox(height: 20),
+
+                    /// Bottom Section: Thin glowing progress bar OR premium Details action
+                    Row(
+                      children: [
+                        if (hasActiveProgress) ...[
+                          // Progress visualizer
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "Progress: ${widget.percentText}",
+                                      style: const TextStyle(
+                                        color: Color(0xFF00E676),
+                                        fontFamily: 'Gilroy-Semibold',
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                    Text(
+                                      widget.progressCount,
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.55),
+                                        fontFamily: 'Gilroy-Semibold',
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: AnimatedBuilder(
+                                    animation: _progressAnimation,
+                                    builder: (context, child) {
+                                      return Container(
+                                        height: 5,
+                                        width: double.infinity,
+                                        color: Colors.white12,
+                                        child: FractionallySizedBox(
+                                          alignment: Alignment.centerLeft,
+                                          widthFactor: _progressAnimation.value.clamp(0.0, 1.0),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              gradient: const LinearGradient(
+                                                colors: [Color(0xFF00E676), Color(0xFF00B0FF)],
+                                              ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: const Color(0xFF00E676).withValues(alpha: 0.5),
+                                                  blurRadius: 4,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                        ] else
+                          const Expanded(child: SizedBox()), // Push CTA to the right
+
+                        // Premium Action Button
+                        GestureDetector(
+                          onTap: () {
+                            Feedback.forTap(context);
+                            if (widget.isEnrolled) {
+                              // resume logic
+                            } else {
+                              context.push('/course-details/${widget.courseId}');
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 9,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: widget.isEnrolled
+                                  ? const LinearGradient(
+                                      colors: [Color(0xFF00E676), Color(0xFF00C853)],
+                                    )
+                                  : null,
+                              color: widget.isEnrolled
+                                  ? null
+                                  : const Color(0xFF00E676).withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFF00E676).withValues(alpha: 0.8),
+                                width: 1.2,
+                              ),
+                              boxShadow: widget.isEnrolled
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(0xFF00E676).withValues(alpha: 0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : [],
+                            ),
+                            child: Center(
+                              child: Text(
+                                widget.isEnrolled ? 'Resume →' : 'Details →',
+                                style: TextStyle(
+                                  color: widget.isEnrolled ? const Color(0xFF020B08) : const Color(0xFF00E676),
+                                  fontFamily: 'Gilroy-Semibold',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-
-              /// Tag
-              if (tag != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: (tagColor ?? Colors.white).withValues(alpha: 0.6),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    tag!,
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: tagColor ?? Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-            ],
+            ),
           ),
-
-          const SizedBox(height: 16),
-
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              /// Progress Bar
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    minHeight: 8,
-                    backgroundColor: Colors.white12,
-                    valueColor: AlwaysStoppedAnimation(progressColor),
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 10),
-
-              /// Percentage
-              Row(
-                children: [
-                  Text(
-                    percentText,
-                    style: TextStyle(
-                      color: progressColor,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    progressCount,
-                    style: const TextStyle(color: Colors.white54, fontSize: 13),
-                  ),
-                ],
-              ),
-
-              const SizedBox(width: 10),
-
-              GestureDetector(
-                onTap: () {
-                  if (isEnrolled) {
-                    // resume logic
-                  } else {
-                    context.push('/course-details/$courseId');
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isEnrolled
-                        ? const Color(0xFF00C853)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                    border: isEnrolled
-                        ? null
-                        : Border.all(color: Colors.white24),
-                  ),
-                  child: Text(
-                    isEnrolled ? 'Resume →' : 'Details →',
-                    style: TextStyle(
-                      color: isEnrolled ? Colors.black : Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -267,3 +429,4 @@ class CourseProgressCard extends StatelessWidget {
     return 'https://img.icons8.com/fluency/144/education.png';
   }
 }
+

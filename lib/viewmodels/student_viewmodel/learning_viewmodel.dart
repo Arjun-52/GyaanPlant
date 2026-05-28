@@ -35,8 +35,19 @@ class LearningViewModel extends ChangeNotifier {
   /// Search query
   String searchQuery = '';
 
+  /// Selected category filter
+  String selectedCategory = 'All';
+
   bool isLoading = false;
   String? errorMessage;
+
+  /// Update selected category
+  void updateSelectedCategory(String category) {
+    if (selectedCategory != category) {
+      selectedCategory = category;
+      notifyListeners();
+    }
+  }
 
   /// Guard against duplicate concurrent progress PUT calls.
   bool _isProgressUpdating = false;
@@ -272,18 +283,27 @@ class LearningViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Get filtered courses based on search
+  /// Get filtered courses based on search and selected category
   List<CourseModel> get filteredCourses {
-    if (searchQuery.isEmpty) {
-      return courses;
+    List<CourseModel> list = courses;
+
+    if (searchQuery.isNotEmpty) {
+      final query = searchQuery.toLowerCase();
+      list = list.where((course) {
+        return course.title.toLowerCase().contains(query) ||
+            (course.description?.toLowerCase().contains(query) ?? false) ||
+            (course.category?.toLowerCase().contains(query) ?? false);
+      }).toList();
     }
 
-    return courses.where((course) {
-      final query = searchQuery.toLowerCase();
-      return course.title.toLowerCase().contains(query) ||
-          (course.description?.toLowerCase().contains(query) ?? false) ||
-          (course.category?.toLowerCase().contains(query) ?? false);
-    }).toList();
+    if (selectedCategory != 'All') {
+      final categoryLower = selectedCategory.toLowerCase();
+      list = list.where((course) {
+        return course.category?.toLowerCase() == categoryLower;
+      }).toList();
+    }
+
+    return list;
   }
 
   /// Get available courses (not enrolled) and filtered
