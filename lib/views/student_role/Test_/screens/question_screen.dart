@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/core/utils/app_logger.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
 import '../../../../models/assessment/mock_test_models.dart';
 
 class QuestionScreen extends StatefulWidget {
   final String sectionTitle;
   final List<PrepPackQuestionModel> questions;
   final MarkingSchemeModel markingScheme;
+  final String? packId;
 
   const QuestionScreen({
     super.key,
     required this.sectionTitle,
     required this.questions,
     required this.markingScheme,
+    this.packId,
   });
 
   @override
@@ -18,8 +22,16 @@ class QuestionScreen extends StatefulWidget {
 }
 
 class _QuestionScreenState extends State<QuestionScreen> {
+  static const _tag = 'QuestionScreen';
+
   int _currentIndex = 0;
   final Map<int, int?> _selectedAnswers = {};
+
+  /// Guard against double-submit
+  bool _isSubmitting = false;
+
+  /// Blocks retry button after 24-hour restriction response
+  bool _retryBlocked = false;
 
   @override
   void initState() {
@@ -31,6 +43,14 @@ class _QuestionScreenState extends State<QuestionScreen> {
   }
 
   void _submitAssessment() {
+    if (_isSubmitting) {
+      AppLogger.warning(_tag, 'Submit already in progress — ignoring');
+      return;
+    }
+
+    _isSubmitting = true;
+    AppLogger.info(_tag, 'Assessment submitted for: ${widget.sectionTitle}');
+
     int correctCount = 0;
     int wrongCount = 0;
     int unattemptedCount = 0;
@@ -55,6 +75,15 @@ class _QuestionScreenState extends State<QuestionScreen> {
         ? ((correctCount / totalAttempted) * 100).toInt() 
         : 0;
 
+    AppLogger.info(
+      _tag,
+      'Results: score=$score correct=$correctCount wrong=$wrongCount '
+      'unattempted=$unattemptedCount accuracy=$accuracy%',
+    );
+
+    // Reset submitting flag — dialog is local, no API call for now
+    _isSubmitting = false;
+
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
@@ -67,143 +96,135 @@ class _QuestionScreenState extends State<QuestionScreen> {
         final scale = CurvedAnimation(parent: anim1, curve: Curves.easeOutBack);
         return ScaleTransition(
           scale: scale,
-          child: AlertDialog(
-            backgroundColor: const Color(0xFF0F2A22),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: const BorderSide(color: Color(0xFF00C853), width: 1.5),
-            ),
-            title: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: const BoxDecoration(
-                    color: Color(0x1F00C853),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.emoji_events,
-                    color: Color(0xFF00C853),
-                    size: 48,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  "Practice Completed!",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    widget.sectionTitle,
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 13,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-                  // Score box
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF020B08),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white10),
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          "YOUR SCORE",
-                          style: TextStyle(
-                            color: Colors.white38,
-                            fontSize: 10,
-                            letterSpacing: 1.5,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          score.toStringAsFixed(1),
-                          style: const TextStyle(
-                            color: Color(0xFF00C853),
-                            fontSize: 36,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Details row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildStatItem("Accuracy", "$accuracy%", Colors.blueAccent),
-                      _buildStatItem("Correct", "$correctCount", const Color(0xFF00C853)),
-                      _buildStatItem("Wrong", "$wrongCount", Colors.redAccent),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  if (unattemptedCount > 0)
-                    Text(
-                      "Unattempted questions: $unattemptedCount",
-                      style: const TextStyle(color: Colors.white38, fontSize: 11),
-                    ),
-                ],
-              ),
-            ),
-            actionsAlignment: MainAxisAlignment.spaceEvenly,
-            actionsPadding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
-            actions: [
-              OutlinedButton(
-                onPressed: () {
-                  Navigator.pop(context); // Close dialog
-                  setState(() {
-                    _currentIndex = 0;
-                    for (int i = 0; i < widget.questions.length; i++) {
-                      _selectedAnswers[i] = null;
-                    }
-                  });
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white70,
-                  side: const BorderSide(color: Colors.white24),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                ),
-                child: const Text("Retry Pack"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // Close dialog
-                  Navigator.pop(context); // Back to Details screen
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00C853),
-                  foregroundColor: const Color(0xFF020B08),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                child: const Text("Finish"),
-              ),
-            ],
+          child: _ResultsDialog(
+            sectionTitle: widget.sectionTitle,
+            score: score,
+            correctCount: correctCount,
+            wrongCount: wrongCount,
+            accuracy: accuracy,
+            unattemptedCount: unattemptedCount,
+            retryBlocked: _retryBlocked,
+            onRetry: () => _handleRetry(context),
+            onFinish: () {
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Back to Details screen
+            },
           ),
         );
       },
+    );
+  }
+
+  /// Handle retry button press — checks backend for retry restriction.
+  Future<void> _handleRetry(BuildContext dialogContext) async {
+    if (_retryBlocked) {
+      _showRetryBlockedSnackBar();
+      return;
+    }
+
+    // If we have a packId, check with the backend first
+    if (widget.packId != null && widget.packId!.isNotEmpty) {
+      AppLogger.info(_tag, 'Checking retry eligibility for pack ${widget.packId}');
+
+      try {
+        final api = ApiService().learning;
+        final result = await api.startAttempt(widget.packId!);
+
+        if (!mounted) return;
+
+        if (result.isFailure) {
+          final errorMessage = result.error?.message ?? '';
+          AppLogger.error(_tag, 'Retry check failed: $errorMessage');
+
+          // Check for retry restriction
+          if (errorMessage.toLowerCase().contains('retry after')) {
+            setState(() => _retryBlocked = true);
+            Navigator.pop(dialogContext); // Close dialog
+            _showRetryBlockedSnackBar();
+            return;
+          }
+
+          // Network error
+          final errorStr = errorMessage.toLowerCase();
+          if (errorStr.contains('network') ||
+              errorStr.contains('connection') ||
+              errorStr.contains('internet')) {
+            Navigator.pop(dialogContext);
+            _showErrorSnackBar('Unable to connect. Please check internet.');
+            return;
+          }
+
+          // Other backend error — show the backend message
+          Navigator.pop(dialogContext);
+          _showErrorSnackBar(
+            errorMessage.isNotEmpty
+                ? errorMessage
+                : 'Something went wrong. Please try again.',
+          );
+          return;
+        }
+
+        AppLogger.info(_tag, 'Retry allowed — resetting quiz');
+      } catch (e) {
+        AppLogger.error(_tag, 'Retry check exception', e);
+        if (!mounted) return;
+
+        final errorStr = e.toString().toLowerCase();
+        if (errorStr.contains('socket') ||
+            errorStr.contains('network') ||
+            errorStr.contains('connection')) {
+          Navigator.pop(dialogContext);
+          _showErrorSnackBar('Unable to connect. Please check internet.');
+          return;
+        }
+
+        Navigator.pop(dialogContext);
+        _showErrorSnackBar('Something went wrong. Please try again.');
+        return;
+      }
+    }
+
+    // Retry allowed — close dialog and reset quiz
+    Navigator.pop(dialogContext);
+    setState(() {
+      _currentIndex = 0;
+      for (int i = 0; i < widget.questions.length; i++) {
+        _selectedAnswers[i] = null;
+      }
+    });
+  }
+
+  void _showRetryBlockedSnackBar() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.timer_outlined, color: Colors.white, size: 20),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text('You can retry this assessment after 24 hours.'),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFFF57C00),
+        duration: const Duration(seconds: 4),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.redAccent,
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
     );
   }
 
@@ -486,32 +507,44 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   // Next / Submit Button
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (_currentIndex < widget.questions.length - 1) {
-                          setState(() {
-                            _currentIndex++;
-                          });
-                        } else {
-                          _submitAssessment();
-                        }
-                      },
+                      onPressed: _isSubmitting
+                          ? null
+                          : () {
+                              if (_currentIndex < widget.questions.length - 1) {
+                                setState(() {
+                                  _currentIndex++;
+                                });
+                              } else {
+                                _submitAssessment();
+                              }
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF00C853),
                         foregroundColor: const Color(0xFF020B08),
+                        disabledBackgroundColor: const Color(0xFF00C853).withValues(alpha: 0.4),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         elevation: 4,
                       ),
-                      child: Text(
-                        _currentIndex < widget.questions.length - 1 ? "NEXT" : "SUBMIT ANSWERS",
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation(Color(0xFF020B08)),
+                              ),
+                            )
+                          : Text(
+                              _currentIndex < widget.questions.length - 1 ? "NEXT" : "SUBMIT ANSWERS",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -520,6 +553,204 @@ class _QuestionScreenState extends State<QuestionScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Extracted results dialog widget for clean separation.
+class _ResultsDialog extends StatelessWidget {
+  final String sectionTitle;
+  final double score;
+  final int correctCount;
+  final int wrongCount;
+  final int accuracy;
+  final int unattemptedCount;
+  final bool retryBlocked;
+  final VoidCallback onRetry;
+  final VoidCallback onFinish;
+
+  const _ResultsDialog({
+    required this.sectionTitle,
+    required this.score,
+    required this.correctCount,
+    required this.wrongCount,
+    required this.accuracy,
+    required this.unattemptedCount,
+    required this.retryBlocked,
+    required this.onRetry,
+    required this.onFinish,
+  });
+
+  Widget _buildStatItem(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            color: color,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white38, fontSize: 11),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: const Color(0xFF0F2A22),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: Color(0xFF00C853), width: 1.5),
+      ),
+      title: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: const BoxDecoration(
+              color: Color(0x1F00C853),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.emoji_events,
+              color: Color(0xFF00C853),
+              size: 48,
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            "Practice Completed!",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              sectionTitle,
+              style: const TextStyle(color: Colors.white54, fontSize: 13),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            // Score box
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF020B08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    "YOUR SCORE",
+                    style: TextStyle(
+                      color: Colors.white38,
+                      fontSize: 10,
+                      letterSpacing: 1.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    score.toStringAsFixed(1),
+                    style: const TextStyle(
+                      color: Color(0xFF00C853),
+                      fontSize: 36,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Details row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildStatItem("Accuracy", "$accuracy%", Colors.blueAccent),
+                _buildStatItem("Correct", "$correctCount", const Color(0xFF00C853)),
+                _buildStatItem("Wrong", "$wrongCount", Colors.redAccent),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (unattemptedCount > 0)
+              Text(
+                "Unattempted questions: $unattemptedCount",
+                style: const TextStyle(color: Colors.white38, fontSize: 11),
+              ),
+            // Retry blocked message
+            if (retryBlocked) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF57C00).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: const Color(0xFFF57C00).withValues(alpha: 0.3),
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.timer_outlined, color: Color(0xFFF57C00), size: 16),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'You can retry this assessment after 24 hours.',
+                        style: TextStyle(color: Color(0xFFF57C00), fontSize: 11),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actionsAlignment: MainAxisAlignment.spaceEvenly,
+      actionsPadding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+      actions: [
+        OutlinedButton(
+          onPressed: retryBlocked ? null : onRetry,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: retryBlocked ? Colors.white30 : Colors.white70,
+            side: BorderSide(
+              color: retryBlocked ? Colors.white12 : Colors.white24,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          ),
+          child: const Text("Retry Pack"),
+        ),
+        ElevatedButton(
+          onPressed: onFinish,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF00C853),
+            foregroundColor: const Color(0xFF020B08),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            textStyle: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          child: const Text("Finish"),
+        ),
+      ],
     );
   }
 }

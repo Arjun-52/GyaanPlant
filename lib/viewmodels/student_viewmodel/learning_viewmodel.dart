@@ -1,10 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
+import 'package:gyaanplant/models/learning/course_progress_model.dart';
 import 'package:gyaanplant/models/learning/learning_model.dart';
 import 'package:gyaanplant/models/student_role_models/dashboard_model.dart';
 import 'package:gyaanplant/network/auth_cache.dart';
 
+/// Result type for progress update operations.
+class ProgressUpdateResult {
+  final bool success;
+  final String message;
+  final CourseProgressModel? progress;
+  final bool isRetryRestricted;
+
+  const ProgressUpdateResult({
+    required this.success,
+    required this.message,
+    this.progress,
+    this.isRetryRestricted = false,
+  });
+}
+
 class LearningViewModel extends ChangeNotifier {
+  static const _tag = 'LearningViewModel';
+
   final _learning = ApiService().learning;
 
   /// All available courses
@@ -18,6 +37,9 @@ class LearningViewModel extends ChangeNotifier {
 
   bool isLoading = false;
   String? errorMessage;
+
+  /// Guard against duplicate concurrent progress PUT calls.
+  bool _isProgressUpdating = false;
 
   bool _disposed = false;
 
@@ -34,86 +56,185 @@ class LearningViewModel extends ChangeNotifier {
 
   /// Fetch everything (courses + enrollments)
   Future<void> fetchCourses() async {
-    print("🚀 [LearningViewModel] FETCH COURSES STARTED. Setting isLoading = true");
+    AppLogger.info(_tag, 'Fetching courses and enrollments');
     isLoading = true;
     errorMessage = null;
     notifyListeners();
 
     final token = AuthCache.token;
     if (token == null) {
-      print("⚠️ [LearningViewModel] AuthCache.token is null! Proceeding anyway for the temporary test flow.");
+      AppLogger.warning(_tag, 'AuthCache.token is null — proceeding anyway for test flow');
     }
 
     try {
-      print("🚀 [LearningViewModel] Calling _learning.getCourses()...");
+      AppLogger.debug(_tag, 'Calling getCourses()...');
       final coursesResult = await _learning.getCourses();
-      print("🚀 [LearningViewModel] Courses response received: isSuccess=${coursesResult.isSuccess}");
+      AppLogger.debug(_tag, 'Courses response: isSuccess=${coursesResult.isSuccess}');
 
-      print("🚀 [LearningViewModel] Calling _learning.getMyEnrollments()...");
+      AppLogger.debug(_tag, 'Calling getMyEnrollments()...');
       final enrollmentsResult = await _learning.getMyEnrollments();
-      print("🚀 [LearningViewModel] Enrollments response received: isSuccess=${enrollmentsResult.isSuccess}");
+      AppLogger.debug(_tag, 'Enrollments response: isSuccess=${enrollmentsResult.isSuccess}');
 
       /// ALL COURSES
       if (coursesResult.isSuccess) {
         courses = coursesResult.data ?? [];
-        print("✅ [LearningViewModel] COURSES LOADED: ${courses.length}");
+        AppLogger.info(_tag, 'Courses loaded: ${courses.length}');
       } else {
         courses = [];
-        print("❌ [LearningViewModel] Failed to load courses: ${coursesResult.error?.message}");
+        AppLogger.error(_tag, 'Failed to load courses: ${coursesResult.error?.message}');
       }
 
       /// ENROLLMENTS
       if (enrollmentsResult.isSuccess) {
         enrollments = enrollmentsResult.data ?? [];
-        print("✅ [LearningViewModel] ENROLLMENTS LOADED: ${enrollments.length}");
+        AppLogger.info(_tag, 'Enrollments loaded: ${enrollments.length}');
       } else {
         enrollments = [];
-        print("❌ [LearningViewModel] Failed to load enrollments: ${enrollmentsResult.error?.message}");
+        AppLogger.error(_tag, 'Failed to load enrollments: ${enrollmentsResult.error?.message}');
       }
     } catch (e) {
       errorMessage = e.toString();
-      print("💥 [LearningViewModel] ERROR in fetchCourses: $e");
+      AppLogger.error(_tag, 'Error in fetchCourses', e);
     } finally {
-      print("🚀 [LearningViewModel] fetchCourses completed. Setting isLoading = false");
+      AppLogger.debug(_tag, 'fetchCourses completed');
       isLoading = false;
       if (!_disposed) {
         notifyListeners();
-        print("🚀 [LearningViewModel] Listeners notified.");
       }
     }
   }
 
   /// Only enrolled courses (for My Courses screen)
   Future<void> fetchMyCourses() async {
-    print("🚀 [LearningViewModel] FETCH MY COURSES. Setting isLoading = true");
+    AppLogger.info(_tag, 'Fetching my courses');
 
     isLoading = true;
     errorMessage = null;
     notifyListeners();
 
     try {
-      print("🚀 [LearningViewModel] Calling _learning.getMyEnrollments()...");
       final result = await _learning.getMyEnrollments();
-      print("🚀 [LearningViewModel] Enrollments response: isSuccess=${result.isSuccess}");
+      AppLogger.debug(_tag, 'Enrollments response: isSuccess=${result.isSuccess}');
 
       if (result.isSuccess) {
         enrollments = result.data ?? [];
-        print("📚 [LearningViewModel] MY COURSES: ${enrollments.length}");
+        AppLogger.info(_tag, 'My courses loaded: ${enrollments.length}');
       } else {
         enrollments = [];
-        print("❌ [LearningViewModel] Failed to load my courses: ${result.error?.message}");
+        AppLogger.error(_tag, 'Failed to load my courses: ${result.error?.message}');
       }
     } catch (e) {
       errorMessage = e.toString();
-      print("💥 [LearningViewModel] ERROR in fetchMyCourses: $e");
+      AppLogger.error(_tag, 'Error in fetchMyCourses', e);
       enrollments = [];
     } finally {
-      print("🚀 [LearningViewModel] fetchMyCourses completed. Setting isLoading = false");
+      AppLogger.debug(_tag, 'fetchMyCourses completed');
       isLoading = false;
       if (!_disposed) {
         notifyListeners();
-        print("🚀 [LearningViewModel] Listeners notified.");
       }
+    }
+  }
+
+  /// Update course progress via PUT API.
+  ///
+  /// Returns a [ProgressUpdateResult] so the UI layer can show
+  /// appropriate messages (success, rewards, retry restriction, error).
+  Future<ProgressUpdateResult> updateCourseProgress(
+    String courseId, {
+    required List<String> completedLectures,
+  }) async {
+    // Prevent duplicate concurrent requests
+    if (_isProgressUpdating) {
+      AppLogger.warning(_tag, 'Progress update already in progress — skipping duplicate');
+      return const ProgressUpdateResult(
+        success: false,
+        message: 'Update already in progress',
+      );
+    }
+
+    _isProgressUpdating = true;
+    AppLogger.info(
+      _tag,
+      'Updating progress for course $courseId: '
+      '${completedLectures.length} completed lectures',
+    );
+
+    try {
+      final result = await _learning.updateProgress(
+        courseId,
+        completedLectures: completedLectures,
+      );
+
+      if (result.isSuccess && result.data != null) {
+        final progressModel = result.data!;
+        AppLogger.info(
+          _tag,
+          'Progress updated: ${progressModel.progress}% '
+          'status=${progressModel.status} '
+          'rewards=(pts:${progressModel.rewards.pointsEarned}, xp:${progressModel.rewards.xpEarned})',
+        );
+
+        // Update local enrollment progress if we have it cached
+        final enrollmentIndex = enrollments.indexWhere(
+          (e) => e.course.id == courseId,
+        );
+        if (enrollmentIndex != -1) {
+          // Reconstruct enrollment with updated progress
+          final oldEnrollment = enrollments[enrollmentIndex];
+          enrollments[enrollmentIndex] = Enrollment(
+            id: oldEnrollment.id,
+            course: oldEnrollment.course,
+            completedModules: progressModel.completedLectures.length,
+            progress: progressModel.progress,
+            lastAccessed: progressModel.lastAccessed,
+          );
+          notifyListeners();
+        }
+
+        return ProgressUpdateResult(
+          success: true,
+          message: 'Progress updated successfully',
+          progress: progressModel,
+        );
+      } else {
+        final errorMsg = result.error?.message ?? 'Failed to update progress';
+        AppLogger.error(_tag, 'Progress update failed: $errorMsg');
+
+        // Check for retry restriction
+        if (errorMsg.toLowerCase().contains('retry after')) {
+          return ProgressUpdateResult(
+            success: false,
+            message: 'You can retry this assessment after 24 hours.',
+            isRetryRestricted: true,
+          );
+        }
+
+        return ProgressUpdateResult(
+          success: false,
+          message: errorMsg,
+        );
+      }
+    } catch (e) {
+      AppLogger.error(_tag, 'Progress update exception', e);
+
+      // Check for network errors
+      final errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('socket') ||
+          errorStr.contains('network') ||
+          errorStr.contains('connection')) {
+        return const ProgressUpdateResult(
+          success: false,
+          message: 'Unable to connect. Please check internet.',
+        );
+      }
+
+      return ProgressUpdateResult(
+        success: false,
+        message: 'Something went wrong. Please try again.',
+      );
+    } finally {
+      _isProgressUpdating = false;
     }
   }
 

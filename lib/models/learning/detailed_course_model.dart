@@ -63,13 +63,15 @@ class DetailedCourseModel {
 }
 
 class DetailedModule {
+  final String id;
   final String title;
   final List<DetailedLecture> lectures;
 
-  DetailedModule({required this.title, required this.lectures});
+  DetailedModule({required this.id, required this.title, required this.lectures});
 
   factory DetailedModule.fromJson(Map<String, dynamic> json) {
     return DetailedModule(
+      id: json['_id'] as String? ?? json['id'] as String? ?? '',
       title: json['title'] as String? ?? '',
       lectures: (json['lectures'] as List<dynamic>?)
               ?.map((e) => DetailedLecture.fromJson(e as Map<String, dynamic>))
@@ -80,13 +82,19 @@ class DetailedModule {
 }
 
 class DetailedLecture {
+  final String id;
   final String title;
+  final String? description;
+  final String? videoUrl;
   final int durationMins;
   final int points;
   final int xp;
 
   DetailedLecture({
+    required this.id,
     required this.title,
+    this.description,
+    this.videoUrl,
     required this.durationMins,
     required this.points,
     required this.xp,
@@ -94,7 +102,10 @@ class DetailedLecture {
 
   factory DetailedLecture.fromJson(Map<String, dynamic> json) {
     return DetailedLecture(
+      id: json['_id'] as String? ?? json['id'] as String? ?? '',
       title: json['title'] as String? ?? '',
+      description: json['description'] as String?,
+      videoUrl: json['videoUrl'] as String?,
       durationMins: json['durationMins'] as int? ?? 0,
       points: json['points'] as int? ?? 0,
       xp: json['xp'] as int? ?? 0,

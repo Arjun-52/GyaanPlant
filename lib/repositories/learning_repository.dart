@@ -1,3 +1,5 @@
+import '../core/utils/app_logger.dart';
+import '../models/learning/course_progress_model.dart';
 import '../models/learning/learning_model.dart';
 import '../models/learning/detailed_course_model.dart';
 import '../models/prep_pack_model.dart';
@@ -7,6 +9,7 @@ import '../network/api_manager.dart';
 import '../network/api_response.dart';
 
 class LearningRepository {
+  static const _tag = 'LearningRepository';
   final NetworkAPIManager _api;
 
   LearningRepository(this._api);
@@ -72,10 +75,34 @@ class LearningRepository {
       fromJson: (json) => json as Map<String, dynamic>,
     );
 
-    print("📦 COURSE DETAILS RESPONSE: ${response.data}");
-    print("📦 COURSE TITLE: ${response.data?['data']?['title']}");
+    AppLogger.debug(_tag, 'Course details response: ${response.data}');
+    AppLogger.debug(_tag, 'Course title: ${response.data?['data']?['title']}');
 
     return DetailedCourseModel.fromJson(response.data!['data']!);
+  }
+
+  /// ✅ Update course progress (PUT /api/v1/learning/{courseId}/progress)
+  ///
+  /// Sends completed lecture IDs to the backend and receives updated progress.
+  Future<ApiResponse<CourseProgressModel>> updateProgress(
+    String courseId, {
+    required List<String> completedLectures,
+  }) {
+    AppLogger.info(
+      _tag,
+      'Updating progress for course $courseId: '
+      '${completedLectures.length} lectures completed',
+    );
+
+    return _api.put<CourseProgressModel>(
+      ApiEndpoints.learningProgress(courseId),
+      data: {'completedLectures': completedLectures},
+      fromJson: (json) {
+        final map = json as Map<String, dynamic>;
+        AppLogger.debug(_tag, 'Progress response: $map');
+        return CourseProgressModel.fromApiResponse(map);
+      },
+    );
   }
 
   /// Get Prep Packs (Test Packs)

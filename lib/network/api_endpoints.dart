@@ -65,6 +65,11 @@ class ApiEndpoints {
   static const String bulkAssign = '/api/v1/learning/bulk-assign';
   static const String learningPaths = '/api/v1/learning/paths';
   static const String assessments = '/api/v1/learning/assessments';
+
+  /// PUT /api/v1/learning/{courseId}/progress
+  static String learningProgress(String courseId) =>
+      '/api/v1/learning/$courseId/progress';
+
   static const String myAssessmentHistory =
       '/api/v1/learning/assessments/my-history';
 
