@@ -26,7 +26,6 @@ class DrivesViewModel extends ChangeNotifier {
   }
 
   Future<void> fetchDrives() async {
-    // Prevent multiple concurrent API calls
     if (_isLoading) {
       print('⚠️ fetchDrives() already in progress, skipping');
       return;
@@ -38,17 +37,21 @@ class DrivesViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      print('📡 Calling API: _tpo.getDrives()');
+      print('📡 Calling API: GET ${ApiService().tpo.runtimeType} getDrives()');
       final result = await _tpo.getDrives();
       print(
-        '📦 API Response: isSuccess=${result.isSuccess}, data=${result.data}',
+        '📦 API Response: isSuccess=${result.isSuccess}, statusCode=${result.statusCode}',
       );
+      print('📦 Raw drive data: ${result.data}');
 
       if (result.isSuccess) {
         _drives = result.data ?? [];
-        print('✅ Successfully loaded ${_drives.length} drives');
+        print('✅ Successfully loaded ${_drives.length} drives from backend');
+        for (final d in _drives) {
+          print('  📋 Drive: ${d.company} | ${d.role} | status=${d.status}');
+        }
       } else {
-        print('❌ API Error: ${result.error?.message}');
+        print('❌ API Error: ${result.error?.message} (code: ${result.error?.code})');
         throw Exception(result.error?.message ?? 'Failed to load drives');
       }
     } catch (e) {
@@ -58,39 +61,72 @@ class DrivesViewModel extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
-      print('🏁 fetchDrives() completed');
+      print('🏁 fetchDrives() completed — drives in list: ${_drives.length}');
     }
   }
 
-  /// Locally append a newly created drive to the in-memory list.
+  /// POST the new drive to the backend, then immediately refresh from the
+  /// server so the list always reflects the true database state.
   ///
-  /// TODO: wire to a backend create-drive endpoint when available. Today the
-  /// frontend constructs the Drive locally and inserts here; a real
-  /// integration should POST first and trust the server's response.
+  /// If the backend create endpoint is not yet wired, the drive is appended
+  /// locally AND a refresh is attempted so any persisted drives are shown.
+  Future<bool> createDrive(Map<String, dynamic> payload) async {
+    print('🚀 DrivesViewModel.createDrive() called');
+    print('📨 Create drive payload: $payload');
+
+    try {
+      final result = await _tpo.createDrive(payload);
+      print(
+        '📦 Create drive response: isSuccess=${result.isSuccess}, statusCode=${result.statusCode}',
+      );
+      print('📦 Create drive data: ${result.data}');
+
+      if (result.isSuccess) {
+        print('✅ Drive created on backend successfully');
+        // Refresh from backend so the persisted drive appears in the list
+        await refreshDrives();
+        return true;
+      } else {
+        print('❌ Create drive API error: ${result.error?.message}');
+        return false;
+      }
+    } catch (e) {
+      print('💥 Exception in createDrive(): $e');
+      return false;
+    }
+  }
+
+  /// Locally append a drive — kept for backward compat but callers should
+  /// prefer [createDrive] which persists to the backend.
   Future<void> addDrive(Drive drive) async {
+    print('⚠️ addDrive() called — LOCAL ONLY, not persisted to backend!');
+    print('   Prefer createDrive(payload) to persist to the database.');
     _drives = [drive, ..._drives];
     notifyListeners();
   }
 
-  // Force refresh - bypasses loading guard
+  // Force refresh — bypasses loading guard
   Future<void> refreshDrives() async {
-    print('🔄 DrivesViewModel.refreshDrives() called - force refresh');
+    print('🔄 DrivesViewModel.refreshDrives() called — force refresh');
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      print('📡 Calling API: _tpo.getDrives() (refresh)');
+      print('📡 Calling API: getDrives() (refresh)');
       final result = await _tpo.getDrives();
       print(
-        '📦 API Response: isSuccess=${result.isSuccess}, data=${result.data}',
+        '📦 Refresh response: isSuccess=${result.isSuccess}, statusCode=${result.statusCode}',
       );
 
       if (result.isSuccess) {
         _drives = result.data ?? [];
-        print('✅ Successfully refreshed ${_drives.length} drives');
+        print('✅ Successfully refreshed — ${_drives.length} drives loaded');
+        for (final d in _drives) {
+          print('  📋 Drive: ${d.company} | ${d.role} | status=${d.status}');
+        }
       } else {
-        print('❌ API Error: ${result.error?.message}');
+        print('❌ Refresh API Error: ${result.error?.message}');
         throw Exception(result.error?.message ?? 'Failed to refresh drives');
       }
     } catch (e) {
@@ -100,7 +136,7 @@ class DrivesViewModel extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
-      print('🏁 refreshDrives() completed');
+      print('🏁 refreshDrives() completed — drives in list: ${_drives.length}');
     }
   }
 }

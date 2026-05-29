@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
-import 'package:gyaanplant/models/learning/detailed_course_model.dart';
 import 'package:gyaanplant/models/learning/player_models.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/learning_viewmodel.dart';
 import 'package:gyaanplant/views/student_role/learn/widgets/learning-courses/curriculum_panel.dart';
@@ -11,9 +10,7 @@ import 'package:gyaanplant/views/student_role/learn/widgets/learning-courses/nav
 import 'package:gyaanplant/views/student_role/learn/widgets/learning-courses/progress_card.dart';
 import 'package:gyaanplant/views/student_role/learn/widgets/learning-courses/video_player_section.dart';
 
-
 // MAIN SCREEN WIDGET
-
 
 class CourseLearningScreen extends StatefulWidget {
   final String courseId;
@@ -58,9 +55,7 @@ class _CourseLearningScreenState extends State<CourseLearningScreen> {
     _fetchCourseDetails();
   }
 
-
   // API INTEGRATION
-
 
   /// Fetch course details from backend and build PlayerCourse from real data.
   Future<void> _fetchCourseDetails() async {
@@ -222,9 +217,7 @@ class _CourseLearningScreenState extends State<CourseLearningScreen> {
     }
   }
 
-
   // BUSINESS LOGIC
-
 
   PlayerLesson get _currentLesson => _allLessons[_currentLessonIndex];
 
@@ -254,16 +247,14 @@ class _CourseLearningScreenState extends State<CourseLearningScreen> {
     });
   }
 
-
   // SNACKBAR HELPERS
-
 
   void _showSuccessSnackBar(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: const Color(0xFF00C853),
+        backgroundColor: const Color(0xFF00FFA3),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -299,33 +290,34 @@ class _CourseLearningScreenState extends State<CourseLearningScreen> {
             const SizedBox(width: 8),
             Text(
               parts.join(' • '),
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Color(0xFF00FFA3),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
-        backgroundColor: const Color(0xFF0F2A22),
+        backgroundColor: const Color(0xFF0C241B),
         duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: Color(0xFF00C853), width: 1),
+          side: const BorderSide(color: Color(0xFF00FFA3), width: 1),
         ),
       ),
     );
   }
 
-
   // BUILD METHOD
-
 
   @override
   Widget build(BuildContext context) {
     // Loading state
     if (_isLoadingCourse) {
       return Scaffold(
-        backgroundColor: const Color(0xFF031B15),
+        backgroundColor: const Color(0xFF030705),
         appBar: AppBar(
-          backgroundColor: const Color(0xFF020B08),
+          backgroundColor: const Color(0xFF030705),
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
@@ -342,7 +334,7 @@ class _CourseLearningScreenState extends State<CourseLearningScreen> {
         ),
         body: const Center(
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00E676)),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00FFA3)),
           ),
         ),
       );
@@ -351,9 +343,9 @@ class _CourseLearningScreenState extends State<CourseLearningScreen> {
     // Error state
     if (_loadError != null || _course == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFF031B15),
+        backgroundColor: const Color(0xFF030705),
         appBar: AppBar(
-          backgroundColor: const Color(0xFF020B08),
+          backgroundColor: const Color(0xFF030705),
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
@@ -387,8 +379,8 @@ class _CourseLearningScreenState extends State<CourseLearningScreen> {
                   icon: const Icon(Icons.refresh, size: 18),
                   label: const Text('Retry'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00C853),
-                    foregroundColor: Colors.black,
+                    backgroundColor: const Color(0xFF00FFA3),
+                    foregroundColor: const Color(0xFF030705),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -404,9 +396,9 @@ class _CourseLearningScreenState extends State<CourseLearningScreen> {
     // Empty modules
     if (_allLessons.isEmpty) {
       return Scaffold(
-        backgroundColor: const Color(0xFF031B15),
+        backgroundColor: const Color(0xFF030705),
         appBar: AppBar(
-          backgroundColor: const Color(0xFF020B08),
+          backgroundColor: const Color(0xFF030705),
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
@@ -432,108 +424,353 @@ class _CourseLearningScreenState extends State<CourseLearningScreen> {
 
     // Normal course player
     final screenWidth = MediaQuery.of(context).size.width;
-    final contentPadding = screenWidth > 600 ? 24.0 : 16.0;
+    final contentPadding = screenWidth > 600 ? 24.0 : 20.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF031B15), 
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF020B08), 
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.courseTitle,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+      backgroundColor: const Color(0xFF030705),
+      extendBodyBehindAppBar: true,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(65),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: const Color(0xFF00FFA3).withValues(alpha: 0.1),
+                width: 1,
               ),
             ),
-            const SizedBox(height: 2),
-            Text(
-              "Lesson ${_currentLessonIndex + 1} of ${_allLessons.length} • ${(_completionPercent * 100).round()}% complete",
-              style: const TextStyle(
-                color: Color(0xFF00E676),
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: contentPadding, vertical: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. VIDEO PLAYER SECTION
-              VideoPlayerSection(
-                lesson: _currentLesson,
-                onPlayTapped: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Playing: ${_currentLesson.title}"),
-                      duration: const Duration(seconds: 2),
-                      backgroundColor: const Color(0xFF00C853),
+          ),
+          child: ClipRRect(
+            child: AppBar(
+              backgroundColor: const Color(0xFF030705).withValues(alpha: 0.85),
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              leading: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0C241B).withValues(alpha: 0.4),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF00FFA3).withValues(alpha: 0.25),
+                      width: 1,
                     ),
-                  );
-                },
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
               ),
-              const SizedBox(height: 16),
-
-              // 2. LESSON INFO CARD
-              LessonInfoCard(
-                section: _currentSection,
-                lesson: _currentLesson,
-                isCompleted: _currentLesson.isCompleted,
-                onCheckboxChanged: (val) => _toggleLessonCompleted(_currentLesson),
+              title: const Text(
+                "Course Player",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
               ),
-              const SizedBox(height: 16),
-
-              // 3. NAVIGATION CONTROLS (PREVIOUS / NEXT)
-              NavigationControlsRow(
-                currentIdx: _currentLessonIndex,
-                maxCount: _allLessons.length,
-                onPrevious: () => _navigateToLesson(_currentLessonIndex - 1),
-                onNext: () => _navigateToLesson(_currentLessonIndex + 1),
-              ),
-              const SizedBox(height: 16),
-
-              // 4. PROGRESS CARD
-              ProgressCard(
-                completedCount: _completedCount,
-                totalCount: _allLessons.length,
-                percent: _completionPercent,
-              ),
-              const SizedBox(height: 16),
-
-              // 5. CURRICULUM PANEL
-              CurriculumPanel(
-                course: _course!,
-                selectedLessonId: _currentLesson.id,
-                isExpanded: _isCurriculumExpanded,
-                onToggleExpand: () {
-                  setState(() {
-                    _isCurriculumExpanded = !_isCurriculumExpanded;
-                  });
-                },
-                onLessonClick: (lesson) {
-                  final idx = _allLessons.indexOf(lesson);
-                  if (idx != -1) {
-                    _navigateToLesson(idx);
-                  }
-                },
-              ),
-              const SizedBox(height: 24),
-            ],
+            ),
           ),
         ),
+      ),
+      body: Stack(
+        children: [
+          // Background ambient lights
+          Positioned(
+            top: -150,
+            left: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF00FFA3).withValues(alpha: 0.04),
+                    blurRadius: 150,
+                    spreadRadius: 50,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 100,
+            right: -100,
+            child: Container(
+              width: 350,
+              height: 350,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF0F3B2E).withValues(alpha: 0.06),
+                    blurRadius: 180,
+                    spreadRadius: 60,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Main body Scrollable
+          SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.symmetric(horizontal: contentPadding, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 0. COURSE HEADER HERO CARD
+                  _StaggeredItem(
+                    index: 0,
+                    child: _CourseHeaderCard(
+                      courseTitle: widget.courseTitle,
+                      currentIdx: _currentLessonIndex,
+                      totalLessons: _allLessons.length,
+                      completionPercent: _completionPercent,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // 1. VIDEO PLAYER SECTION
+                  _StaggeredItem(
+                    index: 1,
+                    child: VideoPlayerSection(
+                      lesson: _currentLesson,
+                      onPlayTapped: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Playing: ${_currentLesson.title}"),
+                            duration: const Duration(seconds: 2),
+                            backgroundColor: const Color(0xFF00FFA3),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // 2. LESSON INFO CARD
+                  _StaggeredItem(
+                    index: 2,
+                    child: LessonInfoCard(
+                      section: _currentSection,
+                      lesson: _currentLesson,
+                      isCompleted: _currentLesson.isCompleted,
+                      onCheckboxChanged: (val) => _toggleLessonCompleted(_currentLesson),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // 3. NAVIGATION CONTROLS (PREVIOUS / NEXT)
+                  _StaggeredItem(
+                    index: 3,
+                    child: NavigationControlsRow(
+                      currentIdx: _currentLessonIndex,
+                      maxCount: _allLessons.length,
+                      onPrevious: () => _navigateToLesson(_currentLessonIndex - 1),
+                      onNext: () => _navigateToLesson(_currentLessonIndex + 1),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // 4. PROGRESS CARD
+                  _StaggeredItem(
+                    index: 4,
+                    child: ProgressCard(
+                      completedCount: _completedCount,
+                      totalCount: _allLessons.length,
+                      percent: _completionPercent,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // 5. CURRICULUM PANEL
+                  _StaggeredItem(
+                    index: 5,
+                    child: CurriculumPanel(
+                      course: _course!,
+                      selectedLessonId: _currentLesson.id,
+                      isExpanded: _isCurriculumExpanded,
+                      onToggleExpand: () {
+                        setState(() {
+                          _isCurriculumExpanded = !_isCurriculumExpanded;
+                        });
+                      },
+                      onLessonClick: (lesson) {
+                        final idx = _allLessons.indexOf(lesson);
+                        if (idx != -1) {
+                          _navigateToLesson(idx);
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StaggeredItem extends StatefulWidget {
+  final Widget child;
+  final int index;
+
+  const _StaggeredItem({required this.child, required this.index});
+
+  @override
+  State<_StaggeredItem> createState() => _StaggeredItemState();
+}
+
+class _StaggeredItemState extends State<_StaggeredItem> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _opacity;
+  late Animation<double> _translate;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _opacity = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    );
+
+    _translate = Tween<double>(begin: 30, end: 0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+
+    Future.delayed(Duration(milliseconds: 50 + widget.index * 80), () {
+      if (mounted) {
+        _controller.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _opacity.value,
+          child: Transform.translate(
+            offset: Offset(0, _translate.value),
+            child: widget.child,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _CourseHeaderCard extends StatelessWidget {
+  final String courseTitle;
+  final int currentIdx;
+  final int totalLessons;
+  final double completionPercent;
+
+  const _CourseHeaderCard({
+    required this.courseTitle,
+    required this.currentIdx,
+    required this.totalLessons,
+    required this.completionPercent,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0C241B).withValues(alpha: 0.4),
+            const Color(0xFF030D0A).withValues(alpha: 0.95),
+          ],
+        ),
+        border: Border.all(
+          color: const Color(0xFF00FFA3).withValues(alpha: 0.25),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00FFA3).withValues(alpha: 0.05),
+            blurRadius: 25,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00FFA3).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFF00FFA3).withValues(alpha: 0.35),
+                  ),
+                ),
+                child: Text(
+                  "LESSON ${currentIdx + 1} OF $totalLessons",
+                  style: const TextStyle(
+                    fontFamily: 'Gilroy-Bold',
+                    color: Color(0xFF00FFA3),
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ),
+              Text(
+                "${(completionPercent * 100).round()}% COMPLETE",
+                style: const TextStyle(
+                  fontFamily: 'Gilroy-Bold',
+                  color: Color(0xFF00FFA3),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            courseTitle,
+            style: const TextStyle(
+              fontFamily: 'Gilroy-Bold',
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
       ),
     );
   }

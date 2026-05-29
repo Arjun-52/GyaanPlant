@@ -6,6 +6,7 @@ import '../../models/auth/auth_user_model.dart';
 import '../../models/auth/college_dropdown_model.dart';
 import '../../network/auth_cache.dart';
 import '../../core/utils/app_logger.dart';
+import '../../routes/app_router.dart';
 
 class AuthViewModel extends ChangeNotifier {
   static const _tag = 'AuthViewModel';
@@ -179,8 +180,10 @@ class AuthViewModel extends ChangeNotifier {
 
         try {
           if (data.user.role.isNotEmpty) {
+            final roleStr = data.user.role.toLowerCase();
             print("🕵️‍♂️ [AuthViewModel.login] BEFORE LocalStorageService.saveRole()");
-            await LocalStorageService.saveRole(data.user.role.toLowerCase());
+            await LocalStorageService.saveRole(roleStr);
+            AuthCache.role = roleStr;
             print("🕵️‍♂️ [AuthViewModel.login] AFTER LocalStorageService.saveRole()");
           }
         } catch (e) {
@@ -418,15 +421,18 @@ class AuthViewModel extends ChangeNotifier {
     await LocalStorageService.clearToken();
     await LocalStorageService.removeRole();
     AuthCache.token = null;
+    AuthCache.role = null;
 
     print("🔥 LOGOUT: Local data cleared");
 
     user = null;
     notifyListeners();
 
-    if (context.mounted) {
-      context.go('/signin');
-    }
+    // ✅ STEP 3: Navigate using the global router to avoid context issues
+    // when the settings screen is inside an IndexedStack (HOD/TPO shell).
+    // Using AppRouter.router.go() ensures navigation happens on the root
+    // navigator regardless of which widget's context triggered the logout.
+    AppRouter.router.go('/signin');
   }
 
   Future<void> forgotPassword(BuildContext context, String email) async {

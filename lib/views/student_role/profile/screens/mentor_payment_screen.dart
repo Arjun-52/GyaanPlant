@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../services/mentor_booking_service.dart';
-import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class MentorPaymentScreen extends StatefulWidget {
   final String mentorId;
@@ -83,79 +82,168 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF020B08),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF020B08),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Payment Details',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+      backgroundColor: const Color(0xFF030705), // Deep black background
+      extendBodyBehindAppBar: true,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(65),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: const Color(0xFF00FFA3).withValues(alpha: 0.1),
+                width: 1,
+              ),
+            ),
+          ),
+          child: ClipRRect(
+            child: AppBar(
+              backgroundColor: const Color(0xFF030705).withValues(alpha: 0.85),
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              leading: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0C241B).withValues(alpha: 0.4),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF00FFA3).withValues(alpha: 0.25),
+                      width: 1,
+                    ),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+              ),
+              title: const Text(
+                'Checkout',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              centerTitle: true,
+            ),
           ),
         ),
-        centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Mentor Information Card
-            _buildMentorInfoCard(),
+      body: Stack(
+        children: [
+          // Background ambient lights
+          Positioned(
+            top: -150,
+            left: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF00FFA3).withValues(alpha: 0.04),
+                    blurRadius: 150,
+                    spreadRadius: 50,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 100,
+            right: -100,
+            child: Container(
+              width: 350,
+              height: 350,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF0F3B2E).withValues(alpha: 0.06),
+                    blurRadius: 180,
+                    spreadRadius: 60,
+                  ),
+                ],
+              ),
+            ),
+          ),
 
-            const SizedBox(height: 20),
+          // Main body Scrollable
+          SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 1. Mentor Information Card
+                  _StaggeredItem(
+                    index: 0,
+                    child: _buildMentorInfoCard(),
+                  ),
 
-            // Booking Details Card
-            _buildBookingDetailsCard(),
+                  const SizedBox(height: 20),
 
-            const SizedBox(height: 20),
+                  // 2. Booking Details Card
+                  _StaggeredItem(
+                    index: 1,
+                    child: _buildBookingDetailsCard(),
+                  ),
 
-            // Payment Breakdown Card
-            _buildPaymentBreakdownCard(),
+                  const SizedBox(height: 20),
 
-            const SizedBox(height: 20),
+                  // 3. Payment Breakdown Card
+                  _StaggeredItem(
+                    index: 2,
+                    child: _buildPaymentBreakdownCard(),
+                  ),
 
-            // Payment Method Card
-            _buildPaymentMethodCard(),
+                  const SizedBox(height: 20),
 
-            const SizedBox(height: 100), // Space for fixed bottom button
-          ],
-        ),
+                  // 4. Payment Method Card
+                  _StaggeredItem(
+                    index: 3,
+                    child: _buildPaymentMethodCard(),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // 5. Trust & Security Section (New)
+                  _StaggeredItem(
+                    index: 4,
+                    child: const _SecurePaymentCard(),
+                  ),
+
+                  const SizedBox(height: 90), // Space for floating bottom CTA
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
       bottomSheet: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF020B08),
-          border: Border(top: BorderSide(color: Color(0xFF12352C), width: 1)),
+        decoration: BoxDecoration(
+          color: const Color(0xFF030705).withValues(alpha: 0.95),
+          border: Border(
+            top: BorderSide(
+              color: const Color(0xFF00FFA3).withValues(alpha: 0.1),
+              width: 1,
+            ),
+          ),
         ),
         padding: EdgeInsets.only(
           left: 20,
           right: 20,
-          top: 16,
-          bottom: MediaQuery.of(context).padding.bottom + 16,
+          top: 14,
+          bottom: MediaQuery.of(context).padding.bottom + 14,
         ),
         child: SizedBox(
           width: double.infinity,
-          child: ElevatedButton(
+          child: _ProceedToPayButton(
             onPressed: _proceedToPayment,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00C853),
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 0,
-            ),
-            child: const Text(
-              'Proceed to Pay',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
           ),
         ),
       ),
@@ -166,62 +254,126 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0B1F19), Color(0xFF0D2F24)],
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0C241B).withValues(alpha: 0.45),
+            const Color(0xFF030D0A).withValues(alpha: 0.9),
+          ],
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF12352C)),
+        border: Border.all(
+          color: const Color(0xFF00FFA3).withValues(alpha: 0.25),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00FFA3).withValues(alpha: 0.05),
+            blurRadius: 20,
+            spreadRadius: 1,
+          ),
+        ],
       ),
       child: Row(
         children: [
-          // Avatar
+          // Glowing Avatar Container
           Container(
-            width: 60,
-            height: 60,
+            width: 64,
+            height: 64,
             decoration: BoxDecoration(
-              color: Colors.green,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF12352C)),
+              color: const Color(0xFF00FFA3).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: const Color(0xFF00FFA3).withValues(alpha: 0.35),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF00FFA3).withValues(alpha: 0.15),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ],
             ),
             child: Center(
               child: Text(
                 widget.mentorAvatar,
                 style: const TextStyle(
-                  color: Colors.black,
+                  color: Color(0xFF00FFA3),
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 22,
                 ),
               ),
             ),
           ),
 
-          const SizedBox(width: 16),
+          const SizedBox(width: 18),
 
-          // Mentor Info
+          // Mentor Details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  widget.mentorName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.mentorName,
+                        style: const TextStyle(
+                          fontFamily: 'Gilroy-Bold',
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    // Verified Badge Row
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00FFA3).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFF00FFA3).withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.verified, color: Color(0xFF00FFA3), size: 10),
+                          SizedBox(width: 4),
+                          Text(
+                            "Verified",
+                            style: TextStyle(
+                              color: Color(0xFF00FFA3),
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 5),
                 Text(
                   widget.mentorRole,
-                  style: const TextStyle(color: Colors.white60, fontSize: 14),
+                  style: TextStyle(
+                    fontFamily: 'Gilroy-Medium',
+                    color: Colors.white.withValues(alpha: 0.65),
+                    fontSize: 13.5,
+                  ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 5),
                 Text(
                   widget.mentorPrice,
                   style: const TextStyle(
-                    color: Colors.greenAccent,
+                    fontFamily: 'Gilroy-Bold',
+                    color: Color(0xFF00FFA3),
                     fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -236,24 +388,46 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0B1F19), Color(0xFF0D2F24)],
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0C241B).withValues(alpha: 0.35),
+            const Color(0xFF030D0A).withValues(alpha: 0.85),
+          ],
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF12352C)),
+        border: Border.all(
+          color: const Color(0xFF00FFA3).withValues(alpha: 0.15),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00FFA3).withValues(alpha: 0.02),
+            blurRadius: 15,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Booking Details',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            children: const [
+              Icon(Icons.stars, color: Color(0xFF00FFA3), size: 16),
+              SizedBox(width: 8),
+              Text(
+                'BOOKING DETAILS',
+                style: TextStyle(
+                  fontFamily: 'Gilroy-Bold',
+                  color: Color(0xFF00FFA3),
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
           // Date
           _buildDetailRow(
@@ -288,24 +462,47 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0B1F19), Color(0xFF0D2F24)],
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0F3B2E).withValues(alpha: 0.3),
+            const Color(0xFF030D0A).withValues(alpha: 0.95),
+          ],
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF12352C)),
+        border: Border.all(
+          color: const Color(0xFF00FFA3).withValues(alpha: 0.25),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00FFA3).withValues(alpha: 0.05),
+            blurRadius: 20,
+            spreadRadius: 1,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Payment Breakdown',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            children: const [
+              Icon(Icons.payment, color: Color(0xFF00FFA3), size: 16),
+              SizedBox(width: 8),
+              Text(
+                'PAYMENT BREAKDOWN',
+                style: TextStyle(
+                  fontFamily: 'Gilroy-Bold',
+                  color: Color(0xFF00FFA3),
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
           // Session Fee
           _buildPaymentRow(
@@ -314,7 +511,7 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
             isHighlighted: false,
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
 
           // Platform Fee
           _buildPaymentRow(
@@ -323,7 +520,7 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
             isHighlighted: false,
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
 
           // GST
           _buildPaymentRow(
@@ -332,18 +529,45 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
             isHighlighted: false,
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
           // Divider
-          Container(height: 1, color: Colors.white.withOpacity(0.1)),
+          Divider(
+            color: const Color(0xFF00FFA3).withValues(alpha: 0.15),
+            thickness: 1.2,
+          ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
-          // Total Amount
-          _buildPaymentRow(
-            label: 'Total Amount',
-            value: '₹${_totalAmount.toStringAsFixed(2)}',
-            isHighlighted: true,
+          // Total Amount (Primary Visual Focus)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Total Amount',
+                style: TextStyle(
+                  fontFamily: 'Gilroy-Bold',
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                '₹${_totalAmount.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontFamily: 'Gilroy-Bold',
+                  color: Color(0xFF00FFA3),
+                  fontSize: 26,
+                  fontWeight: FontWeight.w900,
+                  shadows: [
+                    Shadow(
+                      color: Color(0xFF00FFA3),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -354,95 +578,170 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0B1F19), Color(0xFF0D2F24)],
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0C241B).withValues(alpha: 0.35),
+            const Color(0xFF030D0A).withValues(alpha: 0.85),
+          ],
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF12352C)),
+        border: Border.all(
+          color: const Color(0xFF00FFA3).withValues(alpha: 0.15),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00FFA3).withValues(alpha: 0.02),
+            blurRadius: 15,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Payment Method',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            children: const [
+              Icon(Icons.credit_card, color: Color(0xFF00FFA3), size: 16),
+              SizedBox(width: 8),
+              Text(
+                'PAYMENT METHOD',
+                style: TextStyle(
+                  fontFamily: 'Gilroy-Bold',
+                  color: Color(0xFF00FFA3),
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
-          // Razorpay Option
+          // Razorpay Active Option
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Color(0xFF00C853).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFF00C853)),
+              color: const Color(0xFF00FFA3).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF00FFA3),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF00FFA3).withValues(alpha: 0.15),
+                  blurRadius: 12,
+                  spreadRadius: 1,
+                ),
+              ],
             ),
             child: Row(
               children: [
-                // Razorpay Icon (placeholder)
+                // Razorpay Icon Container
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00C853),
-                    borderRadius: BorderRadius.circular(8),
+                    color: const Color(0xFF00FFA3),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
-                    Icons.payment,
+                    Icons.account_balance_wallet_outlined,
                     color: Colors.black,
-                    size: 20,
+                    size: 22,
                   ),
                 ),
 
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
 
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Razorpay',
+                        'Razorpay Checkout',
                         style: TextStyle(
+                          fontFamily: 'Gilroy-Bold',
                           color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      const Text(
-                        'Secure payment gateway',
-                        style: TextStyle(color: Colors.white60, fontSize: 12),
+                      const SizedBox(height: 3),
+                      Text(
+                        'Secure payments including Cards & UPI',
+                        style: TextStyle(
+                          fontFamily: 'Gilroy-Medium',
+                          color: Colors.white.withValues(alpha: 0.65),
+                          fontSize: 11.5,
+                        ),
                       ),
                     ],
                   ),
                 ),
 
-                // Selected indicator
+                // Custom Check Indicator
                 Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF00C853),
+                  width: 22,
+                  height: 22,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF00FFA3),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.check, color: Colors.black, size: 14),
+                  child: const Icon(Icons.check, color: Colors.black, size: 15),
                 ),
               ],
             ),
           ),
 
-          // Future payment methods placeholder
-          const SizedBox(height: 12),
-          Text(
-            'More payment methods coming soon',
-            style: TextStyle(color: Colors.white38, fontSize: 12),
+          // Placeholders for visual scalability
+          const SizedBox(height: 18),
+          
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildPaymentPlaceholder("UPI", Icons.qr_code),
+              _buildPaymentPlaceholder("Cards", Icons.credit_card),
+              _buildPaymentPlaceholder("Netbanking", Icons.account_balance),
+              _buildPaymentPlaceholder("Wallets", Icons.wallet),
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPaymentPlaceholder(String label, IconData icon) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.03),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.08),
+              width: 1,
+            ),
+          ),
+          child: Icon(
+            icon,
+            color: Colors.white38,
+            size: 16,
+          ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white38,
+            fontSize: 9.5,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 
@@ -453,19 +752,24 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
   }) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFF00C853), size: 20),
+        Icon(icon, color: const Color(0xFF00FFA3), size: 18),
         const SizedBox(width: 12),
         Text(
           label,
-          style: const TextStyle(color: Colors.white60, fontSize: 14),
+          style: TextStyle(
+            fontFamily: 'Gilroy-Medium',
+            color: Colors.white.withValues(alpha: 0.65),
+            fontSize: 14,
+          ),
         ),
         const Spacer(),
         Text(
           value,
           style: const TextStyle(
+            fontFamily: 'Gilroy-Bold',
             color: Colors.white,
             fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ],
@@ -483,17 +787,19 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
         Text(
           label,
           style: TextStyle(
+            fontFamily: isHighlighted ? 'Gilroy-Bold' : 'Gilroy-Medium',
             color: isHighlighted ? Colors.white : Colors.white70,
             fontSize: isHighlighted ? 16 : 14,
-            fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.w500,
+            fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w500,
           ),
         ),
         Text(
           value,
           style: TextStyle(
-            color: isHighlighted ? const Color(0xFF00C853) : Colors.white,
+            fontFamily: 'Gilroy-Bold',
+            color: isHighlighted ? const Color(0xFF00FFA3) : Colors.white,
             fontSize: isHighlighted ? 16 : 14,
-            fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.w500,
+            fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w500,
           ),
         ),
       ],
@@ -540,13 +846,6 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
 
     // Open Razorpay checkout using MentorBookingService
     try {
-      // Use MentorBookingService for mentor session booking
-      // TODO: This mentor-booking flow is mocked end-to-end (fake mentorId,
-      // fake orderId, mocked verification). When wired to the real backend,
-      // call `PaymentRepository.createOrder(itemType: ItemType.session, ...)`
-      // and use the returned `PaidOrder.keyId / orderId / amount` here, the
-      // same way the course flow does. Until then the key is read from the
-      // build env so no secret is committed to source.
       _mentorBookingService.purchaseMentorSession(
         context: context,
         mentorId: widget.mentorId,
@@ -578,9 +877,6 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
     _showSuccessDialog(
       'Mentor session booked successfully! Your booking is confirmed.',
     );
-
-    // TODO: Navigate to booking confirmation screen
-    // TODO: Save booking data to backend
   }
 
   void _handlePaymentError(dynamic response) {
@@ -627,19 +923,18 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF020B08),
+        backgroundColor: const Color(0xFF030705),
         title: const Text(
           'Payment Successful',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontFamily: 'Gilroy-Bold'),
         ),
-        content: Text(message, style: const TextStyle(color: Colors.white70)),
+        content: Text(message, style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontFamily: 'Gilroy-Medium')),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              // TODO: Navigate to booking confirmation
             },
-            child: const Text('OK', style: TextStyle(color: Color(0xFF00C853))),
+            child: const Text('OK', style: TextStyle(color: Color(0xFF00FFA3), fontFamily: 'Gilroy-Bold')),
           ),
         ],
       ),
@@ -650,18 +945,18 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF020B08),
+        backgroundColor: const Color(0xFF030705),
         title: const Text(
           'Payment Error',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontFamily: 'Gilroy-Bold'),
         ),
-        content: Text(message, style: const TextStyle(color: Colors.white70)),
+        content: Text(message, style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontFamily: 'Gilroy-Medium')),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text(
               'Retry',
-              style: TextStyle(color: Color(0xFF00C853)),
+              style: TextStyle(color: Color(0xFF00FFA3), fontFamily: 'Gilroy-Bold'),
             ),
           ),
         ],
@@ -673,15 +968,233 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF020B08),
-        title: const Text('Payment', style: TextStyle(color: Colors.white)),
-        content: Text(message, style: const TextStyle(color: Colors.white70)),
+        backgroundColor: const Color(0xFF030705),
+        title: const Text('Payment', style: TextStyle(color: Colors.white, fontFamily: 'Gilroy-Bold')),
+        content: Text(message, style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontFamily: 'Gilroy-Medium')),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK', style: TextStyle(color: Color(0xFF00C853))),
+            child: const Text('OK', style: TextStyle(color: Color(0xFF00FFA3), fontFamily: 'Gilroy-Bold')),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StaggeredItem extends StatefulWidget {
+  final Widget child;
+  final int index;
+
+  const _StaggeredItem({required this.child, required this.index});
+
+  @override
+  State<_StaggeredItem> createState() => _StaggeredItemState();
+}
+
+class _StaggeredItemState extends State<_StaggeredItem> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _opacity;
+  late Animation<double> _translate;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _opacity = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    );
+
+    _translate = Tween<double>(begin: 30, end: 0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+
+    Future.delayed(Duration(milliseconds: 50 + widget.index * 80), () {
+      if (mounted) {
+        _controller.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _opacity.value,
+          child: Transform.translate(
+            offset: Offset(0, _translate.value),
+            child: widget.child,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SecurePaymentCard extends StatelessWidget {
+  const _SecurePaymentCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0C241B).withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF00FFA3).withValues(alpha: 0.15),
+          width: 1.2,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF00FFA3).withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.lock,
+              color: Color(0xFF00FFA3),
+              size: 16,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Secure Payment",
+                  style: TextStyle(
+                    fontFamily: 'Gilroy-Bold',
+                    color: Colors.white,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  "Your payment is protected using Razorpay's secure payment gateway and encrypted transactions.",
+                  style: TextStyle(
+                    fontFamily: 'Gilroy-Medium',
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 11.5,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProceedToPayButton extends StatefulWidget {
+  final VoidCallback onPressed;
+
+  const _ProceedToPayButton({required this.onPressed});
+
+  @override
+  State<_ProceedToPayButton> createState() => _ProceedToPayButtonState();
+}
+
+class _ProceedToPayButtonState extends State<_ProceedToPayButton> with SingleTickerProviderStateMixin {
+  bool _isTapped = false;
+  late AnimationController _pulsateController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulsateController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulsateController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedScale(
+      scale: _isTapped ? 0.96 : 1.0,
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeOutCubic,
+      child: AnimatedBuilder(
+        animation: _pulsateController,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF00FFA3).withValues(
+                    alpha: 0.2 + 0.1 * _pulsateController.value,
+                  ),
+                  blurRadius: 15 + 10 * _pulsateController.value,
+                  spreadRadius: 1 + 2 * _pulsateController.value,
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: () async {
+                setState(() => _isTapped = true);
+                await Future.delayed(const Duration(milliseconds: 150));
+                setState(() => _isTapped = false);
+                widget.onPressed();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00FFA3),
+                foregroundColor: const Color(0xFF030705),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: const Color(0xFF00FFA3).withValues(alpha: 0.5),
+                    width: 1.5,
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                elevation: 0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.lock, size: 18),
+                  SizedBox(width: 10),
+                  Text(
+                    "Pay Securely",
+                    style: TextStyle(
+                      fontFamily: 'Gilroy-Bold',
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

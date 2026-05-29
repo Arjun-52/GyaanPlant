@@ -141,6 +141,19 @@ class StudentViewModel extends ChangeNotifier {
     }
   }
 
+  String _mapReadinessToStatus(String? readiness) {
+    switch (readiness?.toLowerCase()) {
+      case "high":
+        return "MNC Ready";
+      case "medium":
+        return "Average";
+      case "low":
+        return "At Risk";
+      default:
+        return "Unknown";
+    }
+  }
+
   Future<void> updateStudent({
     required Student currentStudent,
     required String id,
@@ -152,7 +165,17 @@ class StudentViewModel extends ChangeNotifier {
     required String rollNo,
     required double cgpa,
     required String careerPath,
+    required String status,
   }) async {
+    String readiness = 'medium';
+    if (status == 'MNC Ready') {
+      readiness = 'high';
+    } else if (status == 'At Risk') {
+      readiness = 'low';
+    } else if (status == 'Average') {
+      readiness = 'medium';
+    }
+
     final payload = {
       'name': name,
       'email': email,
@@ -162,15 +185,19 @@ class StudentViewModel extends ChangeNotifier {
       'rollNumber': rollNo,
       'cgpa': cgpa,
       'careerPath': careerPath,
+      'readiness': readiness,
     };
 
-    print('Student ID: $id');
-    print('Payload: $payload');
+    print('⚙️ [StudentViewModel] UPDATING STUDENT ID: $id');
+    print('⚙️ [StudentViewModel] REQUEST PAYLOAD SENT: $payload');
 
     final response = await ApiService().student.updateStudent(id, payload);
-    print('Update response: ${response.data}');
+    print('⚙️ [StudentViewModel] API RESPONSE RECEIVED (isSuccess: ${response.isSuccess}): ${response.data}');
 
     if (response.isSuccess && response.data != null) {
+      final apiStudent = response.data!;
+      final mappedStatus = _mapReadinessToStatus(apiStudent.readiness);
+
       final updatedStudent = Student(
         id: currentStudent.id,
         name: name,
@@ -178,14 +205,20 @@ class StudentViewModel extends ChangeNotifier {
         branch: branchName,
         branchId: branchId,
         year: 'Year $year',
-        score: currentStudent.score,
-        status: currentStudent.status,
+        score: apiStudent.profileStrength > 0 ? apiStudent.profileStrength : currentStudent.score,
+        status: mappedStatus != 'Unknown' ? mappedStatus : status,
         initials: _generateInitials(name),
         rollNo: rollNo,
         cgpa: cgpa,
         careerPath: careerPath,
       );
+
+      print('⚙️ [StudentViewModel] UPDATED STUDENT DATA STORED IN STATE: $updatedStudent');
       updateStudentLocal(updatedStudent);
+
+      // Trigger a refresh of the student list to sync fully with the API
+      print('⚙️ [StudentViewModel] TRIGGERING REFRESH OF STUDENT LIST');
+      await refreshStudents();
     } else {
       throw Exception(response.error?.message ?? 'Failed to update student.');
     }

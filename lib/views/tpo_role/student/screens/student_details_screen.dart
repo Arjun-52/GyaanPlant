@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:gyaanplant/models/tpo_role_models/student_model.dart';
+import 'package:gyaanplant/viewmodels/tpo_viewmodels/student_viewmodel.dart';
 
 class StudentDetailsScreen extends StatelessWidget {
   final Student student;
@@ -21,7 +23,15 @@ class StudentDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = getStatusColor(student.status);
+    final studentVm = context.watch<StudentViewModel>();
+    final currentStudent = studentVm.students.firstWhere(
+      (s) => s.id == student.id,
+      orElse: () => student,
+    );
+
+    print('📱 [StudentDetailsScreen] RENDERING STUDENT DATA IN UI: name=${currentStudent.name}, status=${currentStudent.status}');
+
+    final statusColor = getStatusColor(currentStudent.status);
 
     return Scaffold(
       backgroundColor: const Color(0xFF061A14),
@@ -73,7 +83,7 @@ class StudentDetailsScreen extends StatelessWidget {
                           radius: 32,
                           backgroundColor: const Color(0xFF0C2D24),
                           child: Text(
-                            student.initials,
+                            currentStudent.initials,
                             style: TextStyle(
                               color: statusColor,
                               fontSize: 24,
@@ -88,7 +98,7 @@ class StudentDetailsScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              student.name,
+                              currentStudent.name,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 20,
@@ -97,7 +107,7 @@ class StudentDetailsScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              student.email,
+                              currentStudent.email,
                               style: const TextStyle(
                                 color: Colors.white54,
                                 fontSize: 13,
@@ -121,7 +131,7 @@ class StudentDetailsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            "${student.score}%",
+                            "${currentStudent.score}%",
                             style: TextStyle(
                               color: statusColor,
                               fontSize: 24,
@@ -149,7 +159,7 @@ class StudentDetailsScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              student.status,
+                              currentStudent.status,
                               style: TextStyle(
                                 color: statusColor,
                                 fontSize: 12,
@@ -165,7 +175,7 @@ class StudentDetailsScreen extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: LinearProgressIndicator(
-                      value: student.score / 100,
+                      value: currentStudent.score / 100,
                       minHeight: 8,
                       color: statusColor,
                       backgroundColor: Colors.white.withOpacity(0.05),
@@ -195,13 +205,13 @@ class StudentDetailsScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _buildDetailRow(Icons.badge_rounded, 'Roll Number', student.rollNo),
+                  _buildDetailRow(Icons.badge_rounded, 'Roll Number', currentStudent.rollNo),
                   const Divider(color: Colors.white12, height: 24),
-                  _buildDetailRow(Icons.account_tree_rounded, 'Branch', student.branch),
+                  _buildDetailRow(Icons.account_tree_rounded, 'Branch', currentStudent.branch),
                   const Divider(color: Colors.white12, height: 24),
-                  _buildDetailRow(Icons.school_rounded, 'Academic Year', student.year),
+                  _buildDetailRow(Icons.school_rounded, 'Academic Year', currentStudent.year),
                   const Divider(color: Colors.white12, height: 24),
-                  _buildDetailRow(Icons.analytics_rounded, 'CGPA', '${student.cgpa} / 10.0'),
+                  _buildDetailRow(Icons.analytics_rounded, 'CGPA', '${currentStudent.cgpa} / 10.0'),
                 ],
               ),
             ),
@@ -245,7 +255,7 @@ class StudentDetailsScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          student.careerPath,
+                          currentStudent.careerPath,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 15,
@@ -268,7 +278,7 @@ class StudentDetailsScreen extends StatelessWidget {
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Nudged ${student.name} successfully!'),
+                          content: Text('Nudged ${currentStudent.name} successfully!'),
                           backgroundColor: const Color(0xFF00C853),
                         ),
                       );

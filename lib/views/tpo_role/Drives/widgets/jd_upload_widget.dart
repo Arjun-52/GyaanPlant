@@ -3,12 +3,12 @@ import '../services/file_upload_service.dart';
 
 class JDUploadWidget extends StatelessWidget {
   final String? jdFilePath;
-  final VoidCallback onPickFile;
+  final ValueChanged<String?> onPick;
 
   const JDUploadWidget({
     super.key,
     required this.jdFilePath,
-    required this.onPickFile,
+    required this.onPick,
   });
 
   @override
@@ -29,7 +29,7 @@ class JDUploadWidget extends StatelessWidget {
           onTap: () async {
             final String? filePath = await FileUploadService.pickJDFile();
             if (filePath != null) {
-              onPickFile();
+              onPick(filePath);
             }
           },
           child: Container(

@@ -29,6 +29,28 @@ class TpoRepository {
     );
   }
 
+  /// POST /api/v1/drive — creates a new placement drive on the backend.
+  Future<ApiResponse<Drive>> createDrive(Map<String, dynamic> payload) {
+    print('🔀 TpoRepository.createDrive -> POST ${ApiEndpoints.drives}');
+    print('📨 Payload: $payload');
+    return _api.post<Drive>(
+      ApiEndpoints.drives,
+      data: payload,
+      fromJson: (json) {
+        print('📦 Raw createDrive response: $json');
+        if (json is Map<String, dynamic>) {
+          final data = json['data'];
+          if (data is Map<String, dynamic>) {
+            return Drive.fromJson(data);
+          }
+          return Drive.fromJson(json);
+        }
+        throw Exception('Unexpected createDrive response format');
+      },
+    );
+  }
+
+
   Future<ApiResponse<List<Student>>> getStudents(String collegeId) {
     print("🌐 STUDENT API REQUEST:");
     print("URL: ${ApiEndpoints.students}");

@@ -5,7 +5,6 @@ import 'package:gyaanplant/views/auth/widgets/primary_button.dart';
 import 'package:provider/provider.dart';
 
 import '../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
-import 'package:gyaanplant/views/student_role/role_/screens/role_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -37,10 +36,7 @@ class _SignInScreenState extends State<SignInScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pushReplacement(
-              context,
-                MaterialPageRoute(builder: (_) => RoleScreen()),
-            );
+            context.go('/role');
           },
         ),
       ),

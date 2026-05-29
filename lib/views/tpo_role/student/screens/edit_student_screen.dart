@@ -169,6 +169,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
         rollNo: rollNo,
         cgpa: cgpa,
         careerPath: careerPath,
+        status: _status,
       );
 
       ScaffoldMessenger.of(context).showSnackBar(

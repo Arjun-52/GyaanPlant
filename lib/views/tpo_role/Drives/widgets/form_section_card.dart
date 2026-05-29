@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 class FormSectionCard extends StatelessWidget {
+  final String title;
   final List<Widget> children;
 
   const FormSectionCard({
     super.key,
+    required this.title,
     required this.children,
   });
 
@@ -23,7 +25,18 @@ class FormSectionCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: children,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...children,
+        ],
       ),
     );
   }

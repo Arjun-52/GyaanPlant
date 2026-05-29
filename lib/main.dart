@@ -38,12 +38,14 @@ void main() async {
     // 3. Load token from LocalStorageService and populate AuthCache
     final token = await LocalStorageService.getToken();
     AuthCache.token = token;
+    AuthCache.role = await LocalStorageService.getRole();
     print("🔑 TOKEN LOADED ON STARTUP: $token");
-    print("🔑 TOKEN IS NULL: ${token == null}");
+    print("🔑 ROLE LOADED ON STARTUP: ${AuthCache.role}");
 
     AuthInterceptor.onUnauthorized = () async {
       await LocalStorageService.clearToken();
       AuthCache.token = null;
+      AuthCache.role = null;
       AppRouter.router.go('/signin');
     };
 

@@ -326,17 +326,18 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
       aspectRatio: 16 / 9,
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF0D1F1A),
-          borderRadius: BorderRadius.circular(16),
+          color: const Color(0xFF030D0A),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: const Color(0xFF00C853).withValues(alpha: 0.15),
+            color: const Color(0xFF00FFA3).withValues(alpha: 0.25),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF00C853).withValues(alpha: 0.05),
-              blurRadius: 15,
+              color: const Color(0xFF00FFA3).withValues(alpha: 0.08),
+              blurRadius: 20,
               spreadRadius: 1,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -376,16 +377,16 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
             ignoring: !_showControls,
             child: Stack(
               children: [
-                // Gradient backplate
+                // Frosted premium gradient backplate
                 Positioned.fill(
                   child: Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.black54,
+                          Colors.black.withValues(alpha: 0.75),
                           Colors.transparent,
                           Colors.transparent,
-                          Colors.black54,
+                          Colors.black.withValues(alpha: 0.75),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -396,46 +397,59 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
 
                 // Centre play/pause
                 Center(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black45,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.24),
-                        width: 1,
+                  child: AnimatedScale(
+                    scale: _showControls ? 1.0 : 0.8,
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutBack,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF030D0A).withValues(alpha: 0.75),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF00FFA3).withValues(alpha: 0.35),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF00FFA3).withValues(alpha: 0.25),
+                            blurRadius: 20,
+                            spreadRadius: 2,
+                          ),
+                        ],
                       ),
-                    ),
-                    child: IconButton(
-                      iconSize: 56,
-                      icon: Icon(
-                        _controller!.value.isPlaying
-                            ? Icons.pause_circle_filled
-                            : Icons.play_circle_filled,
-                        color: const Color(0xFF00E676),
+                      child: IconButton(
+                        iconSize: 52,
+                        icon: Icon(
+                          _controller!.value.isPlaying
+                              ? Icons.pause_circle_filled
+                              : Icons.play_circle_filled,
+                          color: const Color(0xFF00FFA3),
+                        ),
+                        onPressed: _togglePlayPause,
                       ),
-                      onPressed: _togglePlayPause,
                     ),
                   ),
                 ),
 
                 // Top: title + duration badge
                 Positioned(
-                  top: 12,
-                  left: 16,
-                  right: 16,
+                  top: 14,
+                  left: 18,
+                  right: 18,
                   child: Row(
                     children: [
                       Expanded(
                         child: Text(
                           widget.lesson.title,
                           style: const TextStyle(
+                            fontFamily: 'Gilroy-Bold',
                             color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.bold,
                             shadows: [
                               Shadow(
-                                blurRadius: 4,
-                                color: Colors.black54,
+                                blurRadius: 6,
+                                color: Colors.black,
                                 offset: Offset(0, 1),
                               ),
                             ],
@@ -446,20 +460,20 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                            horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF00C853).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12),
+                          color: const Color(0xFF00FFA3).withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: const Color(0xFF00E676)
-                                .withValues(alpha: 0.4),
-                            width: 0.8,
+                            color: const Color(0xFF00FFA3).withValues(alpha: 0.35),
+                            width: 1,
                           ),
                         ),
                         child: Text(
                           '${widget.lesson.durationMins}m',
                           style: const TextStyle(
-                            color: Color(0xFF00E676),
+                            fontFamily: 'Gilroy-Bold',
+                            color: Color(0xFF00FFA3),
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -471,8 +485,8 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
 
                 // Bottom: progress + time + mini controls
                 Positioned(
-                  left: 12,
-                  right: 12,
+                  left: 14,
+                  right: 14,
                   bottom: 12,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -486,7 +500,7 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
                             allowScrubbing: true,
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             colors: VideoProgressColors(
-                              playedColor: const Color(0xFF00E676),
+                              playedColor: const Color(0xFF00FFA3),
                               bufferedColor:
                                   Colors.white.withValues(alpha: 0.3),
                               backgroundColor:
@@ -509,17 +523,18 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
                                       ? Icons.pause
                                       : Icons.play_arrow,
                                   color: Colors.white,
-                                  size: 20,
+                                  size: 22,
                                 ),
                                 onPressed: _togglePlayPause,
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 14),
                               Text(
                                 '${_formatDuration(_controller!.value.position)} / '
                                 '${_formatDuration(_controller!.value.duration)}',
                                 style: const TextStyle(
+                                  fontFamily: 'Gilroy-Medium',
                                   color: Colors.white70,
-                                  fontSize: 11,
+                                  fontSize: 11.5,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -532,13 +547,13 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
                                     ? Icons.volume_up
                                     : Icons.volume_off,
                                 color: Colors.white70,
-                                size: 18,
+                                size: 20,
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 14),
                               const Icon(
                                 Icons.fullscreen,
                                 color: Colors.white,
-                                size: 20,
+                                size: 22,
                               ),
                             ],
                           ),
@@ -559,7 +574,7 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
     return Container(
       decoration: const BoxDecoration(
         gradient: RadialGradient(
-          colors: [Color(0xFF103A2B), Color(0xFF051711)],
+          colors: [Color(0xFF0C241B), Color(0xFF030705)],
           radius: 1.2,
         ),
       ),
@@ -570,7 +585,7 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
             width: 40,
             height: 40,
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00E676)),
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00FFA3)),
               strokeWidth: 3.5,
             ),
           ),
@@ -578,6 +593,7 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
           Text(
             'Loading ${widget.lesson.title}…',
             style: const TextStyle(
+              fontFamily: 'Gilroy-Medium',
               color: Colors.white70,
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -591,7 +607,7 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
 
   Widget _buildErrorWidget() {
     return Container(
-      color: const Color(0xFF0A1A14),
+      color: const Color(0xFF030705),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(
@@ -619,9 +635,10 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
             const Text(
               'Unable to load video',
               style: TextStyle(
+                fontFamily: 'Gilroy-Bold',
                 color: Colors.white,
                 fontSize: 16,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
             ),
@@ -630,6 +647,7 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
               'All video sources failed.\n'
               'Check your internet connection or try again.',
               style: TextStyle(
+                fontFamily: 'Gilroy-Medium',
                 color: Colors.white38,
                 fontSize: 11.5,
                 height: 1.55,
@@ -657,7 +675,7 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
-                  maxLines: 4,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -670,15 +688,16 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
               icon: const Icon(Icons.refresh_rounded, size: 18),
               label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00C853),
-                foregroundColor: Colors.black,
+                backgroundColor: const Color(0xFF00FFA3),
+                foregroundColor: const Color(0xFF030705),
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 28, vertical: 11),
+                    horizontal: 28, vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 textStyle: const TextStyle(
-                  fontWeight: FontWeight.w700,
+                  fontFamily: 'Gilroy-Bold',
+                  fontWeight: FontWeight.bold,
                   fontSize: 13,
                 ),
                 elevation: 0,
