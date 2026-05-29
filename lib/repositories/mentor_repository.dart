@@ -120,4 +120,18 @@ class MentorRepository {
       },
     );
   }
+
+  Future<ApiResponse<Map<String, dynamic>>> updateBookingStatus(
+    String bookingId,
+    String status,
+  ) {
+    return _api.put<Map<String, dynamic>>(
+      "${ApiEndpoints.sessions}/$bookingId",
+      data: {"status": status},
+      fromJson: (json) {
+        final map = json as Map<String, dynamic>;
+        return map['data'] as Map<String, dynamic>? ?? map;
+      },
+    );
+  }
 }

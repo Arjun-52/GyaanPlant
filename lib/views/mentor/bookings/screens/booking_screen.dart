@@ -33,7 +33,7 @@ class BookingsScreen extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             }
 
-            final list = vm.pending;
+            final list = vm.currentBookings;
 
             return SafeArea(
               child: Padding(
@@ -44,7 +44,10 @@ class BookingsScreen extends StatelessWidget {
                     const BookingsHeader(),
                     const SizedBox(height: 16),
 
-                    const TabSelector(),
+                    TabSelector(
+                      selectedIndex: vm.selectedTab,
+                      onTabChanged: (index) => vm.changeTab(index),
+                    ),
                     const SizedBox(height: 20),
 
                     Expanded(
@@ -63,13 +66,53 @@ class BookingsScreen extends StatelessWidget {
                                 return Column(
                                   children: [
                                     BookingCard(
+                                      booking: b,
                                       initials: getInitials(b.name),
-                                      name: b.name,
-                                      college: b.college,
-                                      time: b.time,
-                                      topic: b.topic,
-                                      price: "₹${b.price}",
                                       avatarColor: Colors.green,
+                                      onAccept: () async {
+                                        final error = await vm.updateBookingStatus(b.id, "accepted");
+                                        if (context.mounted) {
+                                          if (error == null) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text('✅ Booking accepted successfully!'),
+                                                backgroundColor: Color(0xFF00C853),
+                                                behavior: SnackBarBehavior.floating,
+                                              ),
+                                            );
+                                          } else {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text('❌ Failed: $error'),
+                                                backgroundColor: Colors.red,
+                                                behavior: SnackBarBehavior.floating,
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      },
+                                      onDecline: () async {
+                                        final error = await vm.updateBookingStatus(b.id, "rejected");
+                                        if (context.mounted) {
+                                          if (error == null) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text('✅ Booking declined successfully.'),
+                                                backgroundColor: Colors.orange,
+                                                behavior: SnackBarBehavior.floating,
+                                              ),
+                                            );
+                                          } else {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text('❌ Failed: $error'),
+                                                backgroundColor: Colors.red,
+                                                behavior: SnackBarBehavior.floating,
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      },
                                     ),
                                     const SizedBox(height: 14),
                                   ],

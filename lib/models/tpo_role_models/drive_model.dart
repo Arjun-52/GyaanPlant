@@ -1,4 +1,5 @@
 class Drive {
+  final String? id;
   final String company;
   final String role;
   final String date;
@@ -16,6 +17,7 @@ class Drive {
   final String? jdUrl;
 
   Drive({
+    this.id,
     required this.company,
     required this.role,
     required this.date,
@@ -34,6 +36,7 @@ class Drive {
 
   factory Drive.fromJson(Map<String, dynamic> json) {
     return Drive(
+      id: json['_id']?.toString() ?? json['id']?.toString(),
       company: json['company'] ?? '',
       role: json['role'] ?? '',
       date: json['date'] ?? '',

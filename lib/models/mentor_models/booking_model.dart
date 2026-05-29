@@ -1,4 +1,5 @@
 class Booking {
+  final String id;
   final String name;
   final String college;
   final String time;
@@ -7,6 +8,7 @@ class Booking {
   final String status;
 
   Booking({
+    required this.id,
     required this.name,
     required this.college,
     required this.time,
@@ -17,6 +19,7 @@ class Booking {
 
   factory Booking.fromJson(Map<String, dynamic> json) {
     return Booking(
+      id: json['_id'] ?? json['id'] ?? "",
       name: json['student']?['name'] ?? "Student",
       college: json['student']?['branch'] ?? "College",
       time: json['scheduledAt'] ?? "TBD",

@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 
-class TabSelector extends StatefulWidget {
-  final Function(int)? onTabChanged;
+class TabSelector extends StatelessWidget {
+  final int selectedIndex;
+  final Function(int) onTabChanged;
 
-  const TabSelector({super.key, this.onTabChanged});
+  const TabSelector({
+    super.key,
+    required this.selectedIndex,
+    required this.onTabChanged,
+  });
 
-  @override
-  State<TabSelector> createState() => _TabSelectorState();
-}
-
-class _TabSelectorState extends State<TabSelector> {
-  int selectedIndex = 0;
-
-  final List<String> tabs = ["Pending", "Upcoming", "Completed"];
+  final List<String> tabs = const ["Pending", "Upcoming", "Completed"];
 
   @override
   Widget build(BuildContext context) {
@@ -26,16 +24,7 @@ class _TabSelectorState extends State<TabSelector> {
         children: List.generate(tabs.length, (index) {
           return Expanded(
             child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  selectedIndex = index;
-                });
-
-                /// optional callback to parent
-                if (widget.onTabChanged != null) {
-                  widget.onTabChanged!(index);
-                }
-              },
+              onTap: () => onTabChanged(index),
               child: TabItem(text: tabs[index], active: selectedIndex == index),
             ),
           );

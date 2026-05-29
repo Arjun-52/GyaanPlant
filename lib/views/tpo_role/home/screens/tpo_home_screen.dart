@@ -3,11 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:gyaanplant/viewmodels/tpo_viewmodels/tpo_dashboard_viewmodel.dart';
 import 'package:gyaanplant/viewmodels/tpo_viewmodels/tpo_notification_viewmodel.dart';
 import 'package:gyaanplant/views/tpo_role/notification/screens/tpo_notification_screen.dart';
+import 'package:gyaanplant/views/HOD_role/naac/screens/naac_screen.dart';
 import 'package:provider/provider.dart';
 
 class TPODashboard extends StatefulWidget {
   final VoidCallback? onProfileTap;
-  const TPODashboard({super.key, this.onProfileTap});
+  final VoidCallback? onCreateDriveTap;
+  final VoidCallback? onManageStudentsTap;
+  final VoidCallback? onGenerateReportsTap;
+  const TPODashboard({
+    super.key,
+    this.onProfileTap,
+    this.onCreateDriveTap,
+    this.onManageStudentsTap,
+    this.onGenerateReportsTap,
+  });
 
   @override
   State<TPODashboard> createState() => _TPODashboardState();
@@ -509,13 +519,9 @@ class _TPODashboardState extends State<TPODashboard> with TickerProviderStateMix
               icon: Icons.add_circle_outline_rounded,
               color: const Color(0xFF00FFA3),
               onTap: () {
-                // Switches to Drives tab or navigates
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Navigate to drives creation module...'),
-                    backgroundColor: Color(0xFF0C2D24),
-                  ),
-                );
+                if (widget.onCreateDriveTap != null) {
+                  widget.onCreateDriveTap!();
+                }
               },
             ),
             _buildActionCard(
@@ -523,12 +529,9 @@ class _TPODashboardState extends State<TPODashboard> with TickerProviderStateMix
               icon: Icons.school_outlined,
               color: const Color(0xFF00E5FF),
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Loading active student directory...'),
-                    backgroundColor: Color(0xFF0C2D24),
-                  ),
-                );
+                if (widget.onManageStudentsTap != null) {
+                  widget.onManageStudentsTap!();
+                }
               },
             ),
             _buildActionCard(
@@ -536,12 +539,9 @@ class _TPODashboardState extends State<TPODashboard> with TickerProviderStateMix
               icon: Icons.analytics_outlined,
               color: const Color(0xFFFFD600),
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Redirecting to intelligence reports panel...'),
-                    backgroundColor: Color(0xFF0C2D24),
-                  ),
-                );
+                if (widget.onGenerateReportsTap != null) {
+                  widget.onGenerateReportsTap!();
+                }
               },
             ),
             _buildActionCard(
@@ -626,16 +626,13 @@ class _TPODashboardState extends State<TPODashboard> with TickerProviderStateMix
         ),
         const SizedBox(height: 12),
         if (vm.hasUpcomingDrives)
-          SizedBox(
-            height: 200,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: vm.drives.length,
-              physics: const BouncingScrollPhysics(),
-              itemBuilder: (context, index) {
-                return _buildDriveCard(vm.drives[index]);
-              },
-            ),
+          Column(
+            children: vm.drives.map((drive) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildDriveCard(drive),
+              );
+            }).toList(),
           )
         else
           _buildEmptyDrivesCard(),
@@ -645,15 +642,15 @@ class _TPODashboardState extends State<TPODashboard> with TickerProviderStateMix
 
   Widget _buildDriveCard(dynamic drive) {
     // Redesign drive card with premium glass styling
-    final String company = drive.companyName ?? 'Unknown Corp';
+    final String company = drive.company ?? 'Unknown Corp';
     final String date = drive.driveDate != null ? drive.driveDate.toString() : 'TBD';
-    final int eligibleCount = drive.eligibleStudentsCount ?? 0;
+    final int eligibleCount = drive.eligibleCount ?? 0;
     final int registeredCount = drive.registeredCount ?? 0;
     final String status = drive.status ?? 'Active';
 
     return Container(
-      width: 260,
-      margin: const EdgeInsets.only(right: 14),
+      width: double.infinity,
+      height: 160,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),

@@ -15,17 +15,27 @@ class HodStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 60,
-      padding: const EdgeInsets.all(14),
-
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-
-        color: color.withValues(alpha: 0.12),
-
-        border: Border.all(color: color.withValues(alpha: 0.25), width: 0.9),
+        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF091F18), Color(0xFF04100C)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(
+          color: color.withOpacity(0.25),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.04),
+            blurRadius: 12,
+            spreadRadius: 1,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
-
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,17 +43,20 @@ class HodStatCard extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              color: color,
-              fontSize: 22,
+              color: color == Colors.orange ? const Color(0xFFFFB020) : color,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
             ),
           ),
-
-          const SizedBox(height: 4),
-
+          const SizedBox(height: 5),
           Text(
             label,
-            style: const TextStyle(color: Colors.white60, fontSize: 12),
+            style: const TextStyle(
+              color: Colors.white54,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),

@@ -48,17 +48,12 @@ class MentorProfileViewModel extends ChangeNotifier {
   List<String> get expertise =>
       _expertise.isNotEmpty ? _expertise : ["Data Structures", "System Design"];
 
-  Map<String, List<String>> get availability => _availability.isNotEmpty
-      ? _availability
-      : {
-          "Mon": ["3 PM"],
-          "Tue": ["4 PM"],
-        };
+  Map<String, List<String>> get availability => _availability;
 
   /// UPDATE EXPERTISE
   void toggleExpertise(String skill) {
-    if (_expertise.isEmpty) {
-      _expertise = List.from(expertise);
+    if (_expertise.isEmpty && dashboard != null) {
+      _expertise = List.from(dashboard!.skills);
     }
 
     if (_expertise.contains(skill)) {
@@ -73,17 +68,13 @@ class MentorProfileViewModel extends ChangeNotifier {
 
   /// UPDATE AVAILABILITY
   void toggleTime(String day, String time) {
-    if (_availability.isEmpty) {
-      _availability = {
-        "Mon": ["3 PM"],
-        "Tue": ["4 PM"],
-      };
-    }
-
     _availability.putIfAbsent(day, () => []);
 
     if (_availability[day]!.contains(time)) {
       _availability[day]!.remove(time);
+      if (_availability[day]!.isEmpty) {
+        _availability.remove(day);
+      }
     } else {
       _availability[day]!.add(time);
     }
@@ -93,16 +84,14 @@ class MentorProfileViewModel extends ChangeNotifier {
   }
 
   ///  SAVE
-  Future<void> saveProfile() async {
-    if (!_hasChanges) return;
+  Future<String?> saveProfile() async {
+    if (!_hasChanges) return 'No changes to save';
 
     isSaving = true;
     notifyListeners();
 
     try {
       final result = await _mentor.updateProfile({
-        "skills": _expertise,
-        "availability": _availability,
         "mentor": {
           "skills": _expertise,
           "availability": _availability,
@@ -126,12 +115,19 @@ class MentorProfileViewModel extends ChangeNotifier {
             recentSessions: dashboard!.recentSessions,
           );
         }
+        isSaving = false;
+        notifyListeners();
+        return null; // Success
+      } else {
+        isSaving = false;
+        notifyListeners();
+        return result.error?.message ?? 'Failed to update profile';
       }
     } catch (e) {
       debugPrint("Save error: $e");
+      isSaving = false;
+      notifyListeners();
+      return e.toString();
     }
-
-    isSaving = false;
-    notifyListeners();
   }
 }

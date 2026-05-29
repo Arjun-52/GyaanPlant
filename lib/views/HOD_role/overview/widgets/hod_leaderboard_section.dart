@@ -38,9 +38,9 @@ class _HodLeaderboardSectionState extends State<HodLeaderboardSection> {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFF0F2A22),
+          color: const Color(0xFF0C221B),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+          border: Border.all(color: Colors.red.withOpacity(0.3)),
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -60,7 +60,7 @@ class _HodLeaderboardSectionState extends State<HodLeaderboardSection> {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: const Color(0xFF0F2A22),
+          color: const Color(0xFF0C221B),
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Center(
@@ -83,59 +83,68 @@ class _HodLeaderboardSectionState extends State<HodLeaderboardSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Podium (top 3) 
+        // Podium (top 3) with dynamic pop-spring animation
         if (users.length >= 3)
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF0A1F16), Color(0xFF061A10)],
+          AnimatedPodium(
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF0C221B), Color(0xFF05100C)],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                    color: Colors.greenAccent.withOpacity(0.12)),
               ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                  color: const Color(0xFF00C853).withValues(alpha: 0.15)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                PodiumUser(
-                  _initials(users[1].name),
-                  users[1].name,
-                  '${users[1].xp} XP',
-                  2,
-                ),
-                PodiumUser(
-                  _initials(users[0].name),
-                  users[0].name,
-                  '${users[0].xp} XP',
-                  1,
-                ),
-                PodiumUser(
-                  _initials(users[2].name),
-                  users[2].name,
-                  '${users[2].xp} XP',
-                  3,
-                ),
-              ],
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  PodiumUser(
+                    _initials(users[1].name),
+                    users[1].name,
+                    '${users[1].xp} XP',
+                    2,
+                  ),
+                  PodiumUser(
+                    _initials(users[0].name),
+                    users[0].name,
+                    '${users[0].xp} XP',
+                    1,
+                  ),
+                  PodiumUser(
+                    _initials(users[2].name),
+                    users[2].name,
+                    '${users[2].xp} XP',
+                    3,
+                  ),
+                ],
+              ),
             ),
           ),
 
         const SizedBox(height: 12),
 
-        // Rank list (4th onward)
-        ...rankList.map(
-          (user) => RankCard(
-            user.rank,
-            _initials(user.name),
-            user.name,
-            user.department ?? '—',
-            '${user.xp} XP',
-            highlight: false,
-          ),
-        ),
+        // Rank list (4th onward) with sequential slide up stagger transitions
+        ...List.generate(rankList.length, (index) {
+          final user = rankList[index];
+          return AnimatedRankCard(
+            index: index,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: RankCard(
+                user.rank,
+                _initials(user.name),
+                user.name,
+                user.department ?? '—',
+                '${user.xp} XP',
+                highlight: false,
+              ),
+            ),
+          );
+        }),
       ],
     );
   }
@@ -183,6 +192,88 @@ class _HodLeaderboardSectionState extends State<HodLeaderboardSection> {
   }
 }
 
+// 🔷 STAGGERED LIST SLIDE CARD
+class AnimatedRankCard extends StatefulWidget {
+  final int index;
+  final Widget child;
+
+  const AnimatedRankCard({super.key, required this.index, required this.child});
+
+  @override
+  State<AnimatedRankCard> createState() => _AnimatedRankCardState();
+}
+
+class _AnimatedRankCardState extends State<AnimatedRankCard> {
+  bool _visible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration(milliseconds: 100 * widget.index), () {
+      if (mounted) {
+        setState(() {
+          _visible = true;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 500),
+      opacity: _visible ? 1.0 : 0.0,
+      curve: Curves.easeOut,
+      child: AnimatedSlide(
+        duration: const Duration(milliseconds: 600),
+        offset: _visible ? Offset.zero : const Offset(0, 0.25),
+        curve: Curves.easeOutBack,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+// 🔷 PODIUM ELASTIC SPRING POP
+class AnimatedPodium extends StatefulWidget {
+  final Widget child;
+  const AnimatedPodium({super.key, required this.child});
+
+  @override
+  State<AnimatedPodium> createState() => _AnimatedPodiumState();
+}
+
+class _AnimatedPodiumState extends State<AnimatedPodium> {
+  bool _animate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 50), () {
+      if (mounted) {
+        setState(() {
+          _animate = true;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedScale(
+      duration: const Duration(milliseconds: 800),
+      scale: _animate ? 1.0 : 0.88,
+      curve: Curves.easeOutBack,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 600),
+        opacity: _animate ? 1.0 : 0.0,
+        curve: Curves.easeOut,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
 // Shimmer placeholder
 class _LeaderboardShimmer extends StatelessWidget {
   @override
@@ -194,8 +285,9 @@ class _LeaderboardShimmer extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 12),
           height: 64,
           decoration: BoxDecoration(
-            color: const Color(0xFF0F2A22),
+            color: const Color(0xFF0C221B),
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.greenAccent.withOpacity(0.05)),
           ),
         ),
       ),

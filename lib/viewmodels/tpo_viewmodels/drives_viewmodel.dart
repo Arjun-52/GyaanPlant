@@ -70,9 +70,9 @@ class DrivesViewModel extends ChangeNotifier {
   ///
   /// If the backend create endpoint is not yet wired, the drive is appended
   /// locally AND a refresh is attempted so any persisted drives are shown.
-  Future<bool> createDrive(Map<String, dynamic> payload) async {
+  Future<String?> createDrive(Map<String, dynamic> payload) async {
     print('🚀 DrivesViewModel.createDrive() called');
-    print('📨 Create drive payload: $payload');
+    print('📨 Final Request Payload: $payload');
 
     try {
       final result = await _tpo.createDrive(payload);
@@ -82,17 +82,19 @@ class DrivesViewModel extends ChangeNotifier {
       print('📦 Create drive data: ${result.data}');
 
       if (result.isSuccess) {
+        final newlyCreatedDrive = result.data;
         print('✅ Drive created on backend successfully');
+        print('🆔 Database ID of newly created drive: ${newlyCreatedDrive?.id}');
         // Refresh from backend so the persisted drive appears in the list
         await refreshDrives();
-        return true;
+        return null; // Null means success
       } else {
         print('❌ Create drive API error: ${result.error?.message}');
-        return false;
+        return result.error?.message ?? 'Failed to create drive';
       }
     } catch (e) {
       print('💥 Exception in createDrive(): $e');
-      return false;
+      return e.toString();
     }
   }
 

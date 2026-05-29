@@ -25,6 +25,21 @@ class _TPOShellState extends State<TPOShell> {
             _currentIndex = 4; // Switch to settings tab
           });
         },
+        onCreateDriveTap: () {
+          setState(() {
+            _currentIndex = 2; // Switch to Drives tab
+          });
+        },
+        onManageStudentsTap: () {
+          setState(() {
+            _currentIndex = 1; // Switch to Students tab
+          });
+        },
+        onGenerateReportsTap: () {
+          setState(() {
+            _currentIndex = 3; // Switch to Reports tab
+          });
+        },
       ),
       const StudentScreen(),
       const DrivesScreen(),

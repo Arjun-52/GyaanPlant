@@ -8,6 +8,8 @@ import 'package:gyaanplant/views/tpo_role/Drives/widgets/jd_upload_widget.dart';
 import 'package:gyaanplant/views/tpo_role/Drives/widgets/bottom_cta_button.dart';
 import 'package:gyaanplant/models/tpo_role_models/drive_model.dart';
 import 'package:gyaanplant/viewmodels/tpo_viewmodels/drives_viewmodel.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
+import 'package:gyaanplant/models/HOD_models/department_model.dart';
 
 class CreateDriveScreen extends StatefulWidget {
   const CreateDriveScreen({super.key});
@@ -34,6 +36,42 @@ class _CreateDriveScreenState extends State<CreateDriveScreen> {
 
   String? _jdFilePath;
   bool _isSubmitting = false;
+
+  List<Department> _departments = [];
+  bool _isLoadingDepartments = true;
+  String? _departmentsError;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDepartments();
+  }
+
+  Future<void> _loadDepartments() async {
+    try {
+      print('📡 Fetching departments from HOD API for branch mapping...');
+      final result = await ApiService().hod.getDepartments();
+      if (result.isSuccess && result.data != null) {
+        setState(() {
+          _departments = result.data!;
+          _isLoadingDepartments = false;
+        });
+        print('✅ Loaded ${_departments.length} departments for branch mapping.');
+      } else {
+        setState(() {
+          _departmentsError = result.error?.message ?? 'Failed to load branches';
+          _isLoadingDepartments = false;
+        });
+        print('⚠️ Failed to load departments: $_departmentsError');
+      }
+    } catch (e) {
+      setState(() {
+        _departmentsError = e.toString();
+        _isLoadingDepartments = false;
+      });
+      print('💥 Exception loading departments: $e');
+    }
+  }
 
   @override
   void dispose() {
@@ -130,8 +168,90 @@ class _CreateDriveScreenState extends State<CreateDriveScreen> {
     setState(() => _isSubmitting = true);
 
     try {
+      // ── MAPPING BRANCH NAMES TO BACKEND OBJECTIDS ──────────────────────────
+      final List<String> branchIds = [];
+      final List<String> invalidIds = [];
+      final List<String> unmatchedBranches = [];
+
+      for (final selectedBranch in _selectedBranches) {
+        final normalizedSelected = selectedBranch.trim().toUpperCase();
+        Department? matchedDept;
+
+        // 1. Try matching by code
+        for (final dept in _departments) {
+          if (dept.code != null && dept.code!.trim().toUpperCase() == normalizedSelected) {
+            matchedDept = dept;
+            break;
+          }
+        }
+
+        // 2. Try matching by name
+        if (matchedDept == null) {
+          for (final dept in _departments) {
+            if (dept.name.trim().toUpperCase() == normalizedSelected) {
+              matchedDept = dept;
+              break;
+            }
+          }
+        }
+
+        // 3. Normalized fallback comparison
+        if (matchedDept == null) {
+          String normalize(String b) {
+            switch (b.trim().toUpperCase()) {
+              case 'MECH': return 'MECHANICAL';
+              case 'CIVIL': return 'CIVIL';
+              case 'CSE': return 'COMPUTER SCIENCE';
+              case 'ECE': return 'ELECTRONICS';
+              case 'EEE': return 'ELECTRICAL';
+              case 'IT': return 'INFORMATION TECHNOLOGY';
+              default: return b.trim().toUpperCase();
+            }
+          }
+          
+          final normSelected = normalize(normalizedSelected);
+          for (final dept in _departments) {
+            final normDeptName = normalize(dept.name);
+            final normDeptCode = dept.code != null ? normalize(dept.code!) : '';
+            if (normDeptName.contains(normSelected) || normSelected.contains(normDeptName) ||
+                (normDeptCode.isNotEmpty && (normDeptCode.contains(normSelected) || normSelected.contains(normDeptCode)))) {
+              matchedDept = dept;
+              break;
+            }
+          }
+        }
+
+        if (matchedDept != null) {
+          // Verify ID is a valid MongoDB ObjectId (24 hex characters)
+          final deptId = matchedDept.id;
+          if (RegExp(r'^[0-9a-fA-F]{24}$').hasMatch(deptId)) {
+            branchIds.add(deptId);
+          } else {
+            invalidIds.add('$selectedBranch (ID: $deptId)');
+          }
+        } else {
+          unmatchedBranches.add(selectedBranch);
+        }
+      }
+
+      print('🧬 Mapped branch IDs: $branchIds');
+      if (invalidIds.isNotEmpty) {
+        print('⚠️ Invalid MongoDB ObjectIds detected: $invalidIds');
+      }
+      if (unmatchedBranches.isNotEmpty) {
+        print('⚠️ Could not match branches: $unmatchedBranches');
+      }
+
+      if (branchIds.isEmpty) {
+        _showErrorSnackBar(
+          'Error matching branches: Could not locate database IDs for selected branches. '
+          'Please wait for branches to load or pull to refresh.',
+        );
+        setState(() => _isSubmitting = false);
+        return;
+      }
+
       // ── Build the API payload ─────────────────────────────────────────────
-      // The payload must match what the backend /api/v1/drive endpoint expects.
       final String driveDateStr =
           '${_driveDate!.year}-${_driveDate!.month.toString().padLeft(2, '0')}-${_driveDate!.day.toString().padLeft(2, '0')}';
       final String deadlineStr =
@@ -143,9 +263,9 @@ class _CreateDriveScreenState extends State<CreateDriveScreen> {
         'driveDate': driveDateStr,
         'date': driveDateStr,
         'registrationDeadline': deadlineStr,
-        'status': 'Open',
-        'eligibleBranches': _selectedBranches.toList(),
-        'branches': _selectedBranches.toList(),
+        'status': 'active', // FIXED: Map to lowercase backend active status
+        'eligibleBranches': branchIds, // Send MongoDB ObjectIds instead of names
+        'branches': branchIds,
       };
 
       if (_ctcController.text.trim().isNotEmpty) {
@@ -162,36 +282,22 @@ class _CreateDriveScreenState extends State<CreateDriveScreen> {
       }
 
       print('🚀 Submitting drive creation with payload: $payload');
+      print('👉 Status value sent: active');
+      print('👉 Mapped Branch IDs sent: $branchIds');
 
       final drivesViewModel = context.read<DrivesViewModel>();
 
       // ── Call backend ───────────────────────────────────────────────────────
-      final success = await drivesViewModel.createDrive(payload);
+      final errorResult = await drivesViewModel.createDrive(payload);
 
       if (mounted) {
-        if (success) {
+        if (errorResult == null) {
           _showSuccessSnackBar('✅ Drive created successfully!');
           Navigator.pop(context);
         } else {
-          // Backend call failed — still show the drive locally so the TPO
-          // can see their work, but warn them it may not persist.
-          print('⚠️ Backend create failed — falling back to local insert');
-          final fallbackDrive = Drive(
-            company: _companyController.text.trim(),
-            role: _roleController.text.trim(),
-            date: driveDateStr,
-            eligible: 0,
-            registered: 0,
-            pending: 0,
-            status: 'Open',
-            driveDate: driveDateStr,
-          );
-          await drivesViewModel.addDrive(fallbackDrive);
-          _showErrorSnackBar(
-            '⚠️ Drive saved locally but could not sync to server. '
-            'Please check your connection and pull to refresh.',
-          );
-          Navigator.pop(context);
+          // Backend call failed — no local insertion or fake success!
+          print('❌ Backend create failed: $errorResult');
+          _showErrorSnackBar('Failed to create drive: $errorResult');
         }
       }
     } catch (e) {
@@ -344,11 +450,35 @@ class _CreateDriveScreenState extends State<CreateDriveScreen> {
 
             // Eligible Branches
             FormSectionCard(title: 'Eligible Branches', children: [
-              BranchSelectionChips(
-                availableBranches: _availableBranches,
-                selectedBranches: _selectedBranches,
-                onToggleBranch: _toggleBranch,
-              ),
+              _isLoadingDepartments
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF00C853),
+                        ),
+                      ),
+                    )
+                  : _departments.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Text(
+                            _departmentsError != null
+                                ? '⚠️ Error loading branches: $_departmentsError'
+                                : 'No departments registered for your college.',
+                            style: const TextStyle(
+                              color: Color(0xFF8A9E94),
+                              fontSize: 13,
+                            ),
+                          ),
+                        )
+                      : BranchSelectionChips(
+                          availableBranches: _departments
+                              .map((dept) => dept.code ?? dept.name)
+                              .toList(),
+                          selectedBranches: _selectedBranches,
+                          onToggleBranch: _toggleBranch,
+                        ),
             ]),
             const SizedBox(height: 20),
 

@@ -7,7 +7,6 @@
 ///   "data": { ... },
 ///   "rewards": { "pointsEarned": 0, "xpEarned": 0 }
 /// }
-/// ```
 class CourseProgressModel {
   final String id;
   final String course;

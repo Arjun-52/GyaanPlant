@@ -39,7 +39,7 @@ class _OverViewScreenState extends State<OverViewScreen> {
             : 'H';
 
     return Scaffold(
-      backgroundColor: const Color(0xFF061A14),
+      backgroundColor: const Color(0xFF020B08),
       body: Consumer<HodDashboardViewModel>(
         builder: (context, vm, _) {
           if (vm.isLoading) {
@@ -100,17 +100,26 @@ class _OverViewScreenState extends State<OverViewScreen> {
 
           return SafeArea(
             child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
+                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(30),
+                        bottomRight: Radius.circular(30),
+                      ),
+                      gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [Color(0xFF0A1F3D), Color(0xFF071E17)],
+                        colors: [Color(0xFF0F3B2E), Color(0xFF031410)],
+                      ),
+                      border: Border.all(
+                        color: Colors.greenAccent.withOpacity(0.15),
+                        width: 1.2,
                       ),
                     ),
                     child: Column(

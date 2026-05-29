@@ -33,28 +33,45 @@ class _SyllabusCardState extends State<SyllabusCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: const Color(0xFF0F3D34),
-        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0C221B), Color(0xFF05100C)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(
+          color: Colors.greenAccent.withOpacity(0.08),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Row(
         children: [
           ///  ICON
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(10),
+              color: Colors.greenAccent.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.greenAccent.withOpacity(0.15),
+              ),
             ),
             child: const Text(
               "📐",
-              style: TextStyle(fontSize: 18, color: Colors.white),
+              style: TextStyle(fontSize: 16, color: Colors.white),
             ),
           ),
 
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
 
           Expanded(
             child: Column(
@@ -64,34 +81,35 @@ class _SyllabusCardState extends State<SyllabusCard> {
                   widget.title,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
                 ),
 
-                const SizedBox(height: 4),
+                const SizedBox(height: 5),
 
                 Text(
                   _currentSubtitle,
-                  style: const TextStyle(color: Colors.white60, fontSize: 11),
+                  style: const TextStyle(color: Colors.white38, fontSize: 11),
                 ),
 
                 const SizedBox(height: 8),
 
                 ///PROGRESS BAR
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(6),
                   child: LinearProgressIndicator(
                     value: _currentProgress / 10,
-                    minHeight: 6,
-                    color: const Color(0xFF00C853),
-                    backgroundColor: Colors.white.withValues(alpha: 0.08),
+                    minHeight: 5,
+                    color: const Color(0xFF00E676),
+                    backgroundColor: Colors.white.withOpacity(0.08),
                   ),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
 
           GestureDetector(
             onTap: _isMapping
@@ -141,21 +159,21 @@ class _SyllabusCardState extends State<SyllabusCard> {
                   },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 250),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(13),
+                borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: _isMapped
-                      ? Colors.green.withValues(alpha: 0.6)
+                      ? const Color(0xFF00C853).withOpacity(0.5)
                       : _isMapping
-                          ? Colors.blueAccent.withValues(alpha: 0.3)
-                          : Colors.blueAccent.withValues(alpha: 0.6),
+                          ? Colors.blueAccent.withOpacity(0.3)
+                          : const Color(0xFF00E676).withOpacity(0.4),
                 ),
                 color: _isMapped
-                    ? Colors.green.withValues(alpha: 0.1)
+                    ? const Color(0xFF00C853).withOpacity(0.12)
                     : _isMapping
-                        ? Colors.blueAccent.withValues(alpha: 0.05)
-                        : Colors.blueAccent.withValues(alpha: 0.1),
+                        ? Colors.blueAccent.withOpacity(0.05)
+                        : const Color(0xFF00E676).withOpacity(0.12),
               ),
               child: _isMapping
                   ? const SizedBox(
@@ -171,9 +189,9 @@ class _SyllabusCardState extends State<SyllabusCard> {
                   : Text(
                       _isMapped ? "Mapped ✓" : "Map",
                       style: TextStyle(
-                        color: _isMapped ? Colors.green : Colors.blueAccent,
+                        color: _isMapped ? const Color(0xFF00E676) : const Color(0xFF00E676),
                         fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
             ),

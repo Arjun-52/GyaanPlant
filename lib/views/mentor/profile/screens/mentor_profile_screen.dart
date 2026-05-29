@@ -140,7 +140,28 @@ class MentorProfileScreen extends StatelessWidget {
                     Consumer<MentorProfileViewModel>(
                       builder: (context, vm, _) => SaveButton(
                         onPressed: vm.hasChanges && !vm.isSaving
-                            ? () => vm.saveProfile()
+                            ? () async {
+                                final error = await vm.saveProfile();
+                                if (context.mounted) {
+                                  if (error == null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('✅ Profile changes saved successfully!'),
+                                        backgroundColor: Color(0xFF00C853),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('❌ Failed to save changes: $error'),
+                                        backgroundColor: Colors.red,
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  }
+                                }
+                              }
                             : null,
                         isLoading: vm.isSaving,
                       ),

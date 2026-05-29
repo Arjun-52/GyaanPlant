@@ -33,9 +33,8 @@ class AvailabilitySection extends StatelessWidget {
           const SizedBox(height: 12),
 
           Column(
-            children: availability.entries.map((entry) {
-              final day = entry.key;
-              final availableSlots = entry.value;
+            children: ["Mon", "Tue", "Wed", "Thu", "Fri"].map((day) {
+              final availableSlots = availability[day] ?? [];
 
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
