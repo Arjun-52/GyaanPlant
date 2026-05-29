@@ -521,7 +521,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF00C853),
                         foregroundColor: const Color(0xFF020B08),
-                        disabledBackgroundColor: const Color(0xFF00C853).withValues(alpha: 0.4),
+                        disabledBackgroundColor: const Color(0xFF00C853).withOpacity(0.4),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -697,10 +697,10 @@ class _ResultsDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF57C00).withValues(alpha: 0.1),
+                  color: const Color(0xFFF57C00).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: const Color(0xFFF57C00).withValues(alpha: 0.3),
+                    color: const Color(0xFFF57C00).withOpacity(0.3),
                   ),
                 ),
                 child: const Row(

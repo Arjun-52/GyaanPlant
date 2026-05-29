@@ -7,20 +7,51 @@ class BadgeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF0B2A4A), // ✅ dark blue (no gradient)
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF123A63)),
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0B2B23), Color(0xFF02100C)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(
+          color: const Color(0xFF00E676).withOpacity(0.15),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00E676).withOpacity(0.04),
+            blurRadius: 24,
+            spreadRadius: -4,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          ///  Icon box
-          const Text("💼", style: TextStyle(fontSize: 20)),
-
-          const SizedBox(width: 12),
-
-          ///  Text
+          // Icon Box
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0x1F00E676),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF00E676).withOpacity(0.1),
+              ),
+            ),
+            child: const Icon(
+              Icons.stars_rounded,
+              color: Color(0xFF00E676),
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Texts
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,21 +60,24 @@ class BadgeCard extends StatelessWidget {
                   "Share GyaanPlant Badge",
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.2,
                   ),
                 ),
-                SizedBox(height: 2),
+                SizedBox(height: 4),
                 Text(
                   "Let recruiters discover your profile",
-                  style: TextStyle(color: Colors.white54, fontSize: 12),
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
           ),
-
-          ///  Button
-          InkWell(
+          // Share Button
+          GestureDetector(
             onTap: () {
               SharePlus.instance.share(
                 ShareParams(
@@ -54,12 +88,19 @@ class BadgeCard extends StatelessWidget {
               );
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF4DA3FF), Color(0xFF2F80ED)],
+                  colors: [Color(0xFF00E676), Color(0xFF00C853)],
                 ),
-                borderRadius: BorderRadius.circular(11),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF00C853).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
@@ -67,13 +108,18 @@ class BadgeCard extends StatelessWidget {
                   Text(
                     "Share",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.black,
                       fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.3,
                     ),
                   ),
                   SizedBox(width: 4),
-                  Icon(Icons.arrow_forward, size: 14, color: Colors.white),
+                  Icon(
+                    Icons.ios_share_rounded,
+                    size: 13,
+                    color: Colors.black,
+                  ),
                 ],
               ),
             ),

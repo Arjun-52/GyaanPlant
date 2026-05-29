@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'sign_in_screen.dart';
@@ -10,30 +11,65 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _logoScale;
   late final Animation<double> _logoOpacity;
   late final Animation<Offset> _buttonOffset;
+  // Background animation fields
+  late final AnimationController _bgController;
+  late final Animation<Alignment> _bgAlignment;
+  // Logo slide-down animation
+  late final Animation<Offset> _logoSlide;
+  // Button pulse animation
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-    // Controller drives logo pop‑up and button slide‑in
+
+    // Background animation controller
+    _bgController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    );
+    _bgAlignment = Tween<Alignment>(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    ).animate(CurvedAnimation(parent: _bgController, curve: Curves.easeInOut));
+    _bgController.repeat(reverse: true);
+
+    // Main controller drives logo + button entrance
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1600),
+      duration: const Duration(milliseconds: 1800),
     );
-    // Logo appears first (0‑0.6) with bounce effect
+
+    // Logo slides down from top (0.0–0.6) — smooth decelerate
+    _logoSlide = Tween<Offset>(
+      begin: const Offset(0, -1.2),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    // Logo scale — smooth decelerate (no bounce)
     _logoScale = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
+      curve: const Interval(0.0, 0.6, curve: Curves.decelerate),
     );
+
+    // Logo fade in (0.0–0.4)
     _logoOpacity = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
+      curve: const Interval(0.0, 0.4, curve: Curves.easeIn),
     );
-    // Button slides up after logo (0.7‑1.0)
+
+    // Button slides up after logo (0.7–1.0)
     _buttonOffset = Tween<Offset>(
       begin: const Offset(0, 1),
       end: Offset.zero,
@@ -43,12 +79,30 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         curve: const Interval(0.7, 1.0, curve: Curves.easeOutBack),
       ),
     );
+
+    // Button subtle pulse animation
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+    // Start pulse after main animation completes
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _pulseController.repeat(reverse: true);
+      }
+    });
+
     // Start animations
     _controller.forward();
   }
 
   @override
   void dispose() {
+    _pulseController.dispose();
+    _bgController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -56,22 +110,23 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Premium dark gradient background
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF000000), // deep black
-              Color(0xFF001A0A), // dark green
-              Color(0xFF0A0A1A), // hint of purple/blue
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
         child: SafeArea(
           child: Stack(
             children: [
+              // Moving background image
+              AnimatedBuilder(
+                animation: _bgAlignment,
+                builder: (context, child) {
+                  return Positioned.fill(
+                    child: Image.asset(
+                      'assets/images/splash_bg.png',
+                      fit: BoxFit.cover,
+                      alignment: _bgAlignment.value,
+                    ),
+                  );
+                },
+              ),
               // Optional subtle floating particles (simple circles)
               Positioned(
                 top: 80,
@@ -81,7 +136,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   height: 12,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Color(0x33FFFFFF), // low‑opacity white glow
+                    color: Color(0x33FFFFFF),
                   ),
                 ),
               ),
@@ -102,116 +157,137 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Logo with glowing aura
-                    FadeTransition(
-                      opacity: _logoOpacity,
-                      child: ScaleTransition(
-                        scale: _logoScale,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // Soft radial glow behind logo
-                            Container(
-                              width: 260,
-                              height: 260,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: RadialGradient(
-                                  colors: [
-                                    const Color(0xFF00E676).withAlpha(60),
-                                    Colors.transparent,
-                                  ],
-                                  stops: const [0.0, 1.0],
+                    // Logo with slide-down + fade + scale animation
+                    SlideTransition(
+                      position: _logoSlide,
+                      child: FadeTransition(
+                        opacity: _logoOpacity,
+                        child: ScaleTransition(
+                          scale: _logoScale,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // Soft radial glow behind logo
+                              Container(
+                                width: 260,
+                                height: 260,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: RadialGradient(
+                                    colors: [
+                                      const Color(0xFF4169E1).withAlpha(60),
+                                      Colors.transparent,
+                                    ],
+                                    stops: const [0.0, 1.0],
+                                  ),
                                 ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF00E676).withAlpha(40),
-                                    blurRadius: 30,
-                                    spreadRadius: 8,
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.black.withAlpha(120),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 6),
-                                  ),
-                                ],
                               ),
-                            ),
-                            // Logo image
-                            Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
+                              // Logo image
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Image.asset(
+                                  'assets/images/GyaanPlant Latest Logo.png',
+                                  width: 200,
+                                  height: 200,
+                                  fit: BoxFit.contain,
+                                ),
                               ),
-                              child: Image.asset(
-                                'assets/images/GyaanPlant Latest Logo.png',
-                                width: 200,
-                                height: 200,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 8),
                     // Branding tagline
-                    const Text(
-                      'Empowering Digital Learners',
-                      style: TextStyle(
-                        fontFamily: 'Gilroy-Semibold',
-                        color: Color(0xFF8FA59E), // subtle green‑gray
-                        fontSize: 14,
-                        letterSpacing: 0.8,
-                        fontWeight: FontWeight.w600,
+                    FadeTransition(
+                      opacity: _logoOpacity,
+                      child: const Text(
+                        'Empowering Digital Learners',
+                        style: TextStyle(
+                          fontFamily: 'Gilroy-Semibold',
+                          color: Color(0xFFE8FFF0),
+                          fontSize: 28,
+                          letterSpacing: -1.0,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
-              // CTA button at bottom with slide‑in animation
+              // Premium CTA button at bottom
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 32.0),
+                  padding: const EdgeInsets.only(bottom: 40.0),
                   child: SlideTransition(
                     position: _buttonOffset,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => const SignInScreen()),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        elevation: 8,
-                        // Gradient background using Ink
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.black45,
-                      ),
-                      child: Ink(
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFF00E676),
-                              Color(0xFF008E44),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          child: Text(
-                            '🚀 Let’s Start Your Learning Journey',
-                            style: TextStyle(
-                              fontFamily: 'Gilroy-Semibold',
-                              fontSize: 14,
-                              color: Colors.white,
+                    child: FadeTransition(
+                      opacity: _logoOpacity,
+                      child: ScaleTransition(
+                        scale: _pulseAnimation,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (_) => const SignInScreen()),
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 40),
+                            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFF00E676),
+                                  Color(0xFF00C853),
+                                  Color(0xFF009624),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(50),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF00E676).withAlpha(100),
+                                  blurRadius: 20,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 6),
+                                ),
+                                BoxShadow(
+                                  color: Colors.black.withAlpha(40),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    "Let\u2019s Start Your Learning Journey",
+                                    style: TextStyle(
+                                      fontFamily: 'Gilroy-Semibold',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
+                              ],
                             ),
                           ),
                         ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'test_pack_card.dart';
-import 'package:gyaanplant/models/prep_pack_model.dart';
+import 'package:gyaanplant/models/assessment/mock_test_models.dart';
 
 class UpcomingTests extends StatelessWidget {
   const UpcomingTests({super.key});
@@ -10,7 +10,7 @@ class UpcomingTests extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           "Upcoming Test Packs",
           style: TextStyle(
             color: Colors.white,
@@ -18,36 +18,71 @@ class UpcomingTests extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        SizedBox(height: 14),
+        const SizedBox(height: 14),
 
         TestPackCard(
-          pack: PrepPack(
+          pack: PreparationPackModel(
             id: '1',
             title: "TCS NQT Full Mock",
-            description: "3 rounds · 90 min",
-            price: 299.0,
+            price: 299,
+            difficulty: "medium",
+            isPremium: true,
+            discountedPrice: 199,
+            discountPercentage: 33,
+            sections: const [],
+            totalQuestions: 80,
+            totalDurationMins: 90,
+            attempts: 1200,
+            completions: 950,
+            avgScore: 68.5,
+            passingScore: 60.0,
+            hasAccess: false,
+            tags: const ["TCS", "NQT", "Mock"],
           ),
         ),
 
         TestPackCard(
-          pack: PrepPack(
+          pack: PreparationPackModel(
             id: '2',
             title: "Infosys InfyTQ Prep",
-            description: "Aptitude + Coding",
-            price: 249.0,
+            price: 249,
+            difficulty: "easy",
+            isPremium: false,
+            discountedPrice: 149,
+            discountPercentage: 40,
+            sections: const [],
+            totalQuestions: 60,
+            totalDurationMins: 60,
+            attempts: 800,
+            completions: 720,
+            avgScore: 72.0,
+            passingScore: 65.0,
+            hasAccess: true,
+            tags: const ["Infosys", "InfyTQ"],
           ),
         ),
 
         TestPackCard(
-          pack: PrepPack(
+          pack: PreparationPackModel(
             id: '3',
             title: "Wipro NLTH Pack",
-            description: "4 sections · 120 min",
-            price: 279.0,
+            price: 279,
+            difficulty: "hard",
+            isPremium: true,
+            discountedPrice: 179,
+            discountPercentage: 35,
+            sections: const [],
+            totalQuestions: 100,
+            totalDurationMins: 120,
+            attempts: 1500,
+            completions: 1100,
+            avgScore: 61.2,
+            passingScore: 55.0,
+            hasAccess: false,
+            tags: const ["Wipro", "NLTH"],
           ),
         ),
       ],
     );
   }
 }
-// 21EC3D58

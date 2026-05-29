@@ -64,6 +64,10 @@ class DashboardViewModel extends ChangeNotifier {
               'name': studentName,
               'email': studentEmail,
               'id': data.student!.id,
+              'profileStrength': data.student!.profileStrength,
+              'testsCompleted': data.student!.testsCompleted,
+              'totalPoints': data.student!.totalPoints,
+              'streakDays': data.student!.streakDays,
             } : null;
 
             dashboard = DashboardModel(

@@ -5,21 +5,47 @@ class TestHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           "Mock Test 🎯",
           style: TextStyle(
             color: Colors.white,
-            fontSize: 22,
+            fontSize: 26,
             fontWeight: FontWeight.bold,
+            letterSpacing: 0.3,
           ),
         ),
-        SizedBox(height: 4),
-        Text(
-          "Company-specific preparation",
-          style: TextStyle(color: Colors.white54),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: const Color(0xFF00E676),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF00E676).withOpacity(0.5),
+                    blurRadius: 6,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              "Company-specific preparation",
+              style: TextStyle(
+                color: const Color(0xFF00E676).withOpacity(0.7),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ],
         ),
       ],
     );

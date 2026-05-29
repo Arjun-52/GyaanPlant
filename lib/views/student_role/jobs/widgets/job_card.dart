@@ -41,24 +41,47 @@ class _JobCardState extends State<JobCard> {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF0B1F19),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFF12352C)),
+        borderRadius: BorderRadius.circular(26),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0C2B22), Color(0xFF02110D)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(
+          color: const Color(0xFF00E676).withOpacity(0.15),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00E676).withOpacity(0.02),
+            blurRadius: 20,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ///  TOP ROW
+          /// TOP ROW (Logo, Title, Company Name)
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Beautiful Company Logo Container
               Container(
-                width: 42,
-                height: 42,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF132F27),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: const Color(0xFF00E676).withOpacity(0.2),
+                  ),
+                  color: const Color(0xFF020B08),
                 ),
                 child: Center(
                   child: Container(
@@ -69,16 +92,20 @@ class _JobCardState extends State<JobCard> {
                       gradient: RadialGradient(
                         colors: [
                           widget.logoColor,
-                          widget.logoColor.withValues(alpha: 0.6),
+                          widget.logoColor.withOpacity(0.4),
                         ],
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: widget.logoColor.withOpacity(0.3),
+                          blurRadius: 6,
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-
-              const SizedBox(width: 12),
-
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,124 +114,148 @@ class _JobCardState extends State<JobCard> {
                       widget.title,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.2,
                       ),
                     ),
+                    const SizedBox(height: 4),
                     Text(
-                      "${widget.company} — ${widget.location}",
-                      style: const TextStyle(
-                        color: Colors.white38,
+                      "${widget.company}  •  ${widget.location}",
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.5),
                         fontSize: 12,
                       ),
                     ),
                   ],
                 ),
               ),
-
-              ///  Badge
               if (widget.showBadge)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    border: Border.all(color: widget.badgeColor),
-                    borderRadius: BorderRadius.circular(20),
+                    color: widget.badgeColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: widget.badgeColor.withOpacity(0.3),
+                    ),
                   ),
                   child: Text(
-                    widget.badgeText,
+                    widget.badgeText.toUpperCase(),
                     style: TextStyle(
                       color: widget.badgeColor,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
             ],
           ),
+          const SizedBox(height: 16),
 
-          const SizedBox(height: 12),
-
-          /// MATCH %
-          Row(
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF00C853),
-                  shape: BoxShape.circle,
+          /// AI MATCH %
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0x1F00E676),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: const Color(0xFF00E676).withOpacity(0.15),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: Color(0xFF00E676),
+                  size: 13,
                 ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                "${widget.match} profile match",
-                style: const TextStyle(color: Color(0xFF00C853), fontSize: 12),
-              ),
-            ],
+                const SizedBox(width: 6),
+                Text(
+                  "${widget.match} profile match".toUpperCase(),
+                  style: const TextStyle(
+                    color: Color(0xFF00E676),
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
           ),
+          const SizedBox(height: 14),
 
-          const SizedBox(height: 10),
-
-          ///  TAGS
+          /// TAGS / SKILLS
           Wrap(
             spacing: 8,
-            runSpacing: 6,
+            runSpacing: 8,
             children: widget.tags.map((tag) {
               return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF102821),
-                  borderRadius: BorderRadius.circular(20),
+                  color: const Color(0xFF031410),
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: Colors.green.withValues(alpha: 0.3),
+                    color: const Color(0xFF00E676).withOpacity(0.08),
                   ),
                 ),
                 child: Text(
                   tag,
-                  style: const TextStyle(color: Colors.white38, fontSize: 11),
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 11,
+                  ),
                 ),
               );
             }).toList(),
           ),
+          const SizedBox(height: 20),
 
-          const SizedBox(height: 14),
+          // Divider
+          Container(height: 1, color: Colors.white.withOpacity(0.06)),
+          const SizedBox(height: 16),
 
-          ///  BOTTOM ROW
+          /// BOTTOM ROW (Salary & Apply CTA Button)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              /// Salary
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     widget.salary,
                     style: const TextStyle(
-                      color: Color(0xFF00C853),
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF00E676),
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      height: 1.0,
+                      shadows: [
+                        Shadow(
+                          color: Color(0x6600E676),
+                          blurRadius: 10,
+                        ),
+                      ],
                     ),
                   ),
-                  const Text(
-                    "LPA",
-                    style: TextStyle(color: Colors.white30, fontSize: 11),
+                  const SizedBox(height: 4),
+                  Text(
+                    "EST. SALARY (LPA)",
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.3),
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ],
               ),
-
-              /// BUTTON
               GestureDetector(
                 onTap: () async {
                   if (isApplied || isApplying) return;
 
                   try {
-                    // Show a custom popup card prompting the user to upload a resume
                     final shouldUpload = await showDialog<bool>(
                       context: context,
                       builder: (context) {
@@ -212,76 +263,72 @@ class _JobCardState extends State<JobCard> {
                           backgroundColor: Colors.transparent,
                           insetPadding: const EdgeInsets.symmetric(horizontal: 24),
                           child: Container(
-                            padding: const EdgeInsets.all(20),
+                            padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0B1F19),
-                              borderRadius: BorderRadius.circular(24),
+                              color: const Color(0xFF02100C),
+                              borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: const Color(0xFF12352C),
-                                width: 1.5,
+                                color: const Color(0xFF00E676).withOpacity(0.15),
+                                width: 1.2,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.5),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 5),
+                                  color: Colors.black.withOpacity(0.5),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
                                 ),
                               ],
                             ),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                // Icon / Header representation
                                 Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF102821),
+                                    color: const Color(0x1F00E676),
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: const Color(0xFF00C853).withValues(alpha: 0.2),
+                                      color: const Color(0xFF00E676).withOpacity(0.2),
                                     ),
                                   ),
                                   child: const Icon(
-                                    Icons.cloud_upload_outlined,
-                                    color: Color(0xFF00C853),
-                                    size: 36,
+                                    Icons.cloud_upload_rounded,
+                                    color: Color(0xFF00E676),
+                                    size: 32,
                                   ),
                                 ),
-                                const SizedBox(height: 16),
-                                // Title
+                                const SizedBox(height: 20),
                                 const Text(
                                   "Upload Resume",
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.2,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                // Description
-                                const Text(
+                                const SizedBox(height: 10),
+                                Text(
                                   "To complete your application for this position, please upload your professional resume (PDF, DOC, or DOCX).",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: Colors.white60,
+                                    color: Colors.white.withOpacity(0.6),
                                     fontSize: 13,
                                     height: 1.4,
                                   ),
                                 ),
                                 const SizedBox(height: 24),
-                                // Buttons
                                 Row(
                                   children: [
                                     Expanded(
                                       child: TextButton(
                                         onPressed: () => Navigator.pop(context, false),
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.white60,
-                                          padding: const EdgeInsets.symmetric(vertical: 12),
-                                        ),
                                         child: const Text(
                                           "Cancel",
-                                          style: TextStyle(fontWeight: FontWeight.w600),
+                                          style: TextStyle(
+                                            color: Colors.white54,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -290,7 +337,7 @@ class _JobCardState extends State<JobCard> {
                                       child: ElevatedButton(
                                         onPressed: () => Navigator.pop(context, true),
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFF00C853),
+                                          backgroundColor: const Color(0xFF00E676),
                                           foregroundColor: Colors.black,
                                           elevation: 0,
                                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -300,7 +347,7 @@ class _JobCardState extends State<JobCard> {
                                         ),
                                         child: const Text(
                                           "Upload",
-                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                          style: TextStyle(fontWeight: FontWeight.w900),
                                         ),
                                       ),
                                     ),
@@ -315,7 +362,6 @@ class _JobCardState extends State<JobCard> {
 
                     if (shouldUpload != true) return;
 
-                    // Navigate to dynamic drive/file-explorer
                     final FilePickerResult? result = await FilePicker.platform.pickFiles(
                       type: FileType.custom,
                       allowedExtensions: ['pdf', 'doc', 'docx'],
@@ -330,7 +376,6 @@ class _JobCardState extends State<JobCard> {
                         isApplying = true;
                       });
 
-                      // Premium UI experience: Simulate resume uploading state
                       await Future.delayed(const Duration(milliseconds: 1500));
 
                       if (context.mounted) {
@@ -364,54 +409,46 @@ class _JobCardState extends State<JobCard> {
                 },
                 child: isApplied
                     ? Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFF00C853)),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFF00E676)),
+                          color: const Color(0x1A00E676),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          mainAxisSize: MainAxisSize.min,
+                        child: Row(
                           children: [
+                            const Icon(Icons.check_circle_rounded, color: Color(0xFF00E676), size: 14),
+                            const SizedBox(width: 6),
                             const Text(
-                              "✓ Applied",
+                              "Applied",
                               style: TextStyle(
-                                color: Color(0xFF00C853),
+                                color: Color(0xFF00E676),
                                 fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w900,
                               ),
                             ),
-                            if (uploadedResumeName != null) ...[
-                              const SizedBox(height: 2),
-                              Text(
-                                uploadedResumeName!,
-                                style: const TextStyle(
-                                  color: Colors.white38,
-                                  fontSize: 9,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
                           ],
                         ),
                       )
                     : Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF00C853),
-                          borderRadius: BorderRadius.circular(12),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF00E676), Color(0xFF00C853)],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF00C853).withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: isApplying
                             ? const SizedBox(
-                                width: 16,
-                                height: 16,
+                                width: 14,
+                                height: 14,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
@@ -421,8 +458,9 @@ class _JobCardState extends State<JobCard> {
                                 "1-Click Apply",
                                 style: TextStyle(
                                   color: Colors.black,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w900,
                                   fontSize: 12,
+                                  letterSpacing: 0.3,
                                 ),
                               ),
                       ),

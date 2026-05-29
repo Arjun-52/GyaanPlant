@@ -5,52 +5,76 @@ class CertificatesEmptyStateFixed extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use a simple Column structure that's compatible with both ListView and other contexts
-    return Column(
-      children: [
-        const SizedBox(height: 32),
-        // Icon container
-        Center(
-          child: Container(
-            width: 80,
-            height: 80,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0B2B23), Color(0xFF02100C)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(
+          color: const Color(0xFF00E676).withOpacity(0.12),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 72,
+            height: 72,
             decoration: BoxDecoration(
-              color: const Color(0xFF0F2A22),
-              borderRadius: BorderRadius.circular(40),
-              border: Border.all(color: Color(0xFF1E4D3D).withOpacity(0.3)),
+              color: const Color(0x1A00E676),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFF00E676).withOpacity(0.2),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF00E676).withOpacity(0.1),
+                  blurRadius: 16,
+                ),
+              ],
             ),
-            child: Icon(
-              Icons.school_outlined,
-              size: 36,
-              color: Color(0xFF00C853).withOpacity(0.7),
+            child: const Icon(
+              Icons.school_rounded,
+              size: 32,
+              color: Color(0xFF00E676),
             ),
           ),
-        ),
-
-        const SizedBox(height: 20),
-
-        // Title
-        const Text(
-          "No certificates yet",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+          const SizedBox(height: 20),
+          const Text(
+            "No Certificates Yet",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.2,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
-        ),
-
-        const SizedBox(height: 8),
-
-        // Subtitle
-        const Text(
-          "Complete courses to unlock certificates",
-          style: TextStyle(color: Colors.white54, fontSize: 14),
-          textAlign: TextAlign.center,
-        ),
-
-        const SizedBox(height: 32),
-      ],
+          const SizedBox(height: 8),
+          Text(
+            "Complete courses to unlock verified certificates and showcase them to recruiters.",
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.5),
+              fontSize: 12,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }

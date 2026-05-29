@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/test_viewmodel.dart';
@@ -19,15 +20,76 @@ class TestScreen extends StatefulWidget {
   State<TestScreen> createState() => _TestScreenState();
 }
 
-class _TestScreenState extends State<TestScreen> {
+class _TestScreenState extends State<TestScreen> with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocus = FocusNode();
+  bool _isSearchFocused = false;
+
+  // Staggered entrance animations (matching dashboard pattern)
+  late final AnimationController _staggerCtrl;
+  late final List<Animation<double>> _fadeAnims;
+  late final List<Animation<Offset>> _slideAnims;
+
+  // Shimmer pulse for loading
+  late final AnimationController _pulseCtrl;
+  late final Animation<double> _pulseAnim;
 
   @override
   void initState() {
     super.initState();
+
+    // Stagger controller
+    _staggerCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+
+    const sectionCount = 8;
+    _fadeAnims = List.generate(sectionCount, (index) {
+      final double start = index * 0.08;
+      final double end = (start + 0.35).clamp(0.0, 1.0);
+      return Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(
+          parent: _staggerCtrl,
+          curve: Interval(start, end, curve: Curves.easeOut),
+        ),
+      );
+    });
+
+    _slideAnims = List.generate(sectionCount, (index) {
+      final double start = index * 0.08;
+      final double end = (start + 0.35).clamp(0.0, 1.0);
+      return Tween<Offset>(
+        begin: const Offset(0.0, 0.06),
+        end: Offset.zero,
+      ).animate(
+        CurvedAnimation(
+          parent: _staggerCtrl,
+          curve: Interval(start, end, curve: Curves.fastOutSlowIn),
+        ),
+      );
+    });
+
+    // Shimmer pulse
+    _pulseCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+
+    _pulseAnim = Tween<double>(begin: 0.45, end: 0.75).animate(
+      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
+    );
+
+    // Focus listener for search glow
+    _searchFocus.addListener(() {
+      setState(() => _isSearchFocused = _searchFocus.hasFocus);
+    });
+
     Future.microtask(() {
       if (mounted) {
-        context.read<TestViewModel>().fetchTests();
+        context.read<TestViewModel>().fetchTests().then((_) {
+          if (mounted) _staggerCtrl.forward(from: 0.0);
+        });
       }
     });
   }
@@ -35,7 +97,20 @@ class _TestScreenState extends State<TestScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocus.dispose();
+    _staggerCtrl.dispose();
+    _pulseCtrl.dispose();
     super.dispose();
+  }
+
+  Widget _staggeredSection(int index, Widget child) {
+    return FadeTransition(
+      opacity: _fadeAnims[index],
+      child: SlideTransition(
+        position: _slideAnims[index],
+        child: child,
+      ),
+    );
   }
 
   @override
@@ -44,176 +119,245 @@ class _TestScreenState extends State<TestScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF020B08),
-      body: RefreshIndicator(
-        color: const Color(0xFF00C853),
-        backgroundColor: const Color(0xFF020B08),
-        onRefresh: () => vm.fetchTests(),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: vm.isLoading
-              ? const _TestShimmer()
-              : vm.errorMessage != null
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.cloud_off, size: 50, color: Colors.white38),
-                          const SizedBox(height: 12),
-                          Text(
-                            vm.errorMessage ?? "An error occurred",
-                            style: const TextStyle(color: Colors.white70),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: () => vm.fetchTests(),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF00C853),
-                              foregroundColor: Colors.black,
-                            ),
-                            child: const Text("Retry"),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: [
-                        const SizedBox(height: 20),
+      body: Stack(
+        children: [
+          // ── Ambient Background (matching dashboard) ──
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF02120F), Color(0xFF020907)],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: -100,
+            right: -80,
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+              child: Container(
+                width: 280,
+                height: 280,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0x0A00E676),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -120,
+            left: -60,
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
+              child: Container(
+                width: 250,
+                height: 250,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0x0800E676),
+                ),
+              ),
+            ),
+          ),
 
-                        /// HEADER
-                        const TestHeader(),
-
-                        const SizedBox(height: 16),
-
-                        /// FILTER CHIPS
-                        if (vm.companies.isNotEmpty)
-                          Wrap(
-                            spacing: 12,
-                            runSpacing: 12,
-                            children: vm.companies.map((company) {
-                              return FilterChipTest(
-                                label: company.name,
-                                isSelected: vm.selectedCompany == company.name,
-                                onTap: () {
-                                  vm.selectCompany(company.name);
-                                },
-                              );
-                            }).toList(),
-                          ),
-
-
-                        /// STATS
-                        const StatsRow(),
-
-                        const SizedBox(height: 20),
-
-                        /// TEST CARD
-                        _buildAssessmentCard(vm),
-
-                        const SizedBox(height: 20),
-
-                        /// NAV BUTTONS
-                        _buildNavigationButtons(vm),
-
-                        const SizedBox(height: 20),
-
-                        /// AVAILABLE TESTS
-                        const Text(
-                          "Available Tests",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        /// SEARCH BAR & FILTERS
-                        _buildSearchAndFilters(context, vm),
-
-                        const SizedBox(height: 16),
-
-                        _buildAvailableTestsSection(vm),
-
-                        const SizedBox(height: 24),
-
-                        /// PREP PACKS SECTION
-                        const Text(
-                          'Prep Packs',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        _buildPrepPacksSection(vm),
-
-                        const SizedBox(height: 40),
-                      ],
-                    ),
-        ),
+          // ── Main Content ──
+          SafeArea(
+            child: RefreshIndicator(
+              color: const Color(0xFF00C853),
+              backgroundColor: const Color(0xFF020B08),
+              onRefresh: () async {
+                await vm.fetchTests();
+                if (mounted) _staggerCtrl.forward(from: 0.0);
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: vm.isLoading
+                    ? _buildSkeletonLoader()
+                    : vm.errorMessage != null
+                        ? _buildErrorState(vm)
+                        : _buildContent(vm),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
+
+  // ────────────────────── CONTENT ──────────────────────
+
+  Widget _buildContent(TestViewModel vm) {
+    return ListView(
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      children: [
+        const SizedBox(height: 20),
+
+        /// HEADER
+        _staggeredSection(0, const TestHeader()),
+        const SizedBox(height: 16),
+
+        /// FILTER CHIPS
+        if (vm.companies.isNotEmpty)
+          _staggeredSection(
+            1,
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: vm.companies.map((company) {
+                return FilterChipTest(
+                  label: company.name,
+                  isSelected: vm.selectedCompany == company.name,
+                  onTap: () => vm.selectCompany(company.name),
+                );
+              }).toList(),
+            ),
+          ),
+
+        /// STATS
+        _staggeredSection(2, const StatsRow()),
+        const SizedBox(height: 20),
+
+        /// TEST CARD
+        _staggeredSection(3, _buildAssessmentCard(vm)),
+        const SizedBox(height: 20),
+
+        /// NAV BUTTONS
+        _staggeredSection(4, _buildNavigationButtons(vm)),
+        const SizedBox(height: 24),
+
+        /// AVAILABLE TESTS TITLE
+        _staggeredSection(
+          5,
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00E676),
+                  borderRadius: BorderRadius.circular(2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0xFF00E676).withOpacity(0.4),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Text(
+                "Available Tests",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        /// SEARCH BAR & FILTERS
+        _staggeredSection(6, _buildSearchAndFilters(context, vm)),
+        const SizedBox(height: 16),
+
+        _buildAvailableTestsSection(vm),
+        const SizedBox(height: 28),
+
+        /// PREP PACKS TITLE
+        _staggeredSection(
+          7,
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00E676),
+                  borderRadius: BorderRadius.circular(2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0xFF00E676).withOpacity(0.4),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Text(
+                'Prep Packs',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        _buildPrepPacksSection(vm),
+        const SizedBox(height: 40),
+      ],
+    );
+  }
+
+  // ────────────────────── ERROR STATE ──────────────────────
+
+  Widget _buildErrorState(TestViewModel vm) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withOpacity(0.04),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.06),
+                width: 1,
+              ),
+            ),
+            child: const Icon(Icons.cloud_off_rounded,
+                size: 44, color: Colors.white30),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            vm.errorMessage ?? "An error occurred",
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          _buildPremiumButton(
+            label: "Retry",
+            icon: Icons.refresh_rounded,
+            onTap: () => vm.fetchTests(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ────────────────────── ASSESSMENT CARD ──────────────────────
 
   Widget _buildAssessmentCard(TestViewModel vm) {
     final hasAssessment = vm.currentAssessment?.hasAssessment == true;
     final hasAvailable = vm.availableTests.isNotEmpty;
 
     if (!hasAssessment && !hasAvailable) {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: const Color(0xFF031E17),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: const Color(0xFF00C853).withOpacity(0.3),
-            width: 1,
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.quiz_outlined,
-                size: 50,
-                color: Colors.white38,
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                "No assessments available",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                "Assessments will appear here once available",
-                style: TextStyle(color: Colors.white54),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () => vm.fetchTests(),
-                icon: const Icon(Icons.refresh),
-                label: const Text("Refresh"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00C853),
-                  foregroundColor: Colors.black,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
+      return _buildEmptyAssessmentCard(vm);
     }
 
     String title = "";
@@ -230,14 +374,25 @@ class _TestScreenState extends State<TestScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF031E17),
-        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF0C2A1F), Color(0xFF071A14)],
+        ),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: const Color(0xFF00C853),
+          color: Color(0xFF00C853).withOpacity(0.3),
           width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0xFF00E676).withOpacity(0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,16 +402,15 @@ class _TestScreenState extends State<TestScreen> {
           Text(
             subtitle,
             style: const TextStyle(
-              color: Color(0xFF00C853),
+              color: Color(0xFF00E676),
               fontWeight: FontWeight.bold,
               fontSize: 13,
+              letterSpacing: 0.3,
             ),
           ),
           const SizedBox(height: 8),
           QuestionCard(question: title),
           const SizedBox(height: 16),
-
-          /// OPTIONS
           ...List.generate(4, (index) {
             return OptionTile(
               label: "Option ${index + 1}",
@@ -268,6 +422,93 @@ class _TestScreenState extends State<TestScreen> {
       ),
     );
   }
+
+  Widget _buildEmptyAssessmentCard(TestViewModel vm) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF0C2A1F), Color(0xFF071A14)],
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Color(0xFF00C853).withOpacity(0.15),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Animated pulsing icon
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.9, end: 1.1),
+            duration: const Duration(milliseconds: 1500),
+            curve: Curves.easeInOut,
+            builder: (context, scale, child) {
+              // Restart the animation by using a key trick
+              return Transform.scale(
+                scale: scale,
+                child: child,
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    Color(0xFF00E676).withOpacity(0.12),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+              child: const Icon(
+                Icons.quiz_outlined,
+                size: 48,
+                color: Color(0xFF00E676),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            "No assessments available",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Assessments will appear here once available",
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.5),
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          _buildPremiumButton(
+            label: "Refresh",
+            icon: Icons.refresh_rounded,
+            onTap: () => vm.fetchTests(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ────────────────────── NAVIGATION BUTTONS ──────────────────────
 
   Widget _buildNavigationButtons(TestViewModel vm) {
     final showNav = vm.availableTests.isNotEmpty;
@@ -282,23 +523,41 @@ class _TestScreenState extends State<TestScreen> {
           child: InkWell(
             onTap: isFirst ? null : () => vm.previousTest(),
             borderRadius: BorderRadius.circular(16),
-            child: Container(
-              height: 55,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              height: 52,
               decoration: BoxDecoration(
-                color: isFirst ? Colors.white10 : const Color(0xFF0F2A22),
+                gradient: isFirst
+                    ? null
+                    : const LinearGradient(
+                        colors: [Color(0xFF0C241E), Color(0xFF0F2A22)],
+                      ),
+                color: isFirst ? Colors.white.withOpacity(0.04) : null,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isFirst ? Colors.transparent : const Color(0xFF00C853).withOpacity(0.2),
+                  color: isFirst
+                      ? Colors.transparent
+                      : Color(0xFF00C853).withOpacity(0.2),
                   width: 1,
                 ),
               ),
               child: Center(
-                child: Text(
-                  "← Previous",
-                  style: TextStyle(
-                    color: isFirst ? Colors.white24 : Colors.white70,
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.arrow_back_ios_rounded,
+                        size: 14,
+                        color: isFirst ? Colors.white24 : Colors.white70),
+                    const SizedBox(width: 6),
+                    Text(
+                      "Previous",
+                      style: TextStyle(
+                        color: isFirst ? Colors.white24 : Colors.white70,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -309,19 +568,44 @@ class _TestScreenState extends State<TestScreen> {
           child: InkWell(
             onTap: isLast ? null : () => vm.nextTest(),
             borderRadius: BorderRadius.circular(16),
-            child: Container(
-              height: 55,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              height: 52,
               decoration: BoxDecoration(
-                color: isLast ? Colors.white10 : const Color(0xFF00C853),
+                gradient: isLast
+                    ? null
+                    : const LinearGradient(
+                        colors: [Color(0xFF00E676), Color(0xFF00C853)],
+                      ),
+                color: isLast ? Colors.white.withOpacity(0.04) : null,
                 borderRadius: BorderRadius.circular(16),
+                boxShadow: isLast
+                    ? []
+                    : [
+                        BoxShadow(
+                          color: Color(0xFF00E676).withOpacity(0.2),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
               ),
               child: Center(
-                child: Text(
-                  "Next →",
-                  style: TextStyle(
-                    color: isLast ? Colors.white24 : Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Next",
+                      style: TextStyle(
+                        color: isLast ? Colors.white24 : Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(Icons.arrow_forward_ios_rounded,
+                        size: 14,
+                        color: isLast ? Colors.white24 : Colors.black87),
+                  ],
                 ),
               ),
             ),
@@ -331,27 +615,44 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
+  // ────────────────────── AVAILABLE TESTS ──────────────────────
+
   Widget _buildAvailableTestsSection(TestViewModel vm) {
     final problemsList = vm.filteredProblems;
 
     if (vm.isProblemsLoading && vm.problems.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 20),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20),
         child: Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00C853)),
+          child: SizedBox(
+            width: 28,
+            height: 28,
+            child: CircularProgressIndicator(
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFF00C853)),
+              strokeWidth: 2.5,
+              backgroundColor: Color(0xFF00C853).withOpacity(0.15),
+            ),
           ),
         ),
       );
     }
 
     if (problemsList.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 20),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 28),
         child: Center(
-          child: Text(
-            "No tests available",
-            style: TextStyle(color: Colors.white38, fontSize: 14),
+          child: Column(
+            children: [
+              Icon(Icons.inbox_rounded,
+                  size: 36,
+                  color: Colors.white.withOpacity(0.15)),
+              const SizedBox(height: 10),
+              const Text(
+                "No tests available",
+                style: TextStyle(color: Colors.white38, fontSize: 14),
+              ),
+            ],
           ),
         ),
       );
@@ -370,318 +671,459 @@ class _TestScreenState extends State<TestScreen> {
         ),
         if (vm.totalPages > 1)
           Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  onPressed: vm.currentPage > 1
-                      ? () => vm.changeProblemsPage(vm.currentPage - 1)
-                      : null,
-                  icon: const Icon(Icons.arrow_back_ios_new, size: 16),
-                  color: const Color(0xFF00C853),
-                  disabledColor: Colors.white24,
+            padding: const EdgeInsets.only(top: 16),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.03),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.06),
+                  width: 0.5,
                 ),
-                Text(
-                  "Page ${vm.currentPage} of ${vm.totalPages}",
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    onPressed: vm.currentPage > 1
+                        ? () => vm.changeProblemsPage(vm.currentPage - 1)
+                        : null,
+                    icon:
+                        const Icon(Icons.arrow_back_ios_new_rounded, size: 16),
+                    color: const Color(0xFF00C853),
+                    disabledColor: Colors.white24,
                   ),
-                ),
-                IconButton(
-                  onPressed: vm.currentPage < vm.totalPages
-                      ? () => vm.changeProblemsPage(vm.currentPage + 1)
-                      : null,
-                  icon: const Icon(Icons.arrow_forward_ios, size: 16),
-                  color: const Color(0xFF00C853),
-                  disabledColor: Colors.white24,
-                ),
-              ],
+                  Text(
+                    "Page ${vm.currentPage} of ${vm.totalPages}",
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: vm.currentPage < vm.totalPages
+                        ? () => vm.changeProblemsPage(vm.currentPage + 1)
+                        : null,
+                    icon: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                    color: const Color(0xFF00C853),
+                    disabledColor: Colors.white24,
+                  ),
+                ],
+              ),
             ),
           ),
       ],
     );
   }
 
+  // ────────────────────── PROBLEM CARD ──────────────────────
+
   Widget _buildProblemCard(BuildContext context, ProblemModel problem) {
     Color difficultyColor;
+    IconData difficultyIcon;
     switch (problem.difficulty.toLowerCase()) {
       case 'easy':
-        difficultyColor = Colors.green;
+        difficultyColor = const Color(0xFF00E676);
+        difficultyIcon = Icons.speed_rounded;
         break;
       case 'medium':
-        difficultyColor = Colors.orange;
+        difficultyColor = const Color(0xFFFFAB40);
+        difficultyIcon = Icons.trending_up_rounded;
         break;
       case 'hard':
-        difficultyColor = Colors.red;
+        difficultyColor = const Color(0xFFFF5252);
+        difficultyIcon = Icons.local_fire_department_rounded;
         break;
       default:
-        difficultyColor = Colors.green;
+        difficultyColor = const Color(0xFF00E676);
+        difficultyIcon = Icons.speed_rounded;
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F2A22),
-        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF0C241E), Color(0xFF081A14)],
+        ),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: const Color(0xFF00C853).withValues(alpha: 0.15),
+          color: Color(0xFF00C853).withOpacity(0.12),
           width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header: Difficulty and Points badge
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: IntrinsicHeight(
+          child: Row(
             children: [
+              // Green accent bar on left
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                width: 4,
                 decoration: BoxDecoration(
-                  color: difficultyColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: difficultyColor.withValues(alpha: 0.5),
-                    width: 0.8,
-                  ),
-                ),
-                child: Text(
-                  problem.difficulty.toUpperCase(),
-                  style: TextStyle(
-                    color: difficultyColor,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      difficultyColor.withOpacity(0.8),
+                      difficultyColor.withOpacity(0.2),
+                    ],
                   ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00C853).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  "+${problem.points}",
-                  style: const TextStyle(
-                    color: Color(0xFF00E676),
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Title
-          Text(
-            problem.title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 6),
-
-          // Description
-          Text(
-            problem.description,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white54,
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Tags Row
-          if (problem.tags.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: problem.tags.map((tag) {
-                    return Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        tag,
-                        style: const TextStyle(color: Colors.white70, fontSize: 11),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-
-          // Divider
-          Container(
-            height: 0.8,
-            color: Colors.white.withValues(alpha: 0.08),
-          ),
-          const SizedBox(height: 12),
-
-          // Metadata row: cases, solved state
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "${problem.totalTestCases} / ${problem.totalTestCases} CASES",
-                style: const TextStyle(
-                  color: Colors.white38,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Row(
-                children: [
-                  Icon(
-                    problem.solved ? Icons.check_circle : Icons.radio_button_unchecked,
-                    color: problem.solved ? const Color(0xFF00E676) : Colors.white30,
-                    size: 14,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    problem.solved ? "Solved ✓" : "Unsolved",
-                    style: TextStyle(
-                      color: problem.solved ? const Color(0xFF00E676) : Colors.white30,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Progress line
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("Progress", style: TextStyle(color: Colors.white54, fontSize: 11)),
-                  Text(
-                    problem.solved ? "100%" : "0%",
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(2),
-                child: LinearProgressIndicator(
-                  value: problem.solved ? 1.0 : 0.0,
-                  minHeight: 4,
-                  backgroundColor: Colors.white.withValues(alpha: 0.1),
-                  valueColor: const AlwaysStoppedAnimation(Color(0xFF00E676)),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Start Solving / Solved button
-          Builder(builder: (context) {
-            final vm = context.read<TestViewModel>();
-            final isSolved = problem.solved || vm.localSolvedIds.contains(problem.id);
-
-            Future<void> openProblem() async {
-              final result = await Navigator.push<bool>(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      ProblemDetailsScreen(problemId: problem.id),
-                ),
-              );
-              if (context.mounted) {
-                if (result == true) {
-                  // Immediately mark solved locally so the card flips right away
-                  context.read<TestViewModel>().markSolved(problem.id);
-                }
-                // Also refresh backend list in background
-                context.read<TestViewModel>().fetchProblems(page: 1);
-              }
-            }
-
-            return SizedBox(
-              width: double.infinity,
-              height: 44,
-              child: isSolved
-                  ? Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1B5E20),
-                        borderRadius: BorderRadius.circular(10),
-                        border:
-                            Border.all(color: const Color(0xFF00E676), width: 1),
-                      ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(10),
-                        onTap: openProblem,
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.check_circle,
-                                size: 16, color: Color(0xFF00E676)),
-                            SizedBox(width: 6),
-                            Text(
-                              "Solved ✓",
-                              style: TextStyle(
-                                color: Color(0xFF00E676),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+              // Card content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  difficultyColor.withOpacity(0.2),
+                                  difficultyColor.withOpacity(0.08),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: difficultyColor.withOpacity(0.4),
+                                width: 0.8,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : ElevatedButton(
-                      onPressed: openProblem,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00C853),
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Start Solving",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 14),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(difficultyIcon,
+                                    size: 11, color: difficultyColor),
+                                const SizedBox(width: 4),
+                                Text(
+                                  problem.difficulty.toUpperCase(),
+                                  style: TextStyle(
+                                    color: difficultyColor,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          SizedBox(width: 6),
-                          Icon(Icons.arrow_forward, size: 16),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF00C853)
+                                  .withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              "+${problem.points}",
+                              style: const TextStyle(
+                                color: Color(0xFF00E676),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-            );
-          }),
-        ],
+                      const SizedBox(height: 14),
+
+                      // Title
+                      Text(
+                        problem.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          height: 1.3,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+
+                      // Description
+                      Text(
+                        problem.description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.45),
+                          fontSize: 13,
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Tags
+                      if (problem.tags.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: problem.tags.map((tag) {
+                                return Container(
+                                  margin: const EdgeInsets.only(right: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        Colors.white.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: Colors.white
+                                          .withOpacity(0.06),
+                                      width: 0.5,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    tag,
+                                    style: const TextStyle(
+                                        color: Colors.white60, fontSize: 11),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+
+                      // Gradient divider
+                      Container(
+                        height: 0.5,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.transparent,
+                              Colors.white.withOpacity(0.1),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Metadata
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "${problem.totalTestCases} / ${problem.totalTestCases} CASES",
+                            style: const TextStyle(
+                              color: Colors.white38,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Icon(
+                                problem.solved
+                                    ? Icons.check_circle_rounded
+                                    : Icons.radio_button_unchecked_rounded,
+                                color: problem.solved
+                                    ? const Color(0xFF00E676)
+                                    : Colors.white30,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                problem.solved ? "Solved ✓" : "Unsolved",
+                                style: TextStyle(
+                                  color: problem.solved
+                                      ? const Color(0xFF00E676)
+                                      : Colors.white30,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Progress bar
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text("Progress",
+                                  style: TextStyle(
+                                      color: Colors.white54, fontSize: 11)),
+                              Text(
+                                problem.solved ? "100%" : "0%",
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: problem.solved ? 1.0 : 0.0,
+                              minHeight: 5,
+                              backgroundColor:
+                                  Colors.white.withOpacity(0.08),
+                              valueColor: const AlwaysStoppedAnimation(
+                                  Color(0xFF00E676)),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Action button
+                      Builder(builder: (context) {
+                        final vm = context.read<TestViewModel>();
+                        final isSolved = problem.solved ||
+                            vm.localSolvedIds.contains(problem.id);
+
+                        Future<void> openProblem() async {
+                          final result = await Navigator.push<bool>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ProblemDetailsScreen(problemId: problem.id),
+                            ),
+                          );
+                          if (context.mounted) {
+                            if (result == true) {
+                              context
+                                  .read<TestViewModel>()
+                                  .markSolved(problem.id);
+                            }
+                            context
+                                .read<TestViewModel>()
+                                .fetchProblems(page: 1);
+                          }
+                        }
+
+                        return SizedBox(
+                          width: double.infinity,
+                          height: 46,
+                          child: isSolved
+                              ? Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1B5E20),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                        color: const Color(0xFF00E676),
+                                        width: 1),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF00E676)
+                                            .withOpacity(0.15),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(12),
+                                    onTap: openProblem,
+                                    child: const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.check_circle_rounded,
+                                            size: 16,
+                                            color: Color(0xFF00E676)),
+                                        SizedBox(width: 6),
+                                        Text(
+                                          "Solved ✓",
+                                          style: TextStyle(
+                                            color: Color(0xFF00E676),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFF00E676),
+                                        Color(0xFF00C853),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF00E676)
+                                            .withOpacity(0.25),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(12),
+                                      onTap: openProblem,
+                                      child: const Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            "Start Solving",
+                                            style: TextStyle(
+                                              color: Colors.black87,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          SizedBox(width: 6),
+                                          Icon(Icons.arrow_forward_rounded,
+                                              size: 16, color: Colors.black87),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
+
+  // ────────────────────── SEARCH & FILTERS ──────────────────────
 
   Widget _buildSearchAndFilters(BuildContext context, TestViewModel vm) {
     return Column(
@@ -691,37 +1133,57 @@ class _TestScreenState extends State<TestScreen> {
         Row(
           children: [
             Expanded(
-              child: Container(
-                height: 48,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                height: 50,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0F2A22),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF00C853).withValues(alpha: 0.15),
-                    width: 1,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0C241E), Color(0xFF0F2A22)],
                   ),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: _isSearchFocused
+                        ? Color(0xFF00C853).withOpacity(0.5)
+                        : Color(0xFF00C853).withOpacity(0.12),
+                    width: _isSearchFocused ? 1.5 : 1,
+                  ),
+                  boxShadow: _isSearchFocused
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF00E676)
+                                .withOpacity(0.1),
+                            blurRadius: 16,
+                            spreadRadius: 0,
+                          ),
+                        ]
+                      : [],
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Row(
                   children: [
-                    const Icon(Icons.search, color: Colors.white38, size: 20),
-                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.search_rounded,
+                      color: _isSearchFocused
+                          ? const Color(0xFF00E676)
+                          : Colors.white38,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: TextField(
                         controller: _searchController,
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        focusNode: _searchFocus,
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 14),
                         decoration: const InputDecoration(
                           hintText: "Find a challenge...",
-                          hintStyle: TextStyle(color: Colors.white38, fontSize: 14),
+                          hintStyle:
+                              TextStyle(color: Colors.white38, fontSize: 14),
                           border: InputBorder.none,
                           isDense: true,
                         ),
-                        onChanged: (val) {
-                          vm.setSearchQuery(val);
-                        },
-                        onSubmitted: (val) {
-                          vm.searchProblems(val);
-                        },
+                        onChanged: (val) => vm.setSearchQuery(val),
+                        onSubmitted: (val) => vm.searchProblems(val),
                       ),
                     ),
                   ],
@@ -730,24 +1192,39 @@ class _TestScreenState extends State<TestScreen> {
             ),
             const SizedBox(width: 10),
             SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: () {
-                  vm.searchProblems(_searchController.text);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: const Color(0xFF00E676),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: const BorderSide(color: Color(0xFF00C853), width: 1.2),
+              height: 50,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0C241E), Color(0xFF0A1F19)],
                   ),
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: Color(0xFF00C853).withOpacity(0.4),
+                    width: 1,
+                  ),
                 ),
-                child: const Text(
-                  "SEARCH",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.8),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () =>
+                        vm.searchProblems(_searchController.text),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 18),
+                      child: Center(
+                        child: Text(
+                          "SEARCH",
+                          style: TextStyle(
+                            color: Color(0xFF00E676),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -755,7 +1232,7 @@ class _TestScreenState extends State<TestScreen> {
         ),
         const SizedBox(height: 14),
 
-        // Difficulty chips row
+        // Difficulty chips
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
@@ -763,30 +1240,54 @@ class _TestScreenState extends State<TestScreen> {
               final isSelected = vm.selectedDifficulty == diff;
               return Container(
                 margin: const EdgeInsets.only(right: 10),
-                child: InkWell(
-                  onTap: () {
-                    vm.setSelectedDifficulty(diff);
-                  },
-                  borderRadius: BorderRadius.circular(10),
-                  child: Container(
-                    height: 38,
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF00C853) : const Color(0xFF0F2A22),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: isSelected ? const Color(0xFF00C853) : const Color(0xFF00C853).withValues(alpha: 0.15),
-                        width: 1,
+                child: GestureDetector(
+                  onTap: () => vm.setSelectedDifficulty(diff),
+                  child: AnimatedScale(
+                    scale: isSelected ? 1.05 : 1.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic,
+                      height: 40,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      decoration: BoxDecoration(
+                        gradient: isSelected
+                            ? const LinearGradient(
+                                colors: [
+                                  Color(0xFF00E676),
+                                  Color(0xFF00C853),
+                                ],
+                              )
+                            : null,
+                        color: isSelected ? null : const Color(0xFF0A1F19),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected
+                              ? Colors.transparent
+                              : const Color(0xFF00C853)
+                                  .withOpacity(0.12),
+                          width: 1,
+                        ),
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: const Color(0xFF00E676)
+                                      .withOpacity(0.25),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ]
+                            : [],
                       ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        diff,
-                        style: TextStyle(
-                          color: isSelected ? Colors.black : Colors.white70,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          letterSpacing: 0.5,
+                      child: Center(
+                        child: Text(
+                          diff,
+                          style: TextStyle(
+                            color: isSelected ? Colors.black87 : Colors.white60,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
                     ),
@@ -800,38 +1301,55 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
+  // ────────────────────── PREP PACKS ──────────────────────
+
   Widget _buildPrepPacksSection(TestViewModel vm) {
     if (vm.isPrepPacksLoading && vm.packs.isEmpty) {
-      return const _PrepPacksShimmer();
+      return _PrepPacksShimmer(pulseAnim: _pulseAnim);
     }
 
     if (vm.errorMessage != null && vm.packs.isEmpty) {
       return Center(
         child: Column(
           children: [
-            const Icon(Icons.cloud_off, size: 40, color: Colors.white38),
-            const SizedBox(height: 8),
-            const Text("Failed to load prep packs", style: TextStyle(color: Colors.white70)),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () => vm.fetchPrepPacks(page: 1),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00C853),
-                foregroundColor: Colors.black,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.04),
               ),
-              child: const Text("Retry"),
+              child: const Icon(Icons.cloud_off_rounded,
+                  size: 36, color: Colors.white30),
+            ),
+            const SizedBox(height: 12),
+            const Text("Failed to load prep packs",
+                style: TextStyle(color: Colors.white70)),
+            const SizedBox(height: 16),
+            _buildPremiumButton(
+              label: "Retry",
+              icon: Icons.refresh_rounded,
+              onTap: () => vm.fetchPrepPacks(page: 1),
             ),
           ],
         ),
       );
     }
+
     if (vm.packs.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 24),
-          child: Text(
-            "No preparation packs available",
-            style: TextStyle(color: Colors.white38, fontSize: 14),
+          padding: const EdgeInsets.symmetric(vertical: 28),
+          child: Column(
+            children: [
+              Icon(Icons.inventory_2_outlined,
+                  size: 36,
+                  color: Colors.white.withOpacity(0.15)),
+              const SizedBox(height: 10),
+              const Text(
+                "No preparation packs available",
+                style: TextStyle(color: Colors.white38, fontSize: 14),
+              ),
+            ],
           ),
         ),
       );
@@ -854,142 +1372,165 @@ class _TestScreenState extends State<TestScreen> {
         if (vm.totalPrepPackPages > 1)
           Padding(
             padding: const EdgeInsets.only(top: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  onPressed: vm.currentPrepPackPage > 1
-                      ? () => vm.changePrepPacksPage(vm.currentPrepPackPage - 1)
-                      : null,
-                  icon: const Icon(Icons.arrow_back_ios_new, size: 16),
-                  color: const Color(0xFF00C853),
-                  disabledColor: Colors.white24,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.03),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.06),
+                  width: 0.5,
                 ),
-                Text(
-                  "Page ${vm.currentPrepPackPage} of ${vm.totalPrepPackPages}",
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    onPressed: vm.currentPrepPackPage > 1
+                        ? () => vm.changePrepPacksPage(
+                            vm.currentPrepPackPage - 1)
+                        : null,
+                    icon:
+                        const Icon(Icons.arrow_back_ios_new_rounded, size: 16),
+                    color: const Color(0xFF00C853),
+                    disabledColor: Colors.white24,
                   ),
-                ),
-                IconButton(
-                  onPressed: vm.currentPrepPackPage < vm.totalPrepPackPages
-                      ? () => vm.changePrepPacksPage(vm.currentPrepPackPage + 1)
-                      : null,
-                  icon: const Icon(Icons.arrow_forward_ios, size: 16),
-                  color: const Color(0xFF00C853),
-                  disabledColor: Colors.white24,
-                ),
-              ],
+                  Text(
+                    "Page ${vm.currentPrepPackPage} of ${vm.totalPrepPackPages}",
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: vm.currentPrepPackPage < vm.totalPrepPackPages
+                        ? () => vm.changePrepPacksPage(
+                            vm.currentPrepPackPage + 1)
+                        : null,
+                    icon: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                    color: const Color(0xFF00C853),
+                    disabledColor: Colors.white24,
+                  ),
+                ],
+              ),
             ),
           ),
       ],
     );
   }
-}
 
-class _TestShimmer extends StatefulWidget {
-  const _TestShimmer();
+  // ────────────────────── SHARED WIDGETS ──────────────────────
 
-  @override
-  State<_TestShimmer> createState() => _TestShimmerState();
-}
-
-class _TestShimmerState extends State<_TestShimmer> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
+  Widget _buildPremiumButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF00E676), Color(0xFF00C853)],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0xFF00E676).withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 18, color: Colors.black87),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  // ────────────────────── SKELETON LOADER ──────────────────────
+
+  Widget _buildSkeletonLoader() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _skeletonBlock(height: 60, radius: 16),
+          const SizedBox(height: 16),
+          _skeletonBlock(height: 44, radius: 24, width: 280),
+          const SizedBox(height: 18),
+          Row(
+            children: List.generate(
+              4,
+              (index) => Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: index == 3 ? 0 : 8),
+                  child: _skeletonBlock(height: 90, radius: 16),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          _skeletonBlock(height: 200, radius: 22),
+          const SizedBox(height: 18),
+          _skeletonBlock(height: 52, radius: 16),
+          const SizedBox(height: 24),
+          _skeletonBlock(height: 28, radius: 8, width: 160),
+          const SizedBox(height: 16),
+          _skeletonBlock(height: 50, radius: 14),
+          const SizedBox(height: 16),
+          _skeletonBlock(height: 200, radius: 18),
+        ],
+      ),
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _skeletonBlock(
+      {required double height, required double radius, double? width}) {
     return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final opacity = 0.3 + (_controller.value * 0.35);
-        return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              // Header placeholder
-              Opacity(
-                opacity: opacity,
-                child: Container(
-                  width: 200,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: Colors.white12,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
+      animation: _pulseAnim,
+      builder: (context, _) {
+        return Opacity(
+          opacity: _pulseAnim.value,
+          child: Container(
+            height: height,
+            width: width ?? double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(radius),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0C241E), Color(0xFF02100C)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const SizedBox(height: 16),
-              // Chips placeholder
-              Opacity(
-                opacity: opacity,
-                child: Row(
-                  children: List.generate(
-                    3,
-                    (index) => Container(
-                      margin: const EdgeInsets.only(right: 12),
-                      width: 80,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: Colors.white12,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                  ),
-                ),
+              border: Border.all(
+                color: Color(0xFF00E676).withOpacity(0.05),
+                width: 1,
               ),
-              const SizedBox(height: 20),
-              // Stats placeholder
-              Opacity(
-                opacity: opacity,
-                child: Row(
-                  children: List.generate(
-                    4,
-                    (index) => Expanded(
-                      child: Container(
-                        margin: EdgeInsets.only(right: index == 3 ? 0 : 8),
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: Colors.white12,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Quiz Card placeholder
-              Opacity(
-                opacity: opacity,
-                child: Container(
-                  width: double.infinity,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    color: Colors.white10,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         );
       },
@@ -997,48 +1538,40 @@ class _TestShimmerState extends State<_TestShimmer> with SingleTickerProviderSta
   }
 }
 
-class _PrepPacksShimmer extends StatefulWidget {
-  const _PrepPacksShimmer();
+// ════════════════════════════════════════════════════════════
+//  PREP PACKS SHIMMER (accepts pulse animation from parent)
+// ════════════════════════════════════════════════════════════
 
-  @override
-  State<_PrepPacksShimmer> createState() => _PrepPacksShimmerState();
-}
+class _PrepPacksShimmer extends StatelessWidget {
+  final Animation<double> pulseAnim;
 
-class _PrepPacksShimmerState extends State<_PrepPacksShimmer> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  const _PrepPacksShimmer({required this.pulseAnim});
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _controller,
+      animation: pulseAnim,
       builder: (context, child) {
-        final opacity = 0.3 + (_controller.value * 0.35);
+        final opacity = pulseAnim.value;
         return Column(
           children: List.generate(
             2,
             (index) => Opacity(
               opacity: opacity,
               child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                height: 180,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                height: 220,
                 decoration: BoxDecoration(
-                  color: Colors.white10,
-                  borderRadius: BorderRadius.circular(16),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0C241E), Color(0xFF02100C)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Color(0xFF00E676).withOpacity(0.05),
+                    width: 1,
+                  ),
                 ),
               ),
             ),

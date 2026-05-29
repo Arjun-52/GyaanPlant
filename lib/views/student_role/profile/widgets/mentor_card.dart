@@ -25,274 +25,153 @@ class MentorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(18),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(26),
         gradient: const LinearGradient(
-          colors: [Color(0xFF0B1F19), Color(0xFF0D2F24)],
+          colors: [Color(0xFF0C2B22), Color(0xFF02110D)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFF12352C)),
+        border: Border.all(
+          color: const Color(0xFF00E676).withOpacity(0.15),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00E676).withOpacity(0.02),
+            blurRadius: 20,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-
       child: Column(
         children: [
-          /// TOP SECTION
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// AVATAR BOX
+              // Beautiful Avatar Styling with circular nested borders
               Container(
-                width: 74,
-                height: 74,
+                padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFF12352C)),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFF00E676).withOpacity(0.3),
+                    width: 1.5,
+                  ),
                 ),
-
-                child: Center(
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: avatarColor,
-                      shape: BoxShape.circle,
-                    ),
-
-                    alignment: Alignment.center,
-
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFF020B08),
+                  ),
+                  child: CircleAvatar(
+                    radius: 26,
+                    backgroundColor: const Color(0xFF0C2B22),
                     child: Text(
-                      initials,
+                      initials.toUpperCase(),
                       style: const TextStyle(
-                        color: Colors.black,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                        color: Color(0xFF00E676),
                       ),
                     ),
                   ),
                 ),
               ),
-
-              const SizedBox(width: 16),
-
-              /// CENTER INFO
+              const SizedBox(width: 14),
+              // Typography
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name.toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.workspace_premium_rounded,
+                          size: 13,
+                          color: Color(0xFF00E676),
                         ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.workspace_premium_outlined,
-                            size: 14,
-                            color: Colors.white54,
-                          ),
-
-                          const SizedBox(width: 6),
-
-                          Expanded(
-                            child: Text(
-                              role.toUpperCase(),
-                              style: const TextStyle(
-                                color: Colors.white60,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 1,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            role,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.6),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-
-              /// RIGHT SIDE
+              const SizedBox(width: 8),
+              // Price and Rating
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  /// RATING
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(20),
+                      color: const Color(0x1F00E676),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: const Color(0xFF00E676).withOpacity(0.2),
+                      ),
                     ),
-
                     child: const Row(
                       children: [
-                        Icon(Icons.star, color: Colors.orange, size: 15),
-
-                        SizedBox(width: 4),
-
+                        Icon(Icons.star_rounded, color: Color(0xFFFFA726), size: 13),
+                        SizedBox(width: 2),
                         Text(
                           "5.0",
                           style: TextStyle(
-                            color: Colors.orange,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12,
+                            color: Color(0xFFFFA726),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
                           ),
                         ),
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 14),
-
-                  /// PRICE
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: Colors.greenAccent.withOpacity(0.3),
-                      ),
-                    ),
-
-                    child: Text(
-                      price,
-                      style: const TextStyle(
-                        color: Colors.greenAccent,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
-                      ),
+                  const SizedBox(height: 8),
+                  Text(
+                    price,
+                    style: const TextStyle(
+                      color: Color(0xFF00E676),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
                     ),
                   ),
                 ],
               ),
             ],
           ),
-
-          const SizedBox(height: 22),
-
-          /// STATS SECTION
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFF12352C)),
-            ),
-
-            child: Row(
-              children: [
-                /// EXPERIENCE
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: const [
-                          Icon(
-                            Icons.trending_up,
-                            color: Colors.greenAccent,
-                            size: 18,
-                          ),
-
-                          SizedBox(width: 8),
-
-                          Text(
-                            "0 Yrs",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 20,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      SizedBox(height: 8),
-
-                      Text(
-                        "EXPERIENCE",
-                        style: TextStyle(
-                          color: Colors.white38,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 2,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                /// DIVIDER
-                Container(width: 1, height: 50, color: Colors.white10),
-
-                /// SESSIONS
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: const [
-                            Icon(
-                              Icons.person_outline,
-                              color: Colors.blueAccent,
-                              size: 18,
-                            ),
-
-                            SizedBox(width: 8),
-
-                            Text(
-                              "0",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: 8),
-
-                        Text(
-                          "SESSIONS",
-                          style: TextStyle(
-                            color: Colors.white38,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
           const SizedBox(height: 18),
-
-          /// BOOK BUTTON
+          // Divider
+          Container(height: 1, color: Colors.white.withOpacity(0.06)),
+          const SizedBox(height: 18),
+          // Book CTA Button
           SizedBox(
             width: double.infinity,
             child: GestureDetector(
@@ -311,24 +190,28 @@ class MentorCard extends StatelessWidget {
                 );
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-
+                  borderRadius: BorderRadius.circular(14),
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF00C853), Color(0xFF00E676)],
+                    colors: [Color(0xFF00E676), Color(0xFF00C853)],
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00C853).withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-
                 alignment: Alignment.center,
-
                 child: const Text(
-                  "Book Session",
+                  "Book Free Session",
                   style: TextStyle(
                     color: Colors.black,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                    letterSpacing: 0.3,
                   ),
                 ),
               ),
