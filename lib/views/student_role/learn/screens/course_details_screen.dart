@@ -549,23 +549,17 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> with SingleTi
 
               const SizedBox(height: 16),
 
-              // Requirements + Students row
+              // Requirements + Students column
               SlideTransition(
                 position: _sInfo,
                 child: FadeTransition(
                   opacity: _aInfo,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Expanded(
-                        flex: 3,
-                        child: _InfoCardGroup(course: course!),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 1,
-                        child: _EnrolledCard(count: course!.enrolled),
-                      ),
+                      _InfoCardGroup(course: course!),
+                      const SizedBox(height: 12),
+                      _EnrolledCard(count: course!.enrolled),
                     ],
                   ),
                 ),

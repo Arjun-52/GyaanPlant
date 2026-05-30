@@ -176,10 +176,9 @@ class MentorCard extends StatelessWidget {
             width: double.infinity,
             child: GestureDetector(
               onTap: () {
-                showModalBottomSheet(
+                showDialog(
                   context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
+                  barrierDismissible: true,
                   builder: (context) => MentorBookingSheet(
                     mentorId: mentorId ?? name.toLowerCase().replaceAll(' ', '_'),
                     mentorName: name,

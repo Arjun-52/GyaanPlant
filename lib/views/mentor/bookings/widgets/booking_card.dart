@@ -263,14 +263,14 @@ class BookingCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: booking.status == "accepted"
+                    color: (booking.status == "accepted" || booking.status == "confirmed")
                         ? const Color(0xFF00E676).withOpacity(0.1)
                         : booking.status == "completed"
                             ? Colors.blue.withOpacity(0.1)
                             : Colors.redAccent.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: booking.status == "accepted"
+                      color: (booking.status == "accepted" || booking.status == "confirmed")
                           ? const Color(0xFF00E676).withOpacity(0.3)
                           : booking.status == "completed"
                               ? Colors.blue.withOpacity(0.3)
@@ -281,7 +281,7 @@ class BookingCard extends StatelessWidget {
                   child: Text(
                     booking.status.toUpperCase(),
                     style: TextStyle(
-                      color: booking.status == "accepted"
+                      color: (booking.status == "accepted" || booking.status == "confirmed")
                           ? const Color(0xFF00E676)
                           : booking.status == "completed"
                               ? Colors.blue

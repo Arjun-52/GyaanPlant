@@ -1,5 +1,5 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
 import '../screens/mentor_payment_screen.dart';
 
 class MentorBookingSheet extends StatefulWidget {
@@ -22,405 +22,119 @@ class MentorBookingSheet extends StatefulWidget {
   State<MentorBookingSheet> createState() => _MentorBookingSheetState();
 }
 
-class _MentorBookingSheetState extends State<MentorBookingSheet> {
-  // Calendar state
-  DateTime _selectedDate = DateTime.now();
-  DateTime _focusedDay = DateTime.now();
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+class _MentorBookingSheetState extends State<MentorBookingSheet> with SingleTickerProviderStateMixin {
+  late final AnimationController _animController;
+  late final Animation<double> _scaleAnimation;
+  late final Animation<double> _fadeAnimation;
 
-  // Selection state
-  String? _selectedDuration;
-  String? _selectedTimeSlot;
+  // Form controllers
+  final _topicController = TextEditingController();
+  final _notesController = TextEditingController();
 
-  // Duration options
-  final List<String> _durationOptions = ['30 mins', '60 mins', '90 mins'];
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
+  String? _selectedDuration = '30 mins'; // Default duration
 
-  // Time slots
-  final List<String> _timeSlots = [
-    '9:00 AM',
-    '10:00 AM',
-    '11:00 AM',
-    '12:00 PM',
-    '1:00 PM',
-    '2:00 PM',
-    '3:00 PM',
-    '4:00 PM',
-    '5:00 PM',
-    '6:00 PM',
-    '7:00 PM',
-    '8:00 PM',
-  ];
+  final List<String> _durationOptions = const ['30 mins', '60 mins', '90 mins'];
 
   @override
-  Widget build(BuildContext context) {
-    return FractionallySizedBox(
-      heightFactor: 0.65,
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF020B08),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Handle bar
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-
-              // Mentor info header
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    // Avatar
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF12352C)),
-                      ),
-                      child: Center(
-                        child: Text(
-                          widget.mentorAvatar,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(width: 16),
-
-                    // Info
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.mentorName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            widget.mentorRole,
-                            style: const TextStyle(
-                              color: Colors.white60,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            widget.mentorPrice,
-                            style: const TextStyle(
-                              color: Colors.greenAccent,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Close button
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.close,
-                          color: Colors.white70,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Calendar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _buildCalendar(),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Duration selection
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Session Duration',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildDurationChips(),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Time slots
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Available Time Slots',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildTimeSlots(),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Continue button
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _canContinue() ? _onContinue : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _canContinue()
-                          ? const Color(0xFF00C853)
-                          : Colors.white.withOpacity(0.1),
-                      foregroundColor: _canContinue()
-                          ? Colors.black
-                          : Colors.white38,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Continue to Payment',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
     );
+
+    _scaleAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutBack,
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOut,
+    );
+
+    _animController.forward();
   }
 
-  Widget _buildCalendar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF0B1F19),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF12352C)),
-      ),
-      child: TableCalendar<String>(
-        firstDay: DateTime.now(),
-        lastDay: DateTime.now().add(const Duration(days: 365)),
-        focusedDay: _focusedDay,
-        calendarFormat: _calendarFormat,
-        selectedDayPredicate: (day) {
-          return isSameDay(_selectedDate, day);
-        },
-        onDaySelected: (selectedDay, focusedDay) {
-          setState(() {
-            _selectedDate = selectedDay;
-            _focusedDay = focusedDay;
-            _selectedTimeSlot = null; // Reset time slot when date changes
-          });
-        },
-        onFormatChanged: (format) {
-          setState(() {
-            _calendarFormat = format;
-          });
-        },
-        onPageChanged: (focusedDay) {
-          _focusedDay = focusedDay;
-        },
-        enabledDayPredicate: (day) {
-          return day.isAfter(DateTime.now().subtract(const Duration(days: 1)));
-        },
-        calendarStyle: CalendarStyle(
-          outsideDaysVisible: false,
-          weekendTextStyle: const TextStyle(color: Colors.white70),
-          defaultTextStyle: const TextStyle(color: Colors.white70),
-          selectedTextStyle: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w600,
-          ),
-          selectedDecoration: BoxDecoration(
-            color: const Color(0xFF00C853),
-            shape: BoxShape.circle,
-          ),
-          todayTextStyle: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-          todayDecoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFF00C853)),
-          ),
-          disabledTextStyle: const TextStyle(color: Colors.white24),
-          disabledDecoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.02),
-            shape: BoxShape.circle,
-          ),
-        ),
-        headerStyle: const HeaderStyle(
-          titleTextStyle: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-          formatButtonTextStyle: TextStyle(color: Colors.black),
-          formatButtonDecoration: BoxDecoration(
-            color: Color(0xFF00C853),
-            borderRadius: BorderRadius.all(Radius.circular(12)),
-          ),
-          leftChevronIcon: Icon(Icons.chevron_left, color: Colors.white70),
-          rightChevronIcon: Icon(Icons.chevron_right, color: Colors.white70),
-        ),
-        daysOfWeekStyle: const DaysOfWeekStyle(
-          weekdayStyle: TextStyle(color: Colors.white38, fontSize: 12),
-          weekendStyle: TextStyle(color: Colors.white38, fontSize: 12),
-        ),
-      ),
-    );
+  @override
+  void dispose() {
+    _animController.dispose();
+    _topicController.dispose();
+    _notesController.dispose();
+    super.dispose();
   }
 
-  Widget _buildDurationChips() {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 8,
-      children: _durationOptions.map((duration) {
-        final isSelected = _selectedDuration == duration;
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              _selectedDuration = duration;
-            });
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFF00C853)
-                  : Colors.white.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isSelected
-                    ? const Color(0xFF00C853)
-                    : Colors.white.withOpacity(0.1),
-              ),
-            ),
-            child: Text(
-              duration,
-              style: TextStyle(
-                color: isSelected ? Colors.black : Colors.white70,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                fontSize: 14,
-              ),
+  bool _isValid() {
+    return _topicController.text.isNotEmpty &&
+        _notesController.text.isNotEmpty &&
+        _selectedDate != null &&
+        _selectedTime != null &&
+        _selectedDuration != null;
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF00E676),
+              onPrimary: Color(0xFF020B08),
+              surface: Color(0xFF0A1410),
+              onSurface: Colors.white,
             ),
           ),
+          child: child!,
         );
-      }).toList(),
+      },
     );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
   }
 
-  Widget _buildTimeSlots() {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 8,
-      children: _timeSlots.map((timeSlot) {
-        final isSelected = _selectedTimeSlot == timeSlot;
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              _selectedTimeSlot = timeSlot;
-            });
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFF00C853)
-                  : Colors.white.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: isSelected
-                    ? const Color(0xFF00C853)
-                    : Colors.white.withOpacity(0.1),
-              ),
-            ),
-            child: Text(
-              timeSlot,
-              style: TextStyle(
-                color: isSelected ? Colors.black : Colors.white70,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                fontSize: 13,
-              ),
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF00E676),
+              onPrimary: Color(0xFF020B08),
+              surface: Color(0xFF0A1410),
+              onSurface: Colors.white,
             ),
           ),
+          child: child!,
         );
-      }).toList(),
+      },
     );
+    if (picked != null && picked != _selectedTime) {
+      setState(() {
+        _selectedTime = picked;
+      });
+    }
   }
 
-  bool _canContinue() {
-    return _selectedDuration != null && _selectedTimeSlot != null;
-  }
+  void _onSendRequest() {
+    if (!_isValid()) return;
 
-  void _onContinue() {
-    // Close bottom sheet
+    final formattedTime = _selectedTime!.format(context);
+
+    // Close modal popup
     Navigator.pop(context);
 
-    // Navigate to payment screen
+    // Navigate to payment screen preserving identical booking flow
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -430,11 +144,480 @@ class _MentorBookingSheetState extends State<MentorBookingSheet> {
           mentorRole: widget.mentorRole,
           mentorAvatar: widget.mentorAvatar,
           mentorPrice: widget.mentorPrice,
-          selectedDate: _selectedDate,
-          selectedTime: _selectedTimeSlot!,
+          selectedDate: _selectedDate!,
+          selectedTime: formattedTime,
           selectedDuration: _selectedDuration!,
         ),
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final keyboardPadding = MediaQuery.of(context).viewInsets.bottom;
+
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+      child: AnimatedBuilder(
+        animation: _animController,
+        builder: (context, child) {
+          return Opacity(
+            opacity: _fadeAnimation.value,
+            child: Transform.scale(
+              scale: _scaleAnimation.value,
+              child: child,
+            ),
+          );
+        },
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 420),
+            padding: EdgeInsets.only(bottom: keyboardPadding),
+            decoration: BoxDecoration(
+              color: const Color(0xFF020B08).withOpacity(0.95),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: const Color(0xFF00E676).withOpacity(0.18),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF00E676).withOpacity(0.06),
+                  blurRadius: 30,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// Top row: Title & Close Button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "BOOK WITH ${widget.mentorName.toUpperCase()}",
+                                style: const TextStyle(
+                                  color: Color(0xFF00E676),
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                widget.mentorRole,
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.4),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.04),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.08),
+                                width: 1,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.close_rounded,
+                              color: Colors.white60,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    /// Session Topic Input
+                    const Text(
+                      "Session Topic",
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _topicController,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      onChanged: (_) => setState(() {}),
+                      decoration: _inputDecoration("Enter session topic", Icons.subject_rounded),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    /// Notes Input
+                    const Text(
+                      "Notes / Discussion Points",
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _notesController,
+                      maxLines: 2,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      onChanged: (_) => setState(() {}),
+                      decoration: _inputDecoration("Enter notes or points", Icons.note_alt_rounded),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    /// Date & Time Selectors
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Date",
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              GestureDetector(
+                                onTap: () => _selectDate(context),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                  decoration: _selectBoxDecoration(_selectedDate != null),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_today_rounded,
+                                        color: _selectedDate != null ? const Color(0xFF00E676) : Colors.white24,
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          _selectedDate != null
+                                              ? "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}"
+                                              : "Select Date",
+                                          style: TextStyle(
+                                            color: _selectedDate != null ? Colors.white : Colors.white24,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Time",
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              GestureDetector(
+                                onTap: () => _selectTime(context),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                  decoration: _selectBoxDecoration(_selectedTime != null),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.access_time_rounded,
+                                        color: _selectedTime != null ? const Color(0xFF00E676) : Colors.white24,
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          _selectedTime != null ? _selectedTime!.format(context) : "Select Time",
+                                          style: TextStyle(
+                                            color: _selectedTime != null ? Colors.white : Colors.white24,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    /// Duration Chips Selection
+                    const Text(
+                      "Session Duration",
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: _durationOptions.map((duration) {
+                        final isSelected = _selectedDuration == duration;
+                        return Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedDuration = duration;
+                              });
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFF00E676).withOpacity(0.15)
+                                    : const Color(0xFF121212).withOpacity(0.4),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? const Color(0xFF00E676)
+                                      : const Color(0xFF00E676).withOpacity(0.15),
+                                  width: 1.2,
+                                ),
+                              ),
+                              child: Text(
+                                duration,
+                                style: TextStyle(
+                                  color: isSelected ? const Color(0xFF00E676) : Colors.white54,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    /// Fee Information Card
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0C241B).withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFF00E676).withOpacity(0.12),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Consultation Fee",
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.5),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                widget.mentorPrice,
+                                style: const TextStyle(
+                                  color: Color(0xFF00E676),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8),
+                            child: Divider(color: Colors.white10, height: 1),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Duration Limit",
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.5),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                _selectedDuration ?? "30 mins",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    /// Bottom Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                side: const BorderSide(color: Colors.white12, width: 1.2),
+                              ),
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text(
+                              "Cancel",
+                              style: TextStyle(
+                                color: Colors.white60,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: MouseRegion(
+                            cursor: _isValid() ? SystemMouseCursors.click : SystemMouseCursors.basic,
+                            child: Container(
+                              height: 48,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                gradient: _isValid()
+                                    ? const LinearGradient(
+                                        colors: [Color(0xFF00E676), Color(0xFF00B0FF)],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      )
+                                    : null,
+                                color: _isValid() ? null : const Color(0xFF1A2E26),
+                                boxShadow: [
+                                  if (_isValid())
+                                    BoxShadow(
+                                      color: const Color(0xFF00E676).withOpacity(0.3),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                ],
+                              ),
+                              child: TextButton(
+                                style: TextButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                onPressed: _isValid() ? _onSendRequest : null,
+                                child: Text(
+                                  "Send Request",
+                                  style: TextStyle(
+                                    color: _isValid() ? const Color(0xFF031B15) : Colors.white24,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String hint, IconData icon) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(color: Colors.white24, fontSize: 13, fontWeight: FontWeight.bold),
+      prefixIcon: Icon(icon, color: Colors.white24, size: 16),
+      filled: true,
+      fillColor: const Color(0xFF101C17).withOpacity(0.6),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: const Color(0xFF00E676).withOpacity(0.12)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: const Color(0xFF00E676).withOpacity(0.12)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFF00E676), width: 1.5),
+      ),
+    );
+  }
+
+  BoxDecoration _selectBoxDecoration(bool hasValue) {
+    return BoxDecoration(
+      color: const Color(0xFF101C17).withOpacity(0.6),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: hasValue ? const Color(0xFF00E676) : const Color(0xFF00E676).withOpacity(0.12),
+        width: hasValue ? 1.5 : 1,
+      ),
+    );
+  }
 }
+

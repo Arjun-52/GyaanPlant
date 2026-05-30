@@ -14,7 +14,7 @@ class PrepPack {
     return PrepPack(
       id: json['_id'] ?? json['id'] ?? '',
       title: json['title'] ?? json['name'] ?? 'No Title',
-      description: json['description'] ?? '',
+      description: json['description'] ?? '', 
       price: _parsePrice(json['price']),
     );
   }

@@ -203,7 +203,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                                         initials: getInitials(b.name),
                                         avatarColor: Colors.green,
                                         onAccept: () async {
-                                          final error = await vm.updateBookingStatus(b.id, "accepted");
+                                          final error = await vm.updateBookingStatus(b.id, "confirmed");
                                           if (context.mounted) {
                                             if (error == null) {
                                               ScaffoldMessenger.of(context).showSnackBar(

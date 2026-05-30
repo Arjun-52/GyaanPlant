@@ -33,7 +33,7 @@ class BookingViewModel extends ChangeNotifier {
       bookings.where((b) => b.status == "pending").toList();
 
   List<Booking> get upcoming =>
-      bookings.where((b) => b.status == "accepted").toList();
+      bookings.where((b) => b.status == "accepted" || b.status == "confirmed").toList();
 
   List<Booking> get completed =>
       bookings.where((b) => b.status == "completed").toList();
