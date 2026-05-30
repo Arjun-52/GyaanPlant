@@ -15,10 +15,14 @@ class TabSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F1F1A),
+        color: const Color(0xFF0F3D34).withOpacity(0.15),
         borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: const Color(0xFF00E676).withOpacity(0.1),
+          width: 1.2,
+        ),
       ),
       child: Row(
         children: List.generate(tabs.length, (index) {
@@ -44,17 +48,30 @@ class TabItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      curve: Curves.easeOutCubic,
+      padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: active ? const Color(0xFF16C47F) : Colors.transparent,
-        borderRadius: BorderRadius.circular(25),
+        color: active ? const Color(0xFF00E676) : Colors.transparent,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: active
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF00E676).withOpacity(0.3),
+                  blurRadius: 12,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : [],
       ),
       child: Center(
         child: Text(
           text,
           style: TextStyle(
-            color: active ? Colors.black : Colors.white38,
-            fontWeight: FontWeight.w500,
+            color: active ? const Color(0xFF031B15) : Colors.white.withOpacity(0.4),
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+            letterSpacing: 0.5,
           ),
         ),
       ),

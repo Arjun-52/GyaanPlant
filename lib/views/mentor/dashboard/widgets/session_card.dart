@@ -19,142 +19,207 @@ class SessionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-
-        /// 🔥 dark green gradient (important)
+        borderRadius: BorderRadius.circular(24),
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF0E2A1F), // deep green
-            const Color(0xFF081A14), // darker bottom
+            const Color(0xFF0F3D34).withOpacity(0.25),
+            const Color(0xFF020B08).withOpacity(0.5),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-
-        border: Border.all(color: Colors.greenAccent.withOpacity(0.2)),
+        border: Border.all(
+          color: const Color(0xFF00E676).withOpacity(0.2),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00E676).withOpacity(0.03),
+            blurRadius: 16,
+            spreadRadius: 2,
+          ),
+        ],
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// 🔷 TOP ROW (avatar + name)
+          /// TOP ROW (avatar + name)
           Row(
             children: [
               Container(
-                height: 44,
-                width: 44,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF16C47F),
+                height: 48,
+                width: 48,
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFF00E676),
+                    width: 1.5,
+                  ),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0C2D24), Color(0xFF041410)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00E676).withOpacity(0.2),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ],
                 ),
                 child: Center(
                   child: Text(
                     initials,
                     style: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: 14,
+                      letterSpacing: 0.5,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    detail,
-                    style: const TextStyle(color: Colors.white38, fontSize: 12),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 14),
-
-          /// 🔷 TIME + TOPIC
-          Row(
-            children: [
-              const Text("⏰", style: TextStyle(fontSize: 14)),
-
-              const SizedBox(width: 6),
-
-              Text(
-                time,
-                style: const TextStyle(
-                  color: Color(0xFFFFB020), // orange
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
                 ),
               ),
-
-              const SizedBox(width: 10),
-
+              const SizedBox(width: 14),
               Expanded(
-                child: Text(
-                  topic,
-                  style: const TextStyle(color: Colors.white38, fontSize: 12),
-                  overflow: TextOverflow.ellipsis,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      detail,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.4),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
-          /// 🔷 BUTTONS
+          /// TIME + TOPIC
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.03),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.05),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.access_time_filled_rounded,
+                  color: Color(0xFF00E676),
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  time,
+                  style: const TextStyle(
+                    color: Color(0xFF00E676),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    topic,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.5),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          /// BUTTONS
           Row(
             children: [
               /// JOIN BUTTON
               Expanded(
-                child: Container(
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF16C47F),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      "Join Session",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Container(
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00E676),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF00E676).withOpacity(0.25),
+                          blurRadius: 12,
+                          spreadRadius: 1,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text(
+                        "Join Session",
+                        style: TextStyle(
+                          color: Color(0xFF031B15),
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-
               const SizedBox(width: 12),
 
               /// RESCHEDULE BUTTON
               Expanded(
-                child: Container(
-                  height: 44,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white24),
-                    color: Colors.transparent,
-                  ),
-                  child: const Center(
-                    child: Text(
-                      "Reschedule",
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontWeight: FontWeight.w500,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Container(
+                    height: 44,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.12),
+                        width: 1.2,
+                      ),
+                      color: Colors.white.withOpacity(0.04),
+                    ),
+                    child: Center(
+                      child: Text(
+                        "Reschedule",
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ),

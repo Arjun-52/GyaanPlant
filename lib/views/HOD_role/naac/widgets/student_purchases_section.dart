@@ -1,4 +1,5 @@
 // lib/views/HOD_role/naac/widgets/student_purchases_section.dart
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/viewmodels/HOD_viewmodel/student_purchase_viewmodel.dart';
@@ -21,18 +22,45 @@ class StudentPurchasesSection extends StatelessWidget {
             return Center(
               child: ElevatedButton(
                 onPressed: vm.refresh,
-                child: const Text('Retry'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00C853),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Retry', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             );
           }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 24),
-              const Text('Student Purchases', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
+              const SizedBox(height: 28),
+              Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00E676),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Student Purchases Summary',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
               _StatsCards(stats: vm.stats!),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
               _TransactionsList(viewModel: vm),
             ],
           );
@@ -48,22 +76,58 @@ class _StatsCards extends StatelessWidget {
 
   Widget _card(String title, IconData icon, String value, String subtitle) {
     return Container(
-      width: 150,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(12),
+      width: 165,
+      margin: const EdgeInsets.only(right: 14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFF0F3D34), Color(0xFF021B15)]),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+        color: const Color(0xFF061511).withOpacity(0.85),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.greenAccent.withOpacity(0.06),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Colors.white70, size: 20),
-          const SizedBox(height: 6),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF00E676).withOpacity(0.08),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFF00E676).withOpacity(0.15),
+                width: 1,
+              ),
+            ),
+            child: Icon(icon, color: const Color(0xFF00E676), size: 18),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.2,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(subtitle, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+          Text(
+            subtitle,
+            style: const TextStyle(
+              color: Colors.white54,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
@@ -72,13 +136,14 @@ class _StatsCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _card('Active Learners', Icons.people, '${stats.activeLearners}', 'students with purchases'),
-          _card('Gross Revenue', Icons.attach_money, '\u20B9${stats.grossRevenue.toStringAsFixed(2)}', 'total amount'),
-          _card('Course Adoption', Icons.school, '${stats.courseAdoption}', 'courses + prep packs'),
-          _card('Mentorship', Icons.people_outline, '${stats.mentorship}', 'sessions'),
+          _card('Active Learners', Icons.people_outline_rounded, '${stats.activeLearners}', 'Students with purchases'),
+          _card('Gross Revenue', Icons.account_balance_wallet_outlined, '\u20B9${stats.grossRevenue.toStringAsFixed(0)}', 'Total revenue amount'),
+          _card('Course Adoption', Icons.school_outlined, '${stats.courseAdoption}', 'Courses + prep packs'),
+          _card('Mentorship', Icons.psychology_outlined, '${stats.mentorship}', 'Sessions completed'),
         ],
       ),
     );
@@ -94,6 +159,25 @@ class _TransactionsList extends StatefulWidget {
 }
 
 class _TransactionsListState extends State<_TransactionsList> {
+  final FocusNode _searchFocusNode = FocusNode();
+  bool _isSearchFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchFocusNode.addListener(() {
+      setState(() {
+        _isSearchFocused = _searchFocusNode.hasFocus;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final vm = widget.viewModel;
@@ -102,48 +186,100 @@ class _TransactionsListState extends State<_TransactionsList> {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Text('INSTITUTIONAL TRANSACTIONS', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-            Text('Audit of student enrollment and payments', style: TextStyle(color: Colors.white70, fontSize: 12)),
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00E676),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Institutional Transactions',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Audit of student enrollment and payments',
+                  style: TextStyle(color: Colors.white38, fontSize: 11),
+                ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00E676).withOpacity(0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: const Color(0xFF00E676).withOpacity(0.2),
+                ),
+              ),
+              child: Text(
+                '${vm.totalEntries} Purchases',
+                style: const TextStyle(
+                  color: Color(0xFF00E676),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
-              child: TextField(
-                onChanged: (v) => vm.searchQuery = v,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Search by Payment/Order ID',
-                  hintStyle: const TextStyle(color: Colors.white38),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.05),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide.none,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF061511).withOpacity(0.85),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: _isSearchFocused
+                        ? const Color(0xFF00E676).withOpacity(0.4)
+                        : Colors.greenAccent.withOpacity(0.06),
+                    width: 1.2,
+                  ),
+                  boxShadow: _isSearchFocused
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF00E676).withOpacity(0.06),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                          )
+                        ]
+                      : [],
+                ),
+                child: TextField(
+                  focusNode: _searchFocusNode,
+                  onChanged: (v) => vm.searchQuery = v,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: const InputDecoration(
+                    hintText: 'Search by Payment/Order ID',
+                    hintStyle: TextStyle(color: Colors.white38, fontSize: 13),
+                    prefixIcon: Icon(Icons.search, color: Colors.white38, size: 20),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.greenAccent.shade200,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              ),
-              onPressed: () {}, // placeholder for filters
-              child: const Text('Filters'),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.greenAccent.shade100.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text('${vm.totalEntries} Purchases', style: const TextStyle(color: Colors.white70)),
-            ),
+            const SizedBox(width: 10),
+            // Premium Filter Button
+            _FilterActionButton(onPressed: () {}),
           ],
         ),
         const SizedBox(height: 16),
@@ -152,12 +288,19 @@ class _TransactionsListState extends State<_TransactionsList> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFF0F3D34).withOpacity(0.4),
-              borderRadius: BorderRadius.circular(16),
+              color: const Color(0xFF061511).withOpacity(0.85),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.green.withOpacity(0.15),
-                width: 1,
+                color: Colors.greenAccent.withOpacity(0.06),
+                width: 1.2,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: 15,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -165,13 +308,17 @@ class _TransactionsListState extends State<_TransactionsList> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: const Color(0xFF00E676).withOpacity(0.08),
                     shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF00E676).withOpacity(0.2),
+                      width: 1,
+                    ),
                   ),
                   child: const Icon(
                     Icons.receipt_long_outlined,
-                    color: Colors.greenAccent,
-                    size: 40,
+                    color: Color(0xFF00E676),
+                    size: 36,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -179,17 +326,17 @@ class _TransactionsListState extends State<_TransactionsList> {
                   'No transactions found',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 const Text(
-                  'Adjust filters to broaden search',
+                  'Adjust search filters to broaden query',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white60,
-                    fontSize: 14,
+                    color: Colors.white38,
+                    fontSize: 12,
                   ),
                 ),
               ],
@@ -207,6 +354,67 @@ class _TransactionsListState extends State<_TransactionsList> {
   }
 }
 
+class _FilterActionButton extends StatefulWidget {
+  final VoidCallback onPressed;
+  const _FilterActionButton({Key? key, required this.onPressed}) : super(key: key);
+
+  @override
+  State<_FilterActionButton> createState() => _FilterActionButtonState();
+}
+
+class _FilterActionButtonState extends State<_FilterActionButton> {
+  double _scale = 1.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _scale = 0.94),
+      onTapUp: (_) => setState(() => _scale = 1.0),
+      onTapCancel: () => setState(() => _scale = 1.0),
+      onTap: widget.onPressed,
+      child: AnimatedScale(
+        scale: _scale,
+        duration: const Duration(milliseconds: 100),
+        child: Container(
+          height: 46,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF061511).withOpacity(0.85),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: const Color(0xFF00E676).withOpacity(0.3),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF00E676).withOpacity(0.08),
+                blurRadius: 8,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          alignment: Alignment.center,
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.filter_list_rounded, color: Color(0xFF00E676), size: 18),
+              SizedBox(width: 6),
+              Text(
+                'Filters',
+                style: TextStyle(
+                  color: Color(0xFF00E676),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _TransactionCard extends StatelessWidget {
   final PaymentTransaction transaction;
   const _TransactionCard({Key? key, required this.transaction}) : super(key: key);
@@ -214,11 +422,11 @@ class _TransactionCard extends StatelessWidget {
   Color _statusColor(String? status) {
     switch (status?.toLowerCase()) {
       case 'success':
-        return Colors.green;
+        return const Color(0xFF00E676);
       case 'pending':
-        return Colors.orange;
+        return const Color(0xFFFFB020);
       case 'failed':
-        return Colors.red;
+        return const Color(0xFFFF5252);
       default:
         return Colors.white70;
     }
@@ -226,27 +434,109 @@ class _TransactionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final status = transaction.status ?? 'Pending';
+    final col = _statusColor(status);
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFF0F3D34), Color(0xFF021B15)]),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+        color: const Color(0xFF061511).withOpacity(0.85),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.greenAccent.withOpacity(0.06),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(transaction.studentName ?? '-', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text('Item: ${transaction.purchasedItem ?? '-'}', style: const TextStyle(color: Colors.white70)),
-          Text('Amount: \u20B9${transaction.amount?.toStringAsFixed(2) ?? '-'}', style: const TextStyle(color: Colors.white70)),
-          Text('Method: ${transaction.paymentMethod ?? '-'}', style: const TextStyle(color: Colors.white70)),
-          Text('Date: ${transaction.paymentDate ?? '-'}', style: const TextStyle(color: Colors.white70)),
-          const SizedBox(height: 4),
-          Text('Status: ${transaction.status ?? '-'}', style: TextStyle(color: _statusColor(transaction.status), fontWeight: FontWeight.bold)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  transaction.studentName ?? '-',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.1,
+                  ),
+                ),
+              ),
+              // Beautiful glowing status pill
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: col.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: col.withOpacity(0.25),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: col.withOpacity(0.04),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+                child: Text(
+                  status.toUpperCase(),
+                  style: TextStyle(
+                    color: col,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Divider(color: Colors.white.withOpacity(0.06), height: 1, thickness: 1),
+          const SizedBox(height: 12),
+          _buildDetailRow('Item', transaction.purchasedItem ?? '-'),
+          const SizedBox(height: 6),
+          _buildDetailRow('Amount', '\u20B9${transaction.amount?.toStringAsFixed(2) ?? '-'}', isValueBold: true),
+          const SizedBox(height: 6),
+          _buildDetailRow('Payment Method', transaction.paymentMethod ?? '-'),
+          const SizedBox(height: 6),
+          _buildDetailRow('Transaction Date', transaction.paymentDate ?? '-'),
         ],
       ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String val, {bool isValueBold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white38,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          val,
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 12,
+            fontWeight: isValueBold ? FontWeight.bold : FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -259,7 +549,13 @@ class _ShimmerPlaceholders extends StatelessWidget {
       height: height,
       width: width,
       margin: const EdgeInsets.symmetric(vertical: 8),
-      color: Colors.white30,
+      decoration: BoxDecoration(
+        color: const Color(0xFF061511).withOpacity(0.85),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.greenAccent.withOpacity(0.04),
+        ),
+      ),
     );
   }
 
@@ -275,14 +571,18 @@ class _ShimmerPlaceholders extends StatelessWidget {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: 4,
-            itemBuilder: (_, i) => Container(width: 150, margin: const EdgeInsets.only(right: 12), child: _shimmerBox(height: 120)),
+            itemBuilder: (_, i) => Container(
+              width: 150,
+              margin: const EdgeInsets.only(right: 12),
+              child: _shimmerBox(height: 120),
+            ),
           ),
         ),
         const SizedBox(height: 24),
         // transaction list placeholder
-        _shimmerBox(height: 20),
-        _shimmerBox(height: 20),
-        _shimmerBox(height: 20),
+        _shimmerBox(height: 40),
+        _shimmerBox(height: 80),
+        _shimmerBox(height: 80),
       ],
     );
   }

@@ -11,68 +11,126 @@ class HeaderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF140A2E), Color(0xFF1A0033)],
+          colors: [
+            const Color(0xFF0F3D34).withOpacity(0.3),
+            const Color(0xFF020B08).withOpacity(0.8),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
+        border: Border.all(
+          color: const Color(0xFF00E676).withOpacity(0.15),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00E676).withOpacity(0.03),
+            blurRadius: 20,
+            spreadRadius: 2,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ///  TOP ROW
+          /// TOP ROW
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF00E676),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        "MENTOR PLATFORM",
+                        style: TextStyle(
+                          color: Color(0xFF00E676),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+
+                  /// NAME
                   const Text(
                     "Mentor Dashboard",
-                    style: TextStyle(color: Colors.white60, fontSize: 13),
-                  ),
-                  const SizedBox(height: 6),
-
-                  ///  NAME
-                  const Text(
-                    "Mentor",
                     style: TextStyle(
-                      fontSize: 26,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFFB388FF),
+                      color: Colors.white,
+                      letterSpacing: 0.5,
                     ),
                   ),
 
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
 
-                  ///  ROLE
+                  /// ROLE
                   Text(
-                    data.role.isNotEmpty ? data.role : "Mentor",
-                    style: const TextStyle(color: Colors.white38, fontSize: 12),
+                    data.role.isNotEmpty ? data.role : "Professional Mentor",
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.5),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
 
-              ///  AVATAR
+              /// AVATAR
               GestureDetector(
                 onTap: () => context.go('/mentor-profile'),
                 child: Container(
-                  height: 48,
-                  width: 48,
-                  decoration: const BoxDecoration(
+                  height: 52,
+                  width: 52,
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.greenAccent,
+                    border: Border.all(
+                      color: const Color(0xFF00E676),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF00E676).withOpacity(0.25),
+                        blurRadius: 10,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0C2D24), Color(0xFF041410)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                   ),
                   child: const Center(
                     child: Text(
                       "M",
                       style: TextStyle(
-                        color: Colors.black,
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ),
@@ -81,31 +139,35 @@ class HeaderWidget extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
-          ///  STATS ROW
+          /// STATS ROW
           Row(
             children: [
               Expanded(
                 child: StatCard(
                   "${data.sessionsDone}",
                   "Sessions Done",
-                  Colors.purple,
+                  const Color(0xFF00E676),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
 
               Expanded(
                 child: StatCard(
                   "₹${data.earnings}",
                   "Total Earnings",
-                  Colors.orange,
+                  const Color(0xFF00E676),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
 
               Expanded(
-                child: StatCard("${data.rating} ⭐", "Rating", Colors.green),
+                child: StatCard(
+                  "${data.rating} ★",
+                  "Rating",
+                  const Color(0xFF00E676),
+                ),
               ),
             ],
           ),

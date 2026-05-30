@@ -5,18 +5,33 @@ class BookingsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
-        Text(
-          "Bookings",
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+        Container(
+          width: 4,
+          height: 22,
+          decoration: BoxDecoration(
+            color: const Color(0xFF00E676),
+            borderRadius: BorderRadius.circular(4),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF00E676).withOpacity(0.4),
+                blurRadius: 6,
+                spreadRadius: 1,
+              ),
+            ],
           ),
         ),
-        SizedBox(width: 8),
-        Text("📅", style: TextStyle(fontSize: 20)),
+        const SizedBox(width: 12),
+        const Text(
+          "Mentor Bookings",
+          style: TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 0.5,
+          ),
+        ),
       ],
     );
   }

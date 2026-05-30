@@ -10,38 +10,51 @@ class StatBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 90,
-      padding: const EdgeInsets.all(16),
+      height: 96,
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-
-        /// 🔥 DARK GREEN GRADIENT BG
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0F2A20), Color(0xFF0A1F18)],
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF0F3D34).withOpacity(0.2),
+            const Color(0xFF020B08).withOpacity(0.4),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-
-        /// 🔥 SOFT BORDER
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(
+          color: const Color(0xFF00E676).withOpacity(0.15),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00E676).withOpacity(0.02),
+            blurRadius: 12,
+            spreadRadius: 1,
+          ),
+        ],
       ),
-
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, // 👈 LEFT ALIGN
+        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             value,
-            style: TextStyle(
-              color: color,
-              fontSize: 22,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             label,
-            style: const TextStyle(color: Colors.white38, fontSize: 12),
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.4),
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),

@@ -15,10 +15,32 @@ class EarningsScreen extends StatefulWidget {
   State<EarningsScreen> createState() => _EarningsScreenState();
 }
 
-class _EarningsScreenState extends State<EarningsScreen> {
+class _EarningsScreenState extends State<EarningsScreen> with SingleTickerProviderStateMixin {
+  late final AnimationController _animController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<double> _slideAnimation;
+
   @override
   void initState() {
     super.initState();
+    
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+    );
+
+    _slideAnimation = Tween<double>(begin: 40.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _animController,
+        curve: const Interval(0.2, 1.0, curve: Curves.easeOutCubic),
+      ),
+    );
+
     Future.microtask(() {
       if (mounted) {
         context.read<MentorEarningsController>().fetchEarnings();
@@ -27,16 +49,22 @@ class _EarningsScreenState extends State<EarningsScreen> {
   }
 
   @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF050A0A),
+      backgroundColor: const Color(0xFF020B08),
       body: SafeArea(
         child: Consumer<MentorEarningsController>(
           builder: (context, controller, child) {
             if (controller.isLoading) {
               return const Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFF16C47F),
+                  color: Color(0xFF00E676),
                 ),
               );
             }
@@ -62,7 +90,8 @@ class _EarningsScreenState extends State<EarningsScreen> {
                       const SizedBox(height: 24),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF16C47F),
+                          backgroundColor: const Color(0xFF00E676),
+                          foregroundColor: Colors.black,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -79,6 +108,9 @@ class _EarningsScreenState extends State<EarningsScreen> {
               );
             }
 
+            // Start animations once dashboard data is available
+            _animController.forward();
+
             final model = controller.earnings;
             final stats = model?.stats;
             final recentSessions = model?.recentSessions ?? [];
@@ -90,141 +122,226 @@ class _EarningsScreenState extends State<EarningsScreen> {
             final pendingClearance = stats?.pendingClearance ?? 0.0;
 
             return Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const EarningsHeader(),
-                  const SizedBox(height: 16),
-
-                  TotalEarningsCard(
-                    totalEarnings: totalEarnings,
-                    sessionsCompleted: sessionsCompleted,
-                    monthlyEarnings: monthlyEarnings,
+                  const SizedBox(height: 24),
+                  
+                  // Header Animated Fade-In
+                  AnimatedBuilder(
+                    animation: _animController,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: _fadeAnimation.value,
+                        child: child,
+                      );
+                    },
+                    child: const EarningsHeader(),
                   ),
                   const SizedBox(height: 20),
-
-                  /// stats grid
-                  Row(
-                    children: [
-                      Expanded(
-                        child: EarningsStatBox(
-                          "₹${monthlyEarnings.toStringAsFixed(0)}",
-                          "Monthly Earnings",
-                          const Color(0xFFB388FF),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: EarningsStatBox(
-                          "₹${(sessionsCompleted > 0 ? (totalEarnings / sessionsCompleted) : 0.0).toStringAsFixed(0)}",
-                          "Avg per Session",
-                          const Color(0xFFFFB020),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: EarningsStatBox(
-                          "₹${netEarnings.toStringAsFixed(0)}",
-                          "Net Earnings",
-                          const Color(0xFF16C47F),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: EarningsStatBox(
-                          "₹${pendingClearance.toStringAsFixed(0)}",
-                          "Pending Clearance",
-                          const Color(0xFF00E5FF),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  const Text(
-                    "Recent Payouts",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
 
                   Expanded(
-                    child: ListView(
-                      children: [
-                        if (recentSessions.isEmpty)
-                          const SizedBox(
-                            height: 100,
-                            child: Center(
-                              child: Text(
-                                "No recent payouts found",
-                                style: TextStyle(color: Colors.white38),
-                              ),
-                            ),
-                          )
-                        else
-                          ...recentSessions.map((item) {
-                            final dateStr = (item is Map && item.containsKey('date'))
-                                ? item['date']?.toString() ?? "N/A"
-                                : "N/A";
-                            final sessionsStr = (item is Map && item.containsKey('sessions'))
-                                ? "${item['sessions']} sessions"
-                                : "1 session";
-                            final amountStr = (item is Map && item.containsKey('amount'))
-                                ? "₹${item['amount']}"
-                                : "₹0";
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: PayoutCard(
-                                date: dateStr,
-                                sessions: sessionsStr,
-                                amount: amountStr,
-                              ),
-                            );
-                          }),
-                        const SizedBox(height: 10),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF16C47F),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                    child: AnimatedBuilder(
+                      animation: _animController,
+                      builder: (context, child) {
+                        return Opacity(
+                          opacity: _fadeAnimation.value,
+                          child: Transform.translate(
+                            offset: Offset(0, _slideAnimation.value),
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: ListView(
+                        physics: const BouncingScrollPhysics(),
+                        children: [
+                          TotalEarningsCard(
+                            totalEarnings: totalEarnings,
+                            sessionsCompleted: sessionsCompleted,
+                            monthlyEarnings: monthlyEarnings,
+                          ),
+                          const SizedBox(height: 24),
+
+                          /// Stats Grid
+                          Row(
+                            children: [
+                              Expanded(
+                                child: EarningsStatBox(
+                                  "₹${monthlyEarnings.toStringAsFixed(0)}",
+                                  "Monthly Earnings",
+                                  const Color(0xFF00E676),
                                 ),
                               ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => WithdrawScreen(
-                                      availableBalance: pendingClearance,
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: EarningsStatBox(
+                                  "₹${(sessionsCompleted > 0 ? (totalEarnings / sessionsCompleted) : 0.0).toStringAsFixed(0)}",
+                                  "Avg per Session",
+                                  const Color(0xFF00E676),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: EarningsStatBox(
+                                  "₹${netEarnings.toStringAsFixed(0)}",
+                                  "Net Earnings",
+                                  const Color(0xFF00E676),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: EarningsStatBox(
+                                  "₹${pendingClearance.toStringAsFixed(0)}",
+                                  "Pending Clearance",
+                                  const Color(0xFF00E676),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 28),
+
+                          Row(
+                            children: [
+                              Container(
+                                width: 4,
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF00E676),
+                                  borderRadius: BorderRadius.circular(4),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF00E676).withOpacity(0.4),
+                                      blurRadius: 6,
+                                      spreadRadius: 1,
                                     ),
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                "Withdraw ₹${pendingClearance.toStringAsFixed(0)}",
-                                style: const TextStyle(
-                                  color: Colors.black,
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              const Text(
+                                "Recent Payouts",
+                                style: TextStyle(
+                                  color: Colors.white,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          if (recentSessions.isEmpty)
+                            Container(
+                              height: 100,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0F3D34).withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: const Color(0xFF00E676).withOpacity(0.1),
+                                  width: 1.2,
+                                ),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  "No recent payouts found",
+                                  style: TextStyle(color: Colors.white38),
+                                ),
+                              ),
+                            )
+                          else
+                            ...recentSessions.map((item) {
+                              final dateStr = (item is Map && item.containsKey('date'))
+                                  ? item['date']?.toString() ?? "N/A"
+                                  : "N/A";
+                              final sessionsStr = (item is Map && item.containsKey('sessions'))
+                                  ? "${item['sessions']} sessions"
+                                  : "1 session";
+                              final amountStr = (item is Map && item.containsKey('amount'))
+                                  ? "₹${item['amount']}"
+                                  : "₹0";
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: PayoutCard(
+                                  date: dateStr,
+                                  sessions: sessionsStr,
+                                  amount: amountStr,
+                                ),
+                              );
+                            }),
+
+                          const SizedBox(height: 24),
+                          
+                          /// Withdraw Button
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: Container(
+                              width: double.infinity,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF00E676),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF00E676).withOpacity(0.3),
+                                    blurRadius: 16,
+                                    spreadRadius: 2,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: TextButton(
+                                style: TextButton.styleFrom(
+                                  foregroundColor: const Color(0xFF031B15),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => WithdrawScreen(
+                                        availableBalance: pendingClearance,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.account_balance_wallet_rounded,
+                                      color: Color(0xFF031B15),
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      "Withdraw ₹${pendingClearance.toStringAsFixed(0)}",
+                                      style: const TextStyle(
+                                        color: Color(0xFF031B15),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
+                          
+                          // Bottom Navigation Margins
+                          const SizedBox(height: 120),
+                        ],
+                      ),
                     ),
                   ),
                 ],
