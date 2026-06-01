@@ -283,7 +283,7 @@ class _MentorProfileScreenState extends State<MentorProfileScreen> with SingleTi
                                             if (error == null) {
                                               ScaffoldMessenger.of(context).showSnackBar(
                                                 const SnackBar(
-                                                  content: Text('✅ Profile changes saved successfully!'),
+                                                  content: Text('✅ Availability updated successfully.'),
                                                   backgroundColor: Color(0xFF00E676),
                                                   behavior: SnackBarBehavior.floating,
                                                 ),

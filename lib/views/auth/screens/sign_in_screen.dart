@@ -26,8 +26,13 @@ class _SignInScreenState extends State<SignInScreen> {
   Widget build(BuildContext context) {
     final vm = Provider.of<AuthViewModel>(context);
 
-    return Scaffold(
-      backgroundColor: bgColor,
+    return WillPopScope(
+      onWillPop: () async {
+        context.go('/role');
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: bgColor,
 
       ///  APPBAR
       appBar: AppBar(
@@ -250,7 +255,8 @@ class _SignInScreenState extends State<SignInScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 

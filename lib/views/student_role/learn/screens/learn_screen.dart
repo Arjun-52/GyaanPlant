@@ -54,237 +54,224 @@ class _LearnScreenState extends State<LearnScreen> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF020B08),
-      body: Stack(
-        children: [
-          // ── BACKGROUND GLOW LAYER ─────────────────────────────────────────
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF00E676).withValues(alpha: 0.06),
-                    blurRadius: 120,
-                    spreadRadius: 40,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 100,
-            left: -150,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF00B0FF).withValues(alpha: 0.04),
-                    blurRadius: 150,
-                    spreadRadius: 50,
-                  ),
-                ],
-              ),
-            ),
-          ),
+    return Consumer<LearningViewModel>(
+      builder: (context, vm, child) {
+        if (vm.isLoading) {
+          return const Scaffold(
+            backgroundColor: Color(0xFF020B08),
+            body: _LearningScreenLoader(),
+          );
+        }
 
-          // ── MAIN CONTENT LAYER ─────────────────────────────────────────────
-          Consumer<LearningViewModel>(
-            builder: (context, vm, child) {
-              if (vm.isLoading) {
-                return const _LearningScreenLoader();
-              }
+        if (vm.errorMessage != null) {
+          return Scaffold(
+            backgroundColor: const Color(0xFF020B08),
+            body: _buildErrorState(vm.errorMessage!),
+          );
+        }
 
-              if (vm.errorMessage != null) {
-                return _buildErrorState(vm.errorMessage!);
-              }
+        final availableCourses = vm.availableFilteredCourses;
+        final showBottomBar = availableCourses.isNotEmpty || vm.searchQuery.isNotEmpty || vm.selectedCategory != 'All';
 
-              final availableCourses = vm.availableFilteredCourses;
-
-              return FadeTransition(
-                opacity: _fadeAnimation,
-                child: Stack(
-                  children: [
-                    SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const LearningHeader(),
-                          
-                          // Search Box
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: SearchInputField(
-                              onChanged: (query) {
-                                vm.updateSearchQuery(query);
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          
-                          // Category Selector
-                          const FilterChips(),
-                          const SizedBox(height: 22),
-
-                          // Courses Heading
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              "Available Modules (${availableCourses.length})",
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontFamily: 'Gilroy-Semibold',
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF8fa59e),
-                                letterSpacing: 0.5,
+        return Scaffold(
+          backgroundColor: const Color(0xFF020B08),
+          bottomNavigationBar: showBottomBar
+              ? Container(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                  color: const Color(0xFF020B08),
+                  child: SafeArea(
+                    top: false,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              Feedback.forTap(context);
+                              context.push('/my-courses');
+                            },
+                            child: Container(
+                              height: 52,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF00E676), Color(0xFF00B0FF)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF00E676).withValues(alpha: 0.25),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                                border: Border.all(
+                                  color: const Color(0xFF00E676),
+                                  width: 1.5,
+                                ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Courses List
-                          if (availableCourses.isEmpty)
-                            _buildEmptyState(vm)
-                          else
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Column(
-                                children: List.generate(availableCourses.length, (index) {
-                                  final course = availableCourses[index];
-                                  
-                                  // Staggered animated entrance for each card
-                                  return TweenAnimationBuilder<double>(
-                                    tween: Tween(begin: 0.0, end: 1.0),
-                                    duration: const Duration(milliseconds: 400),
-                                    curve: Curves.easeOutCubic,
-                                    builder: (context, val, child) {
-                                      return Transform.translate(
-                                        offset: Offset(0, 30 * (1.0 - val)),
-                                        child: Opacity(
-                                          opacity: val,
-                                          child: child,
-                                        ),
-                                      );
-                                    },
-                                    child: CourseProgressCard(
-                                      courseId: course.id,
-                                      title: course.title,
-                                      subtitle: '${course.totalModules} comprehensive modules',
-                                      percentText: '0%',
-                                      progressCount: '0/${course.totalModules}',
-                                      progress: 0.0,
-                                      progressColor: const Color(0xFF00E676),
-                                      tag: 'New',
-                                      tagColor: const Color(0xFF00E676),
-                                      isEnrolled: false,
-                                      thumbnail: course.thumbnail,
-                                    ),
-                                  );
-                                }),
-                              ),
-                            ),
-
-                          // Spacer to allow scrolling past the floating bottom CTA bar
-                          const SizedBox(height: 130),
-                        ],
-                      ),
-                    ),
-
-                    // ── FLOATING GLASS MY COURSES BAR ──────────────────────────
-                    if (availableCourses.isNotEmpty || vm.searchQuery.isNotEmpty || vm.selectedCategory != 'All')
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.transparent,
-                                const Color(0xFF020B08).withValues(alpha: 0.8),
-                                const Color(0xFF020B08),
-                              ],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            ),
-                          ),
-                          child: SafeArea(
-                            top: false,
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      Feedback.forTap(context);
-                                      context.push('/my-courses');
-                                    },
-                                    child: Container(
-                                      height: 52,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(16),
-                                        gradient: const LinearGradient(
-                                          colors: [Color(0xFF00E676), Color(0xFF00B0FF)],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: const Color(0xFF00E676).withValues(alpha: 0.25),
-                                            blurRadius: 15,
-                                            offset: const Offset(0, 4),
-                                          ),
-                                        ],
-                                        border: Border.all(
-                                          color: const Color(0xFF00E676),
-                                          width: 1.5,
-                                        ),
-                                      ),
-                                      child: const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.local_library_rounded,
-                                            color: Color(0xFF020B08),
-                                            size: 20,
-                                          ),
-                                          SizedBox(width: 10),
-                                          Text(
-                                            "My Enrolled Courses",
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontFamily: 'Gilroy-Semibold',
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF020B08),
-                                              letterSpacing: 0.3,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.local_library_rounded,
+                                    color: Color(0xFF020B08),
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    "My Enrolled Courses",
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontFamily: 'Gilroy-Semibold',
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF020B08),
+                                      letterSpacing: 0.3,
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                )
+              : null,
+          body: Stack(
+            children: [
+              // ── BACKGROUND GLOW LAYER ─────────────────────────────────────────
+              Positioned(
+                top: -100,
+                right: -100,
+                child: Container(
+                  width: 300,
+                  height: 300,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF00E676).withValues(alpha: 0.06),
+                        blurRadius: 120,
+                        spreadRadius: 40,
                       ),
-                  ],
+                    ],
+                  ),
                 ),
-              );
-            },
+              ),
+              Positioned(
+                bottom: 100,
+                left: -150,
+                child: Container(
+                  width: 400,
+                  height: 400,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF00B0FF).withValues(alpha: 0.04),
+                        blurRadius: 150,
+                        spreadRadius: 50,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // ── MAIN CONTENT LAYER ─────────────────────────────────────────────
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const LearningHeader(),
+                      
+                      // Search Box
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: SearchInputField(
+                          onChanged: (query) {
+                            vm.updateSearchQuery(query);
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      
+                      // Category Selector
+                      const FilterChips(),
+                      const SizedBox(height: 22),
+
+                      // Courses Heading
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          "Available Modules (${availableCourses.length})",
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontFamily: 'Gilroy-Semibold',
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF8fa59e),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Courses List
+                      if (availableCourses.isEmpty)
+                        _buildEmptyState(vm)
+                      else
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(
+                            children: List.generate(availableCourses.length, (index) {
+                              final course = availableCourses[index];
+                              
+                              // Staggered animated entrance for each card
+                              return TweenAnimationBuilder<double>(
+                                tween: Tween(begin: 0.0, end: 1.0),
+                                duration: const Duration(milliseconds: 400),
+                                curve: Curves.easeOutCubic,
+                                builder: (context, val, child) {
+                                  return Transform.translate(
+                                    offset: Offset(0, 30 * (1.0 - val)),
+                                    child: Opacity(
+                                      opacity: val,
+                                      child: child,
+                                    ),
+                                  );
+                                },
+                                child: CourseProgressCard(
+                                  courseId: course.id,
+                                  title: course.title,
+                                  subtitle: '${course.totalModules} comprehensive modules',
+                                  percentText: '0%',
+                                  progressCount: '0/${course.totalModules}',
+                                  progress: 0.0,
+                                  progressColor: const Color(0xFF00E676),
+                                  tag: 'New',
+                                  tagColor: const Color(0xFF00E676),
+                                  isEnrolled: false,
+                                  thumbnail: course.thumbnail,
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
+
+                      // Normal bottom spacing
+                      const SizedBox(height: 30),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

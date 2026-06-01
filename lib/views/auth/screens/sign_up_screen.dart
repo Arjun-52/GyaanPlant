@@ -60,8 +60,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<AuthViewModel>(context);
-    return Scaffold(
-      backgroundColor: bgColor,
+    return WillPopScope(
+      onWillPop: () async {
+        if (vm.currentStep > 1) {
+          vm.previousStep();
+          return false;
+        }
+        context.go('/role');
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: bgColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -177,8 +186,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   ///  STEP CONTENT
   Widget _buildStepContent(AuthViewModel vm) {

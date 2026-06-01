@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../../viewmodels/student_viewmodel/student_tab_controller.dart';
-
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import '../../../../viewmodels/student_viewmodel/student_tab_controller.dart';
+import '../../../../core/utils/greeting_helper.dart';
 
 class HomeHeader extends StatefulWidget {
   final String name;
@@ -47,16 +43,8 @@ class _HomeHeaderState extends State<HomeHeader> with SingleTickerProviderStateM
     final firstName = parts.isNotEmpty ? parts[0] : "";
     final lastName = parts.length > 1 ? parts[1] : "";
 
-    // Determine standard greeting based on current time
-    final hour = DateTime.now().hour;
-    final String timeGreeting;
-    if (hour < 12) {
-      timeGreeting = "Good morning 👋";
-    } else if (hour < 17) {
-      timeGreeting = "Good afternoon 👋";
-    } else {
-      timeGreeting = "Good evening 👋";
-    }
+    // Determine standard greeting based on current time using the reusable GreetingHelper
+    final String timeGreeting = "${GreetingHelper.getTimeGreetingPrefix()} 👋";
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),

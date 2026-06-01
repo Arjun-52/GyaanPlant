@@ -5,6 +5,8 @@ import 'package:gyaanplant/viewmodels/tpo_viewmodels/tpo_notification_viewmodel.
 import 'package:gyaanplant/views/tpo_role/notification/screens/tpo_notification_screen.dart';
 import 'package:gyaanplant/views/HOD_role/naac/screens/naac_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
+import 'package:gyaanplant/core/utils/greeting_helper.dart';
 
 class TPODashboard extends StatefulWidget {
   final VoidCallback? onProfileTap;
@@ -288,6 +290,10 @@ class _TPODashboardState extends State<TPODashboard> with TickerProviderStateMix
   }
 
   Widget _buildHeroHeader(TpoDashboardViewModel vm) {
+    final authVm = context.watch<AuthViewModel>();
+    final user = authVm.user;
+    final String greetingStr = GreetingHelper.getGreeting(user?.name, user?.role ?? 'TPO');
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -317,10 +323,10 @@ class _TPODashboardState extends State<TPODashboard> with TickerProviderStateMix
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
-                  'Good morning, TPO 👋',
-                  style: TextStyle(
+                  greetingStr,
+                  style: const TextStyle(
                     fontFamily: 'Gilroy-Bold',
                     color: Colors.white,
                     fontSize: 20,
@@ -328,8 +334,8 @@ class _TPODashboardState extends State<TPODashboard> with TickerProviderStateMix
                     letterSpacing: -0.3,
                   ),
                 ),
-                SizedBox(height: 6),
-                Text(
+                const SizedBox(height: 6),
+                const Text(
                   'Manage placements, track readiness, and drive student success.',
                   style: TextStyle(
                     fontFamily: 'Gilroy-Medium',

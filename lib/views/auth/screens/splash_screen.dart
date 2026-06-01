@@ -232,10 +232,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                         scale: _pulseAnimation,
                         child: GestureDetector(
                           onTap: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (_) => const SignInScreen()),
-                            );
+                            context.go('/role');
                           },
                           child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 40),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/role_viewmodel.dart';
 
 import '../widgets/header_section.dart';
@@ -20,8 +21,13 @@ class _RoleScreenState extends State<RoleScreen> {
     final screenWidth = mediaQuery.size.width;
     final screenHeight = mediaQuery.size.height;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF030705), // Deep dark black background
+    return WillPopScope(
+      onWillPop: () async {
+        context.go('/splash');
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF030705), // Deep dark black background
       body: Stack(
         children: [
           // Ambient Glow Orbs
@@ -63,8 +69,9 @@ class _RoleScreenState extends State<RoleScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _GlowingOrb extends StatefulWidget {

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:gyaanplant/core/utils/app_logger.dart';
+import 'package:gyaanplant/core/utils/greeting_helper.dart';
 
 class CareerRoadmapViewModel extends ChangeNotifier {
   static const _tag = 'CareerRoadmapViewModel';
@@ -217,8 +218,7 @@ class CareerRoadmapViewModel extends ChangeNotifier {
   }
 
   String _generateAIMessage() {
-    final hour = DateTime.now().hour;
-    String greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    final greeting = GreetingHelper.getTimeGreetingPrefix();
     
     return "$greeting! Based on your profile and completed skills, I've designed a personalized 90-day roadmap to make you job ready. Your SQL fundamentals are strong, and you're making great progress in Python. Let's focus on Power BI next week to boost your data visualization skills.";
   }

@@ -39,8 +39,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: bgColor,
+    return WillPopScope(
+      onWillPop: () async {
+        context.go('/signin');
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: bgColor,
 
       body: SafeArea(
         child: SingleChildScrollView(
@@ -50,7 +55,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             children: [
               /// 🔙 BACK
               IconButton(
-                onPressed: () => context.go('/'),
+                onPressed: () => context.go('/signin'),
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
 
@@ -128,7 +133,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ///  SIGN IN
                       Center(
                         child: GestureDetector(
-                          onTap: () => context.go('/'),
+                          onTap: () => context.go('/signin'),
                           child: RichText(
                             text: TextSpan(
                               text: "Remember your password? ",
@@ -158,6 +163,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
