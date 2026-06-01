@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class SessionCard extends StatelessWidget {
+class SessionCard extends StatefulWidget {
   final String initials;
   final String name;
   final String detail;
   final String time;
   final String topic;
+  final String? meetingLink;
 
   const SessionCard({
     super.key,
@@ -14,7 +16,71 @@ class SessionCard extends StatelessWidget {
     required this.detail,
     required this.time,
     required this.topic,
+    this.meetingLink,
   });
+
+  @override
+  State<SessionCard> createState() => _SessionCardState();
+}
+
+class _SessionCardState extends State<SessionCard> {
+  bool _isLoading = false;
+
+  Future<void> _joinSession() async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final link = widget.meetingLink;
+      if (link == null || link.trim().isEmpty) {
+        _showError("Meeting link is not available yet. Please contact the administrator.");
+        return;
+      }
+
+      final uri = Uri.tryParse(link.trim());
+      if (uri == null || !uri.hasScheme || (uri.scheme != 'http' && uri.scheme != 'https')) {
+        _showError("Meeting link is not available yet. Please contact the administrator.");
+        return;
+      }
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        _showError("Meeting link is not available yet. Please contact the administrator.");
+      }
+    } catch (e) {
+      _showError("Meeting link is not available yet. Please contact the administrator.");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +139,7 @@ class SessionCard extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    initials,
+                    widget.initials,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -89,7 +155,7 @@ class SessionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      name,
+                      widget.name,
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -99,7 +165,7 @@ class SessionCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      detail,
+                      widget.detail,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.4),
                         fontSize: 12,
@@ -134,7 +200,7 @@ class SessionCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  time,
+                  widget.time,
                   style: const TextStyle(
                     color: Color(0xFF00E676),
                     fontWeight: FontWeight.bold,
@@ -145,7 +211,7 @@ class SessionCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    topic,
+                    widget.topic,
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.5),
                       fontSize: 13,
@@ -166,30 +232,42 @@ class SessionCard extends StatelessWidget {
               /// JOIN BUTTON
               Expanded(
                 child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Container(
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF00E676),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF00E676).withOpacity(0.25),
-                          blurRadius: 12,
-                          spreadRadius: 1,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Text(
-                        "Join Session",
-                        style: TextStyle(
-                          color: Color(0xFF031B15),
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                          fontSize: 14,
-                        ),
+                  cursor: _isLoading ? SystemMouseCursors.basic : SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: _isLoading ? null : _joinSession,
+                    child: Container(
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00E676),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF00E676).withOpacity(0.25),
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFF031B15),
+                                ),
+                              )
+                            : const Text(
+                                "Join Session",
+                                style: TextStyle(
+                                  color: Color(0xFF031B15),
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                  fontSize: 14,
+                                ),
+                              ),
                       ),
                     ),
                   ),

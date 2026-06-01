@@ -320,6 +320,7 @@ class _MentorDashboardScreenState extends State<MentorDashboardScreen> with Sing
           detail: "Session",
           time: session.time,
           topic: session.topic,
+          meetingLink: session.meetingLink,
         );
       }).toList(),
     );
