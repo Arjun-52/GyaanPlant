@@ -2,6 +2,7 @@ import '../models/tpo_role_models/drive_model.dart';
 import '../models/tpo_role_models/student_model.dart';
 
 import '../network/api_endpoints.dart';
+import '../core/utils/app_logger.dart';
 import '../network/api_manager.dart';
 import '../network/api_response.dart';
 
@@ -31,13 +32,13 @@ class TpoRepository {
 
   /// POST /api/v1/drive — creates a new placement drive on the backend.
   Future<ApiResponse<Drive>> createDrive(Map<String, dynamic> payload) {
-    print('🔀 TpoRepository.createDrive -> POST ${ApiEndpoints.drives}');
-    print('📨 Payload: $payload');
+    AppLogger.info('TpoRepository', '🔀 TpoRepository.createDrive -> POST ${ApiEndpoints.drives}');
+    AppLogger.debug('TpoRepository', '📨 Payload: $payload');
     return _api.post<Drive>(
       ApiEndpoints.drives,
       data: payload,
       fromJson: (json) {
-        print('📦 Raw createDrive response: $json');
+        AppLogger.debug('TpoRepository', '📦 Raw createDrive response: $json');
         if (json is Map<String, dynamic>) {
           final data = json['data'];
           if (data is Map<String, dynamic>) {
@@ -52,21 +53,21 @@ class TpoRepository {
 
 
   Future<ApiResponse<List<Student>>> getStudents(String collegeId) {
-    print("🌐 STUDENT API REQUEST:");
-    print("URL: ${ApiEndpoints.students}");
-    print("QUERY PARAMS: {college: $collegeId}");
+    AppLogger.info('TpoRepository', '🌐 STUDENT API REQUEST:');
+    AppLogger.debug('TpoRepository', 'URL: ${ApiEndpoints.students}');
+    AppLogger.debug('TpoRepository', 'QUERY PARAMS: {college: $collegeId}');
 
     return _api.get<List<Student>>(
       ApiEndpoints.students,
       queryParameters: {'college': collegeId},
       fromJson: (json) {
-        print("📦 RAW RESPONSE: $json");
+        AppLogger.debug('TpoRepository', '📦 RAW RESPONSE: $json');
         final map = json as Map<String, dynamic>;
         final list = map['data'] as List<dynamic>? ?? [];
         final students = list
             .map((e) => Student.fromJson(e as Map<String, dynamic>))
             .toList();
-        print("📊 FILTERED STUDENTS COUNT: ${students.length}");
+        AppLogger.info('TpoRepository', '📊 FILTERED STUDENTS COUNT: ${students.length}');
         return students;
       },
     );
@@ -94,14 +95,14 @@ class TpoRepository {
       'college': collegeId,
     };
 
-    print('🔀 TPO.onboardStudent -> POST ${ApiEndpoints.students}');
-    print('📨 Request payload: $payload');
+    AppLogger.info('TpoRepository', '🔀 TPO.onboardStudent -> POST ${ApiEndpoints.students}');
+    AppLogger.debug('TpoRepository', '📨 Request payload: $payload');
 
     return _api.post<Student>(
       ApiEndpoints.students,
       data: payload,
       fromJson: (json) {
-        print('📦 Raw onboard response: $json');
+        AppLogger.debug('TpoRepository', '📦 Raw onboard response: $json');
         if (json is Map<String, dynamic>) {
           final data = json['data'];
           if (data is Map<String, dynamic>) {

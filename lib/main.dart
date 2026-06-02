@@ -23,6 +23,7 @@ import 'viewmodels/student_viewmodel/notification_viewmodel.dart';
 import 'viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
 import 'viewmodels/student_viewmodel/organization_viewmodel.dart';
 import 'viewmodels/mentor_viewmodel/mentor_earnings_controller.dart';
+import 'core/utils/app_logger.dart';
 
 void main() async {
   try {
@@ -39,8 +40,8 @@ void main() async {
     final token = await LocalStorageService.getToken();
     AuthCache.token = token;
     AuthCache.role = await LocalStorageService.getRole();
-    print("🔑 TOKEN LOADED ON STARTUP: $token");
-    print("🔑 ROLE LOADED ON STARTUP: ${AuthCache.role}");
+    AppLogger.info('main', '🔑 TOKEN LOADED ON STARTUP: $token');
+    AppLogger.info('main', '🔑 ROLE LOADED ON STARTUP: ${AuthCache.role}');
 
     AuthInterceptor.onUnauthorized = () async {
       await LocalStorageService.clearToken();

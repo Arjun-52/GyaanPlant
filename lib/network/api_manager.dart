@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:dio/io.dart';
 import 'package:dio/dio.dart';
 import 'api_response.dart';
+import '../core/utils/app_logger.dart';
 import 'app_constants.dart';
 import 'auth_cache.dart';
 import 'interceptors/auth_interceptor.dart';
@@ -216,14 +217,14 @@ class NetworkAPIManager {
     T Function(dynamic)? fromJson,
     int retryCount = 0,
   }) async {
-    print("=== API MANAGER DEBUG ===");
-    print("PERFORMING REQUEST (RETRY: $retryCount)");
+    AppLogger.debug('NetworkAPIManager', '=== API MANAGER DEBUG ===');
+    AppLogger.debug('NetworkAPIManager', 'PERFORMING REQUEST (RETRY: $retryCount)');
 
     try {
       final response = await request();
-      print("✅ REQUEST SUCCESSFUL");
-      print("STATUS CODE: ${response.statusCode}");
-      print("RESPONSE DATA: ${response.data}");
+      AppLogger.info('NetworkAPIManager', '✅ REQUEST SUCCESSFUL');
+      AppLogger.debug('NetworkAPIManager', 'STATUS CODE: ${response.statusCode}');
+      AppLogger.debug('NetworkAPIManager', 'RESPONSE DATA: ${response.data}');
 
       return _handleResponse<T>(response, fromJson: fromJson);
     } on DioException catch (e) {
@@ -346,6 +347,5 @@ class NetworkAPIManager {
     }
   }
 
-  // ignore: avoid_print
-  void debugLog(String msg) => print(msg);
+  void debugLog(String msg) => AppLogger.debug('NetworkAPIManager', msg);
 }

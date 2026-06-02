@@ -25,6 +25,7 @@ class SessionCard extends StatefulWidget {
 
 class _SessionCardState extends State<SessionCard> {
   bool _isLoading = false;
+  bool _isRescheduling = false;
 
   Future<void> _joinSession() async {
     if (_isLoading) return;
@@ -34,25 +35,35 @@ class _SessionCardState extends State<SessionCard> {
     });
 
     try {
-      final link = widget.meetingLink;
-      if (link == null || link.trim().isEmpty) {
-        _showError("Meeting link is not available yet. Please contact the administrator.");
+      final rawLink = widget.meetingLink;
+
+      Future<void> _openGoogleMeetOrError() async {
+        final meetUri = Uri.parse('https://meet.google.com');
+        if (await canLaunchUrl(meetUri)) {
+          await launchUrl(meetUri, mode: LaunchMode.externalApplication);
+        } else {
+          _showError("Unable to open Google Meet. Please contact the administrator.");
+        }
+      }
+
+      if (rawLink == null || rawLink.trim().isEmpty) {
+        await _openGoogleMeetOrError();
         return;
       }
 
-      final uri = Uri.tryParse(link.trim());
+      final uri = Uri.tryParse(rawLink.trim());
       if (uri == null || !uri.hasScheme || (uri.scheme != 'http' && uri.scheme != 'https')) {
-        _showError("Meeting link is not available yet. Please contact the administrator.");
+        await _openGoogleMeetOrError();
         return;
       }
 
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
-        _showError("Meeting link is not available yet. Please contact the administrator.");
+        await _openGoogleMeetOrError();
       }
     } catch (e) {
-      _showError("Meeting link is not available yet. Please contact the administrator.");
+      _showError("Unable to open meeting. Please contact the administrator.");
     } finally {
       if (mounted) {
         setState(() {
@@ -80,6 +91,52 @@ class _SessionCardState extends State<SessionCard> {
         ),
       ),
     );
+  }
+
+  Future<void> _rescheduleSession() async {
+    if (_isRescheduling) return;
+
+    setState(() {
+      _isRescheduling = true;
+    });
+
+    try {
+      final rawLink = widget.meetingLink;
+
+      Future<void> _openCalendarOrError() async {
+        final calUri = Uri.parse('https://calendar.google.com');
+        if (await canLaunchUrl(calUri)) {
+          await launchUrl(calUri, mode: LaunchMode.externalApplication);
+        } else {
+          _showError("Unable to open Calendar. Please contact the administrator.");
+        }
+      }
+
+      if (rawLink == null || rawLink.trim().isEmpty) {
+        await _openCalendarOrError();
+        return;
+      }
+
+      final uri = Uri.tryParse(rawLink.trim());
+      if (uri == null || !uri.hasScheme || (uri.scheme != 'http' && uri.scheme != 'https')) {
+        await _openCalendarOrError();
+        return;
+      }
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        await _openCalendarOrError();
+      }
+    } catch (e) {
+      _showError("Unable to open reschedule options. Please contact the administrator.");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRescheduling = false;
+        });
+      }
+    }
   }
 
   @override
@@ -278,26 +335,38 @@ class _SessionCardState extends State<SessionCard> {
               /// RESCHEDULE BUTTON
               Expanded(
                 child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Container(
-                    height: 44,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.12),
-                        width: 1.2,
-                      ),
-                      color: Colors.white.withOpacity(0.04),
-                    ),
-                    child: Center(
-                      child: Text(
-                        "Reschedule",
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                          fontSize: 14,
+                  cursor: _isRescheduling ? SystemMouseCursors.basic : SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: _isRescheduling ? null : _rescheduleSession,
+                    child: Container(
+                      height: 44,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.12),
+                          width: 1.2,
                         ),
+                        color: Colors.white.withOpacity(0.04),
+                      ),
+                      child: Center(
+                        child: _isRescheduling
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                "Reschedule",
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.7),
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                  fontSize: 14,
+                                ),
+                              ),
                       ),
                     ),
                   ),

@@ -5,6 +5,7 @@ import '../../models/payment/item_type.dart';
 import '../../models/payment/payment_result.dart';
 import '../../services/payment_service.dart';
 import '../../data/services/api_service.dart';
+import '../../core/unlocked_packs_cache.dart';
 import 'prep_pack_state.dart';
 
 class PrepPackDetailsViewModel extends ChangeNotifier {
@@ -98,6 +99,8 @@ class PrepPackDetailsViewModel extends ChangeNotifier {
             // Backend confirmed unlock
             _state = PreparationUnlocked(unlockedPack);
             notifyListeners();
+            // Mark unlocked in local cache so other screens update immediately
+            UnlockedPacksCache.add(packId);
             showSuccess("Pack unlocked successfully! 🎉");
           } else {
             // Backend still returning 402 after retries — backend sync lag.
@@ -107,6 +110,8 @@ class PrepPackDetailsViewModel extends ChangeNotifier {
             final forcedUnlock = _copyWithAccess(previewPack);
             _state = PreparationUnlocked(forcedUnlock);
             notifyListeners();
+            // Backend sync lag: force local unlock so UI updates immediately
+            UnlockedPacksCache.add(packId);
             showSuccess(
               "Pack unlocked! ✓ Tap ↻ to refresh if content isn't visible yet.",
             );

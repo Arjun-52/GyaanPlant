@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gyaanplant/models/assessment/mock_test_models.dart';
 import 'package:gyaanplant/views/student_role/Test_/screens/prep_pack_details_screen.dart';
+import 'package:gyaanplant/data/services/api_service.dart';
+import 'package:gyaanplant/core/unlocked_packs_cache.dart';
 
 class TestPackCard extends StatefulWidget {
   final PreparationPackModel pack;
@@ -16,6 +18,7 @@ class _TestPackCardState extends State<TestPackCard>
     with SingleTickerProviderStateMixin {
   late final AnimationController _shimmerCtrl;
   bool _isPressed = false;
+  late bool _hasAccess;
 
   @override
   void initState() {
@@ -24,6 +27,7 @@ class _TestPackCardState extends State<TestPackCard>
       vsync: this,
       duration: const Duration(milliseconds: 2500),
     )..repeat();
+    _hasAccess = widget.pack.hasAccess || UnlockedPacksCache.contains(widget.pack.id);
   }
 
   @override
@@ -405,7 +409,7 @@ class _TestPackCardState extends State<TestPackCard>
               SizedBox(
                 width: double.infinity,
                 height: 50,
-                child: pack.hasAccess
+                child: _hasAccess
                     ? _buildStartButton(context)
                     : _buildUnlockButton(context),
               ),
@@ -512,6 +516,27 @@ class _TestPackCardState extends State<TestPackCard>
         builder: (context) => PrepPackDetailsScreen(packId: widget.pack.id),
       ),
     );
+    // After returning from details screen, verify access status from backend.
+    // If the backend hasn't updated yet, optimistically mark as unlocked
+    // because the details screen performs the unlock flow and may force
+    // an optimistic unlock when verification completes.
+    try {
+      final api = ApiService();
+      final response = await api.assessment.getPrepPackDetails(widget.pack.id);
+      if (response.isSuccess && response.data != null && response.statusCode == 200) {
+        setState(() => _hasAccess = true);
+        UnlockedPacksCache.add(widget.pack.id);
+      } else {
+        // Backend may still be syncing; rely on local optimistic unlock.
+        // Only flip if the previous state was unlocked in details view.
+        setState(() => _hasAccess = widget.pack.hasAccess || _hasAccess);
+      }
+    } catch (_) {
+      // Network or other error: keep existing state but trigger parent
+      // callback so list containers can refresh if they choose to.
+      setState(() => _hasAccess = widget.pack.hasAccess || _hasAccess);
+    }
+
     widget.onReturn?.call();
   }
 
