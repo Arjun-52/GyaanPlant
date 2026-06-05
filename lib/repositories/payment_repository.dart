@@ -71,28 +71,33 @@ class PaymentRepository {
     required String itemId,
     required ItemType itemType,
   }) async {
-    final response = await _api.post<Map<String, dynamic>>(
-      '/api/v1/learning/$itemId/enroll',
-      data: {'itemType': itemType.value},
-      fromJson: (json) => json as Map<String, dynamic>,
-    );
+    try {
+      final response = await _api.post<Map<String, dynamic>>(
+        '/api/v1/learning/$itemId/enroll',
+        data: {'itemType': itemType.value},
+        fromJson: (json) => json as Map<String, dynamic>,
+      );
 
-    if (response.success && response.data?['success'] == true) {
-      AppLogger.info(_tag, 'Course enrollment success: $itemId');
-      return;
+      if (response.success && response.data?['success'] == true) {
+        AppLogger.info(_tag, 'Course enrollment success: $itemId');
+        return;
+      }
+
+      // Idempotent: already-enrolled is treated as success.
+      // Prefer the structured error code; fall back to substring match so this
+      // works whether or not the backend has shipped the ALREADY_ENROLLED code.
+      final errCode = response.error?.code;
+      final errMsg = response.error?.message.toLowerCase() ?? '';
+      if (errCode == 'ALREADY_ENROLLED' || errMsg.contains('already enrolled')) {
+        AppLogger.info(_tag, 'Course already enrolled (idempotent): $itemId');
+        return;
+      }
+
+      throw Exception('Failed to enroll in course: ${response.error?.message}');
+    } catch (e) {
+      if (e.toString().contains('Already enrolled')) return;
+      rethrow;
     }
-
-    // Idempotent: already-enrolled is treated as success.
-    // Prefer the structured error code; fall back to substring match so this
-    // works whether or not the backend has shipped the ALREADY_ENROLLED code.
-    final errCode = response.error?.code;
-    final errMsg = response.error?.message.toLowerCase() ?? '';
-    if (errCode == 'ALREADY_ENROLLED' || errMsg.contains('already enrolled')) {
-      AppLogger.info(_tag, 'Course already enrolled (idempotent): $itemId');
-      return;
-    }
-
-    throw Exception('Failed to enroll in course: ${response.error?.message}');
   }
 
   Future<Map<String, dynamic>> verifyPayment({

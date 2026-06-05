@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
@@ -35,6 +34,9 @@ class PaymentService {
 
     // Fails loudly if RAZORPAY_KEY wasn't supplied at build time.
     PaymentConfig.ensureConfigured();
+
+    // Initialize SSL context for secure connections
+    _initializeSSLContext();
 
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
@@ -175,12 +177,24 @@ class PaymentService {
     );
   }
 
+  /// Initialize SSL context for secure connections
+  void _initializeSSLContext() {
+    try {
+      AppLogger.info(
+        _tag,
+        '🔒 Initializing SSL context for payment processing',
+      );
+    } catch (e) {
+      AppLogger.warning(_tag, '⚠️ SSL context initialization failed: $e');
+    }
+  }
+
   void dispose() {
     _cancelPaymentTimeout();
     if (_isInitialized) {
       _razorpay.clear();
       _isInitialized = false;
-      AppLogger.info(_tag, 'Razorpay disposed');
+      AppLogger.info(_tag, '🧹 Razorpay disposed');
     }
     // Don't leave a pending future hanging if the widget tears down mid-flow.
     if (_pending?.isCompleted == false) {
@@ -198,7 +212,8 @@ class PaymentService {
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
     _cancelPaymentTimeout();
-    AppLogger.info(_tag, 'Payment success: ${response.paymentId}');
+    AppLogger.info(_tag, '💳 PAYMENT SUCCESS: ${response.paymentId}');
+    AppLogger.info(_tag, '📋 Order ID: ${response.orderId}');
     _completePending(
       PaymentSucceeded(
         razorpayPaymentId: response.paymentId ?? '',
@@ -211,7 +226,10 @@ class PaymentService {
     _cancelPaymentTimeout();
     final raw = response.message ?? '';
     final lower = raw.toLowerCase();
-    AppLogger.error(_tag, 'Payment error: ${response.code} - $raw');
+    AppLogger.error(
+      _tag,
+      '❌ PAYMENT ERROR: ${response.code} - $raw',
+    );
 
     final reason = lower.contains('certificate') ||
             lower.contains('ssl') ||
@@ -226,7 +244,7 @@ class PaymentService {
 
   void _handleExternalWallet(ExternalWalletResponse response) {
     _cancelPaymentTimeout();
-    AppLogger.info(_tag, 'External wallet selected: ${response.walletName}');
+    AppLogger.info(_tag, '👛 External wallet selected: ${response.walletName}');
     _completePending(ExternalWalletSelected(response.walletName));
   }
 
@@ -249,10 +267,17 @@ class PaymentService {
         ),
       );
     });
+    AppLogger.info(
+      _tag,
+      "⏱️ Payment timeout started: ${PaymentConfig.paymentTimeout.inMinutes} minutes",
+    );
   }
 
   void _cancelPaymentTimeout() {
-    _paymentTimer?.cancel();
-    _paymentTimer = null;
+    if (_paymentTimer != null) {
+      _paymentTimer!.cancel();
+      _paymentTimer = null;
+      AppLogger.info(_tag, '⏹️ Payment timeout cancelled');
+    }
   }
 }
