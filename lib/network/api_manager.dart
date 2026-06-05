@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:dio/io.dart';
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'api_response.dart';
 import 'app_constants.dart';
@@ -54,6 +56,18 @@ class NetworkAPIManager {
         validateStatus: (status) => status != null && status < 500,
       ),
     );
+
+    //  DEBUG MODE ONLY: Accept invalid SSL certificates
+    // This is a temporary workaround for certificate hostname mismatch
+    // MUST be removed before production release
+    if (kDebugMode) {
+      (_dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
+          (client) {
+        client.badCertificateCallback =
+            (X509Certificate cert, String host, int port) => true;
+        return client;
+      };
+    }
 
     _dio.interceptors.addAll(_config.interceptors);
 
