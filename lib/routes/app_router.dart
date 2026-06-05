@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/views/student_role/learn/screens/course_details_screen.dart';
 import 'package:gyaanplant/views/student_role/learn/screens/my_courses_screen.dart';
@@ -12,8 +11,7 @@ import 'package:gyaanplant/viewmodels/mentor_viewmodel/mentor_dashboard_viewmode
 import 'package:gyaanplant/views/auth/screens/sign_in_screen.dart';
 import 'package:gyaanplant/views/auth/screens/sign_up_screen.dart';
 import 'package:gyaanplant/views/auth/screens/forgot_password_screen.dart';
-import 'package:gyaanplant/views/student_role/career_roadmap/screens/ai_career_roadmap_screen.dart';
-import 'package:gyaanplant/viewmodels/student_viewmodel/career_roadmap_viewmodel.dart';
+import 'package:gyaanplant/views/auth/screens/splash_screen.dart';
 import 'package:gyaanplant/views/student_role/role_/screens/role_screen.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/leaderboard_view.dart';
 import 'package:gyaanplant/views/shells/student_shell.dart';
@@ -26,31 +24,47 @@ import 'package:gyaanplant/views/mentor/sessions/screens/sessions_screen.dart';
 import 'package:gyaanplant/views/mentor/earnings/screens/earnings_screen.dart';
 import 'package:gyaanplant/views/mentor/profile/screens/mentor_profile_screen.dart';
 
-import '../network/auth_cache.dart';
 import '../data/services/local_storage_service.dart';
+import '../network/auth_cache.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/role',
-    debugLogDiagnostics: kDebugMode,
+    initialLocation: '/splash',
+    debugLogDiagnostics: true,
 
     redirect: (context, state) async {
-      // Use in-memory cache first (fast path); fall back to secure storage only
-      // when the cache is cold (e.g. immediately after a cold start).
-      final token = AuthCache.token ?? await LocalStorageService.getToken();
+      // DEVELOPMENT-ONLY BYPASS
+      // Set devBypass = true to bypass login/signup and go straight to Student Dashboard on launch.
+      // Set to false to restore original login/registration routing.
+      const bool devBypass = false;
+
+      var token = await LocalStorageService.getToken();
+      if (token == 'mock_dev_token') {
+        print(" ROUTER: Found old mock_dev_token. Clearing session for a fresh login.");
+        await LocalStorageService.clearToken();
+        await LocalStorageService.removeRole();
+        AuthCache.token = null;
+        token = null;
+      }
+      final role = devBypass ? 'student' : await LocalStorageService.getRole();
       final location = state.uri.toString();
 
-      final isLoggedIn = token != null && token.isNotEmpty;
+      final isLoggedIn = devBypass ? true : (token != null && token.isNotEmpty);
 
+      print("🔄 ROUTER: token=$isLoggedIn role=$role location=$location");
+
+      // NOT LOGGED IN → allow only auth screens
       if (!isLoggedIn) {
-        const authPaths = {'/role', '/', '/signup', '/forgot-password'};
+        const authPaths = {'/role', '/signin', '/', '/signup', '/forgot-password', '/splash'};
         return authPaths.contains(location) ? null : '/role';
       }
 
-      // Logged-in: redirect from auth paths except sign-in after role selection
-      const authPaths = {'/signup', '/forgot-password', '/role'};
-      if (authPaths.contains(location)) {
-        final role = await LocalStorageService.getRole();
+      // LOGGED IN → prevent going to auth screens
+      if (location == '/' ||
+          location == '/signin' ||
+          location == '/signup' ||
+          location == '/forgot-password' ||
+          location == '/role') {
         switch (role) {
           case 'student':
             return '/student-dashboard';
@@ -61,23 +75,31 @@ class AppRouter {
           case 'mentor':
             return '/mentor-dashboard';
           default:
+            if (location == '/role') return null; // Avoid infinite redirect loop
             return '/role';
         }
-      }
-
-      // Allow logged-in users to access sign-in screen (/) after role selection
-      // This enables re-authentication flow
-      if (location == '/') {
-        return null;
       }
 
       return null;
     },
 
     routes: [
+      /// SPLASH
+      GoRoute(
+        path: '/splash',
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+
       ///  AUTH
       GoRoute(
         path: '/',
+        name: 'root',
+        redirect: (context, state) => '/splash',
+      ),
+
+      GoRoute(
+        path: '/signin',
         name: 'signIn',
         builder: (context, state) => const SignInScreen(),
       ),
@@ -119,13 +141,6 @@ class AppRouter {
         path: '/notifications',
         name: 'notifications',
         builder: (context, state) => const StudentNotificationScreen(),
-      ),
-      GoRoute(
-        path: '/ai-career-roadmap',
-        builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => CareerRoadmapViewModel(),
-          child: const AICareerRoadmapScreen(),
-        ),
       ),
 
       ///  HOD

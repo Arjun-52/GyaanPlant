@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/models/tpo_role_models/drive_model.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
 
 class DrivesViewModel extends ChangeNotifier {
-  static const _tag = 'DrivesViewModel';
-
   final _tpo = ApiService().tpo;
 
   List<Drive> _drives = [];
@@ -29,73 +26,81 @@ class DrivesViewModel extends ChangeNotifier {
   }
 
   Future<void> fetchDrives() async {
-    if (_isLoading) return;
+    // Prevent multiple concurrent API calls
+    if (_isLoading) {
+      print('⚠️ fetchDrives() already in progress, skipping');
+      return;
+    }
 
+    print('🚀 DrivesViewModel.fetchDrives() called');
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
+      print('📡 Calling API: _tpo.getDrives()');
       final result = await _tpo.getDrives();
+      print(
+        '📦 API Response: isSuccess=${result.isSuccess}, data=${result.data}',
+      );
 
       if (result.isSuccess) {
         _drives = result.data ?? [];
-        AppLogger.info(_tag, 'Loaded ${_drives.length} drives');
+        print('✅ Successfully loaded ${_drives.length} drives');
       } else {
-        _error = result.error?.message ?? 'Failed to load drives';
-        AppLogger.error(_tag, _error!);
+        print('❌ API Error: ${result.error?.message}');
+        throw Exception(result.error?.message ?? 'Failed to load drives');
       }
-    } catch (e, st) {
+    } catch (e) {
+      print('💥 Exception in fetchDrives(): $e');
       _error = e.toString();
       _drives = [];
-      AppLogger.error(_tag, 'Failed to fetch drives', e, st);
     } finally {
       _isLoading = false;
       notifyListeners();
+      print('🏁 fetchDrives() completed');
     }
   }
 
-  Future<void> refreshDrives() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      final result = await _tpo.getDrives();
-
-      if (result.isSuccess) {
-        _drives = result.data ?? [];
-        AppLogger.info(_tag, 'Refreshed ${_drives.length} drives');
-      } else {
-        _error = result.error?.message ?? 'Failed to refresh drives';
-        AppLogger.error(_tag, _error!);
-      }
-    } catch (e, st) {
-      _error = e.toString();
-      _drives = [];
-      AppLogger.error(_tag, 'Failed to refresh drives', e, st);
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
+  /// Locally append a newly created drive to the in-memory list.
+  ///
+  /// TODO: wire to a backend create-drive endpoint when available. Today the
+  /// frontend constructs the Drive locally and inserts here; a real
+  /// integration should POST first and trust the server's response.
   Future<void> addDrive(Drive drive) async {
+    _drives = [drive, ..._drives];
+    notifyListeners();
+  }
+
+  // Force refresh - bypasses loading guard
+  Future<void> refreshDrives() async {
+    print('🔄 DrivesViewModel.refreshDrives() called - force refresh');
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      // For now, just add the drive to the list locally
-      // TODO: Implement actual API call when backend is ready
-      _drives.insert(0, drive); // Add new drive at the beginning
-      AppLogger.info(_tag, 'Added new drive: ${drive.company}');
-    } catch (e, st) {
+      print('📡 Calling API: _tpo.getDrives() (refresh)');
+      final result = await _tpo.getDrives();
+      print(
+        '📦 API Response: isSuccess=${result.isSuccess}, data=${result.data}',
+      );
+
+      if (result.isSuccess) {
+        _drives = result.data ?? [];
+        print('✅ Successfully refreshed ${_drives.length} drives');
+      } else {
+        print('❌ API Error: ${result.error?.message}');
+        throw Exception(result.error?.message ?? 'Failed to refresh drives');
+      }
+    } catch (e) {
+      print('💥 Exception in refreshDrives(): $e');
       _error = e.toString();
-      AppLogger.error(_tag, 'Failed to add drive', e, st);
+      _drives = [];
     } finally {
       _isLoading = false;
       notifyListeners();
+      print('🏁 refreshDrives() completed');
     }
   }
 }

@@ -42,13 +42,26 @@ class PaymentRepository {
       throw Exception('No order data received from server');
     }
 
+    // Razorpay-side id (`order_...`) is what the SDK and the verify endpoint
+    // expect. Fall back to `orderId` only for older response shapes.
     final orderId = (data['razorpayOrderId'] ?? data['orderId']) as String?;
-    final amount = (data['amountInPaise'] ?? data['amount']) as int?;
-    if (orderId == null || amount == null) {
-      throw Exception('Invalid order response: missing orderId or amount');
+    // SDK expects amount in paise. Prefer `amountInPaise`; fall back to
+    // `amount × 100` if the backend only sent rupees.
+    final paise = data['amountInPaise'] as int?;
+    final rupees = data['amount'] as int?;
+    final amount = paise ?? (rupees != null ? rupees * 100 : null);
+    // Per-order Razorpay public key — backend controls test/live and can
+    // rotate without an app release.
+    final keyId = data['keyId'] as String?;
+
+    if (orderId == null || amount == null || keyId == null) {
+      throw Exception(
+        'Invalid order response: missing one of razorpayOrderId / '
+        'amountInPaise / keyId',
+      );
     }
 
-    return PaidOrder(orderId: orderId, amount: amount);
+    return PaidOrder(orderId: orderId, amount: amount, keyId: keyId);
   }
 
   Future<void> enrollFreeItem({
@@ -100,19 +113,22 @@ class PaymentRepository {
     }
   }
 
+  /// Verify a Razorpay payment with the backend.
+  ///
+  /// Field names match the backend contract exactly (snake_case). The
+  /// signature is mandatory — the backend HMAC-verifies the success callback
+  /// using it, so a missing/wrong signature → 400.
   Future<Map<String, dynamic>> verifyPayment({
     required String razorpayPaymentId,
     required String razorpayOrderId,
-    required String itemId,
-    required ItemType itemType,
+    required String razorpaySignature,
   }) async {
     final response = await _api.post<Map<String, dynamic>>(
       ApiEndpoints.verifyPayment,
       data: {
-        'razorpayPaymentId': razorpayPaymentId,
-        'razorpayOrderId': razorpayOrderId,
-        'itemId': itemId,
-        'itemType': itemType.value,
+        'razorpay_order_id': razorpayOrderId,
+        'razorpay_payment_id': razorpayPaymentId,
+        'razorpay_signature': razorpaySignature,
       },
       fromJson: (json) => json as Map<String, dynamic>,
     );

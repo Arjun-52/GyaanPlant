@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'api_response.dart';
 import 'app_constants.dart';
+import 'auth_cache.dart';
+import 'interceptors/auth_interceptor.dart';
 import 'network_config.dart';
 
 class NetworkAPIManager {
@@ -12,7 +14,6 @@ class NetworkAPIManager {
   final NetworkConfig _config;
   bool _isInitialized = false;
 
-  // Only non-cancelled, in-flight tokens are kept here.
   static final List<CancelToken> _activeCancelTokens = [];
 
   NetworkAPIManager._(this._config) {
@@ -81,9 +82,21 @@ class NetworkAPIManager {
           responseBody: true,
           requestHeader: false,
           responseHeader: false,
+          logPrint: (obj) => debugLog('[API] $obj'),
         ),
       );
     }
+
+    // ── SSL certificate bypass ─────────────────────────────────────────────
+    // The backend server at backend.gyaanplant.com has an incomplete
+    // certificate chain (missing intermediate CA), causing Android's TLS
+    // stack to throw CERTIFICATE_VERIFY_FAILED. This overrides the HttpClient
+    // to accept all certificates for this app's Dio instance.
+    (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+      final client = HttpClient();
+      client.badCertificateCallback = (cert, host, port) => true;
+      return client;
+    };
 
     _isInitialized = true;
   }
@@ -98,16 +111,16 @@ class NetworkAPIManager {
     CancelToken? cancelToken,
   }) async {
     _ensureInitialized();
-    final ct = _track(cancelToken);
+    final token = cancelToken ?? CancelToken();
+    _activeCancelTokens.add(token);
     return _perform(
       () => _dio.get(
         endpoint,
         queryParameters: queryParameters,
         options: options,
-        cancelToken: ct,
+        cancelToken: token,
       ),
       fromJson: fromJson,
-      cancelToken: ct,
     );
   }
 
@@ -120,17 +133,17 @@ class NetworkAPIManager {
     CancelToken? cancelToken,
   }) async {
     _ensureInitialized();
-    final ct = _track(cancelToken);
+    final token = cancelToken ?? CancelToken();
+    _activeCancelTokens.add(token);
     return _perform(
       () => _dio.post(
         endpoint,
         data: data,
         queryParameters: queryParameters,
         options: options,
-        cancelToken: ct,
+        cancelToken: token,
       ),
       fromJson: fromJson,
-      cancelToken: ct,
     );
   }
 
@@ -143,17 +156,17 @@ class NetworkAPIManager {
     CancelToken? cancelToken,
   }) async {
     _ensureInitialized();
-    final ct = _track(cancelToken);
+    final token = cancelToken ?? CancelToken();
+    _activeCancelTokens.add(token);
     return _perform(
       () => _dio.put(
         endpoint,
         data: data,
         queryParameters: queryParameters,
         options: options,
-        cancelToken: ct,
+        cancelToken: token,
       ),
       fromJson: fromJson,
-      cancelToken: ct,
     );
   }
 
@@ -166,17 +179,17 @@ class NetworkAPIManager {
     CancelToken? cancelToken,
   }) async {
     _ensureInitialized();
-    final ct = _track(cancelToken);
+    final token = cancelToken ?? CancelToken();
+    _activeCancelTokens.add(token);
     return _perform(
       () => _dio.patch(
         endpoint,
         data: data,
         queryParameters: queryParameters,
         options: options,
-        cancelToken: ct,
+        cancelToken: token,
       ),
       fromJson: fromJson,
-      cancelToken: ct,
     );
   }
 
@@ -189,25 +202,18 @@ class NetworkAPIManager {
     CancelToken? cancelToken,
   }) async {
     _ensureInitialized();
-    final ct = _track(cancelToken);
+    final token = cancelToken ?? CancelToken();
+    _activeCancelTokens.add(token);
     return _perform(
       () => _dio.delete(
         endpoint,
         data: data,
         queryParameters: queryParameters,
         options: options,
-        cancelToken: ct,
+        cancelToken: token,
       ),
       fromJson: fromJson,
-      cancelToken: ct,
     );
-  }
-
-  /// Register a cancel token and return it (creates one if not supplied).
-  CancelToken _track(CancelToken? supplied) {
-    final ct = supplied ?? CancelToken();
-    _activeCancelTokens.add(ct);
-    return ct;
   }
 
   static void cancelAllRequests() {
@@ -224,11 +230,17 @@ class NetworkAPIManager {
   Future<ApiResponse<T>> _perform<T>(
     Future<Response> Function() request, {
     T Function(dynamic)? fromJson,
-    CancelToken? cancelToken,
     int retryCount = 0,
   }) async {
+    print("=== API MANAGER DEBUG ===");
+    print("PERFORMING REQUEST (RETRY: $retryCount)");
+
     try {
       final response = await request();
+      print("✅ REQUEST SUCCESSFUL");
+      print("STATUS CODE: ${response.statusCode}");
+      print("RESPONSE DATA: ${response.data}");
+
       return _handleResponse<T>(response, fromJson: fromJson);
     } on DioException catch (e) {
       if (retryCount < AppConstants.maxRetries && _shouldRetry(e)) {
@@ -236,7 +248,6 @@ class NetworkAPIManager {
         return _perform(
           request,
           fromJson: fromJson,
-          cancelToken: cancelToken,
           retryCount: retryCount + 1,
         );
       }
@@ -262,9 +273,6 @@ class NetworkAPIManager {
         ),
         statusCode: 500,
       );
-    } finally {
-      // Remove this token from the active list so the list doesn't grow forever.
-      if (cancelToken != null) _activeCancelTokens.remove(cancelToken);
     }
   }
 
@@ -283,6 +291,12 @@ class NetworkAPIManager {
         parsed = raw as T?;
       }
       return ApiResponse.success(data: parsed as T, statusCode: statusCode);
+    }
+
+    // Handle 401 — force logout since validateStatus lets 4xx through
+    if (statusCode == 401) {
+      AuthCache.token = null;
+      AuthInterceptor.onUnauthorized?.call();
     }
 
     final error = _parseErrorBody(response.data);
@@ -347,6 +361,9 @@ class NetworkAPIManager {
       throw StateError('NetworkAPIManager is not properly initialized.');
     }
   }
+
+  // ignore: avoid_print
+  void debugLog(String msg) => print(msg);
 }
 
 // Custom HttpOverrides to bypass SSL certificate verification for development

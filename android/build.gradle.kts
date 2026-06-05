@@ -1,15 +1,5 @@
 allprojects {
     repositories {
-        // Vendored Razorpay Android SDK (avoids Gradle/JBR TLS PKIX failures on some Windows setups).
-        exclusiveContent {
-            forRepository {
-                maven {
-                    name = "RazorpayLocal"
-                    url = uri(rootProject.file("local-maven"))
-                }
-            }
-            filter { includeGroup("com.razorpay") }
-        }
         google()
         mavenCentral()
     }

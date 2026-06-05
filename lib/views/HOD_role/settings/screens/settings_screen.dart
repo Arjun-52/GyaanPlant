@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../viewmodels/HOD_viewmodel/settings_view_model.dart';
-import '../../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

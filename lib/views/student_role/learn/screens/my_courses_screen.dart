@@ -3,6 +3,7 @@ import 'package:gyaanplant/viewmodels/student_viewmodel/learning_viewmodel.dart'
 import 'package:provider/provider.dart';
 
 import '../widgets/course_card.dart';
+import 'course_learning_screen.dart';
 
 class MyCoursesScreen extends StatefulWidget {
   const MyCoursesScreen({super.key});
@@ -53,6 +54,17 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
                   title: course.title,
                   modules: course.totalModules,
                   progress: progress.toDouble(),
+                  onResume: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CourseLearningScreen(
+                          courseId: course.id,
+                          courseTitle: course.title,
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),

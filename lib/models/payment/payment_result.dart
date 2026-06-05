@@ -15,12 +15,18 @@ class FreeEnrollmentSucceeded extends PaymentResult {
 
 /// Razorpay checkout completed successfully. The caller must still verify
 /// the payment with the backend (call `PaymentService.verifyPayment`).
+///
+/// `razorpaySignature` is the HMAC the SDK returned alongside the payment id;
+/// the backend uses it to confirm the success callback came from a real
+/// Razorpay redirect and not a forged client.
 class PaymentSucceeded extends PaymentResult {
   final String razorpayPaymentId;
   final String razorpayOrderId;
+  final String razorpaySignature;
   const PaymentSucceeded({
     required this.razorpayPaymentId,
     required this.razorpayOrderId,
+    required this.razorpaySignature,
   });
 }
 

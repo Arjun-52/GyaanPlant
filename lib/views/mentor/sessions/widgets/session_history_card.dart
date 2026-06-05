@@ -35,7 +35,7 @@ class SessionHistoryCard extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
 
-        border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.2)),
+        border: Border.all(color: Colors.greenAccent.withOpacity(0.2)),
       ),
 
       child: Column(
@@ -101,7 +101,7 @@ class SessionHistoryCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: Colors.white.withOpacity(0.05),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(

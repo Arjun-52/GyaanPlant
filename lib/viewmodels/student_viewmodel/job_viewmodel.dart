@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../core/utils/app_logger.dart';
 import '../../data/services/api_service.dart';
 import '../../models/drive/drive_model.dart';
+import '../../network/auth_cache.dart';
 
 class JobViewModel extends ChangeNotifier {
   static const _tag = 'JobViewModel';
@@ -28,28 +28,62 @@ class JobViewModel extends ChangeNotifier {
   }
 
   Future<void> fetchJobs() async {
-    if (isLoaded) return;
+    print("🚀 CALLING JOBS API - fetchJobs() triggered");
 
+    // Check token before API call
+    final token = AuthCache.token;
+    print(
+      "🔑 TOKEN: ${token != null ? 'Present (${token.length} chars)' : 'MISSING'}",
+    );
+
+    if (isLoaded) {
+      print("⚠️ Already loaded, skipping API call");
+      return;
+    }
+
+    print("🌐 JOBS API URL: /api/v1/drive");
     isLoading = true;
     errorMessage = null;
     notifyListeners();
 
     try {
+      print("📡 Making API call to getDrives()...");
       final result = await _drive.getDrives();
 
-      if (result.isSuccess && result.data != null) {
-        jobs = result.data!.drives;
-        isLoaded = true;
-        AppLogger.info(_tag, 'Loaded ${jobs.length} jobs');
+      print("📦 STATUS: ${result.isSuccess ? 'SUCCESS' : 'FAILED'}");
+      if (result.isSuccess) {
+        print("📊 RESPONSE DATA: ${result.data}");
+
+        if (result.data != null) {
+          jobs = result.data!.drives;
+          isLoaded = true;
+          print("✅ JOBS STORED: ${jobs.length} jobs loaded");
+
+          // Log first job details for debugging
+          if (jobs.isNotEmpty) {
+            final firstJob = jobs.first;
+            print(
+              "🔍 FIRST JOB: id=${firstJob.id}, role=${firstJob.role}, companyName=${firstJob.companyName}",
+            );
+          }
+        } else {
+          print("❌ RESULT DATA IS NULL");
+          errorMessage = 'API returned null data';
+        }
       } else {
+        print("❌ API ERROR: ${result.error?.message}");
         errorMessage = result.error?.message ?? 'Failed to fetch jobs';
-        AppLogger.error(_tag, errorMessage!);
       }
     } catch (e, st) {
+      print("💥 ERROR TYPE: ${e.runtimeType}");
+      print("💥 ERROR: $e");
+      print("📍 STACK: $st");
       errorMessage = e.toString();
-      AppLogger.error(_tag, 'Failed to fetch jobs', e, st);
     } finally {
       isLoading = false;
+      print(
+        "🔔 notifyListeners() called - isLoading=$isLoading, jobs.length=${jobs.length}",
+      );
       if (!_disposed) notifyListeners();
     }
   }

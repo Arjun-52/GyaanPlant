@@ -1,52 +1,48 @@
 import 'package:flutter/material.dart';
-import 'package:gyaanplant/core/utils/app_logger.dart';
 import 'package:gyaanplant/models/mentor_models/mentor_dashboard_model.dart';
 import 'package:gyaanplant/data/services/api_service.dart';
 
 class MentorDashboardViewModel extends ChangeNotifier {
-  static const _tag = 'MentorDashboardViewModel';
-
   final _mentor = ApiService().mentor;
 
   MentorDashboardModel? dashboard;
   bool isLoading = false;
   String? error;
-  bool _disposed = false;
-
-  @override
-  void dispose() {
-    _disposed = true;
-    super.dispose();
-  }
-
-  @override
-  void notifyListeners() {
-    if (!_disposed) super.notifyListeners();
-  }
 
   Future<void> loadDashboard() async {
+    print("🔄 MENTOR VIEWMODEL: Starting loadDashboard");
     isLoading = true;
     error = null;
     notifyListeners();
 
     try {
+      print("🌐 MENTOR API: Calling getDashboard()");
       final result = await _mentor.getDashboard();
+      print("📦 MENTOR API RESPONSE: isSuccess=${result.isSuccess}");
 
       if (result.isSuccess && result.data != null) {
         dashboard = result.data;
-        AppLogger.info(_tag, 'Dashboard loaded — ${dashboard?.name}');
+        print("✅ MENTOR DASHBOARD LOADED:");
+        print("   - Name: ${dashboard?.name}");
+        print("   - Role: ${dashboard?.role}");
+        print("   - Sessions: ${dashboard?.sessionsDone}");
+        print("   - Earnings: ${dashboard?.earnings}");
+        print("   - Rating: ${dashboard?.rating}");
       } else {
+        print("❌ MENTOR API ERROR: ${result.error?.message}");
         error = result.error?.message ?? 'Failed to load dashboard';
         dashboard = null;
-        AppLogger.error(_tag, error!);
       }
-    } catch (e, st) {
+    } catch (e) {
+      print("� MENTOR VIEWMODEL EXCEPTION: $e");
       error = e.toString();
       dashboard = null;
-      AppLogger.error(_tag, 'Failed to load dashboard', e, st);
-    } finally {
-      isLoading = false;
-      if (!_disposed) notifyListeners();
     }
+
+    isLoading = false;
+    notifyListeners();
+    print(
+      "✅ MENTOR VIEWMODEL: loadDashboard completed - hasData=${dashboard != null}",
+    );
   }
 }

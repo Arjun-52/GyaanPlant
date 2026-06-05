@@ -11,12 +11,14 @@ class RoleList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: roles.map((role) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: RoleCard(role: role),
-        );
-      }).toList(),
+      children: roles
+          .map(
+            (role) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: RoleCard(role: role),
+            ),
+          )
+          .toList(),
     );
   }
 }

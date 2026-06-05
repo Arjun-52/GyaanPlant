@@ -14,8 +14,12 @@ class _StudentScreenState extends State<StudentScreen> {
   @override
   void initState() {
     super.initState();
+    print('🎯 StudentScreen.initState() called');
     Future.microtask(() {
-      if (mounted) context.read<StudentViewModel>().initialize();
+      if (mounted) {
+        print('🔔 Calling StudentViewModel.initialize() from initState');
+        context.read<StudentViewModel>().initialize();
+      }
     });
   }
 
@@ -26,7 +30,10 @@ class _StudentScreenState extends State<StudentScreen> {
       body: Consumer<StudentViewModel>(
         builder: (context, viewModel, _) {
           return RefreshIndicator(
-            onRefresh: () => viewModel.refreshStudents(),
+            onRefresh: () {
+              print('🔄 Refresh triggered');
+              return viewModel.refreshStudents();
+            },
             color: Colors.green,
             child: SafeArea(
               child: Padding(
@@ -105,10 +112,10 @@ class _StudentScreenState extends State<StudentScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.green : Colors.white.withValues(alpha: 0.1),
+          color: isSelected ? Colors.green : Colors.white.withOpacity(0.1),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? Colors.green : Colors.white.withValues(alpha: 0.3),
+            color: isSelected ? Colors.green : Colors.white.withOpacity(0.3),
           ),
         ),
         child: Text(
@@ -163,7 +170,10 @@ class _StudentScreenState extends State<StudentScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: viewModel.refreshStudents,
+              onPressed: () {
+                print('🔄 Retry button pressed');
+                viewModel.refreshStudents();
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.black,
@@ -208,6 +218,7 @@ class _StudentScreenState extends State<StudentScreen> {
       );
     }
 
+    print('📱 Displaying ${filteredStudents.length} students');
     return ListView.builder(
       itemCount: filteredStudents.length,
       itemBuilder: (context, index) {

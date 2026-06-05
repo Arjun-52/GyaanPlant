@@ -64,15 +64,17 @@ class LearningRepository {
     );
   }
 
-  /// Get single course by ID.
-  Future<ApiResponse<CourseModel>> getCourseById(String id) {
-    return _api.get<CourseModel>(
+  /// ✅ Get single course by ID (matches Postman: /api/v1/learning/{id})
+  Future<CourseModel> getCourseById(String id) async {
+    final response = await _api.get<Map<String, dynamic>>(
       '${ApiEndpoints.learning}/$id',
-      fromJson: (json) {
-        final map = json as Map<String, dynamic>;
-        return CourseModel.fromJson(map['data'] as Map<String, dynamic>);
-      },
+      fromJson: (json) => json as Map<String, dynamic>,
     );
+
+    print("📦 COURSE DETAILS RESPONSE: ${response.data}");
+    print("📦 COURSE TITLE: ${response.data?['data']?['title']}");
+
+    return CourseModel.fromJson(response.data!['data']!);
   }
 
   /// Get Prep Packs (Test Packs)

@@ -56,7 +56,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               const SizedBox(height: 20),
 
-              /// 🔥 HEADER
+              ///  HEADER
               const Text(
                 "Forgot Password?",
                 style: TextStyle(
@@ -79,18 +79,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               const SizedBox(height: 40),
 
-              /// 🔥 CARD
+              /// CARD
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   color: cardColor,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: primaryGreen.withValues(alpha: 0.2),
-                  ),
+                  border: Border.all(color: primaryGreen.withOpacity(0.2)),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryGreen.withValues(alpha: 0.08),
+                      color: primaryGreen.withOpacity(0.08),
                       blurRadius: 20,
                       spreadRadius: 1,
                     ),
@@ -106,12 +104,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                       CustomTextField(
                         hint: "name@institution.edu",
-                        onChanged: (value) {},
+                        onChanged: (value) {
+                          _emailController.text = value;
+                        },
                       ),
 
                       const SizedBox(height: 30),
 
-                      /// 🔥 BUTTON
+                      ///  BUTTON
                       Consumer<AuthViewModel>(
                         builder: (context, vm, child) {
                           return PrimaryButton(
@@ -125,7 +125,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                       const SizedBox(height: 20),
 
-                      /// 🔗 SIGN IN
+                      ///  SIGN IN
                       Center(
                         child: GestureDetector(
                           onTap: () => context.go('/'),

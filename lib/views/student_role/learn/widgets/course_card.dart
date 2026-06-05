@@ -4,11 +4,13 @@ class CourseCard extends StatelessWidget {
   final String title;
   final int modules;
   final double progress;
+  final VoidCallback? onResume;
 
   const CourseCard({
     required this.title,
     required this.modules,
     required this.progress,
+    this.onResume,
   });
 
   @override
@@ -73,7 +75,7 @@ class CourseCard extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: onResume,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF00E676),
               ),

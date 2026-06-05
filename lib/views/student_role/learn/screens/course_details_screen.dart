@@ -8,8 +8,13 @@ import '../../../../models/learning/learning_model.dart';
 import '../../../../models/payment/item_type.dart';
 import '../../../../models/payment/order_result.dart';
 import '../../../../viewmodels/student_viewmodel/learning_viewmodel.dart';
-import '../../../../config/payment_config.dart';
 import 'package:provider/provider.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/course-details/info_card.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/course-details/section_card.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/course-details/row_item.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/course-details/error_retry_widget.dart';
+import 'package:gyaanplant/views/student_role/learn/widgets/course-details/price_enroll_card.dart';
+import 'package:gyaanplant/views/student_role/learn/screens/course_learning_screen.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
   final String courseId;
@@ -65,16 +70,13 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     });
 
     try {
-      final result = await _learning.getCourseById(widget.courseId);
-      if (result.isSuccess && result.data != null) {
-        course = result.data;
-        if (mounted) {
-          isEnrolled = context.read<LearningViewModel>().isCourseEnrolled(
-            widget.courseId,
-          );
-        }
-      } else {
-        error = result.error?.message ?? 'Failed to load course';
+      // `getCourseById` now returns `CourseModel` directly and throws on
+      // failure — no `ApiResponse` wrapper.
+      course = await _learning.getCourseById(widget.courseId);
+      if (mounted) {
+        isEnrolled = context.read<LearningViewModel>().isCourseEnrolled(
+          widget.courseId,
+        );
       }
     } catch (e) {
       error = e.toString();
@@ -89,22 +91,14 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       'Payment success: paymentId=${response.paymentId} orderId=${response.orderId} itemId=$currentItemId itemType=$currentItemType',
     );
 
-    if (response.paymentId == null) {
-      AppLogger.error(_tag, 'Payment ID is null');
-      if (mounted) setState(() => isPaymentProcessing = false);
-      return;
-    }
-
-    if (response.orderId == null) {
-      AppLogger.error(_tag, 'Order ID is null');
-      if (mounted) setState(() => isPaymentProcessing = false);
-      return;
-    }
-
-    if (currentItemId == null || currentItemType == null) {
+    if (response.paymentId == null ||
+        response.orderId == null ||
+        response.signature == null) {
       AppLogger.error(
         _tag,
-        'Current item details are null: itemId=$currentItemId itemType=$currentItemType',
+        'Razorpay success callback missing field(s): '
+        'paymentId=${response.paymentId} orderId=${response.orderId} '
+        'signature=${response.signature}',
       );
       if (mounted) setState(() => isPaymentProcessing = false);
       return;
@@ -116,8 +110,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       await _apiService.payment.verifyPayment(
         razorpayPaymentId: response.paymentId!,
         razorpayOrderId: response.orderId!,
-        itemId: currentItemId!,
-        itemType: currentItemType!,
+        razorpaySignature: response.signature!,
       );
 
       AppLogger.info(_tag, 'Payment verified; refreshing course list');
@@ -234,14 +227,20 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
       final int amount;
       final String orderId;
+      final String keyId;
       switch (order) {
         case FreeItemOrder():
           AppLogger.info(_tag, 'Course is FREE — direct enrollment');
           await _enrollFreeItem();
           return;
-        case PaidOrder(orderId: final id, amount: final amt):
+        case PaidOrder(
+            orderId: final id,
+            amount: final amt,
+            keyId: final key,
+          ):
           orderId = id;
           amount = amt;
+          keyId = key;
       }
 
       if (amount <= 0) {
@@ -250,7 +249,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       }
 
       final options = {
-        'key': PaymentConfig.razorpayKey,
+        'key': keyId,
         'order_id': orderId,
         'amount': amount,
         'name': 'GyaanPlant',
@@ -261,7 +260,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
       AppLogger.info(
         _tag,
-        'Opening Razorpay: orderId=$orderId amount=₹${(amount / 100).toStringAsFixed(2)} testMode=${PaymentConfig.isTestMode}',
+        'Opening Razorpay: orderId=$orderId amount=₹${(amount / 100).toStringAsFixed(2)} testMode=${keyId.startsWith('rzp_test_')}',
       );
 
       _razorpay.open(options);
@@ -370,16 +369,16 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   }
 
   void _resumeCourse() {
-    // TODO: Navigate to course content
-    // For now, just show a message
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Opening course content...'),
-          backgroundColor: Colors.blue,
+    if (course == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CourseLearningScreen(
+          courseId: widget.courseId,
+          courseTitle: course!.title,
         ),
-      );
-    }
+      ),
+    );
   }
 
   @override
@@ -401,35 +400,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               child: CircularProgressIndicator(color: Color(0xFF00C853)),
             )
           : error != null
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error, color: Colors.red, size: 64),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Error loading course",
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    error!,
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _fetchCourse,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00C853),
-                    ),
-                    child: const Text(
-                      "Retry",
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
-                ],
-              ),
+          ? ErrorRetryWidget(
+              errorMessage: error!,
+              onRetry: _fetchCourse,
             )
           : course == null
           ? const Center(
@@ -458,24 +431,24 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   /// Info cards
                   Row(
                     children: [
-                      _infoCard("Modules", "${course!.totalModules}"),
+                      InfoCard(title: "Modules", value: "${course!.totalModules}"),
                       const SizedBox(width: 10),
-                      _infoCard("Duration", "${course!.durationMins}m"),
+                      InfoCard(title: "Duration", value: "${course!.durationMins}m"),
                     ],
                   ),
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      _infoCard("Points", "50"),
+                      InfoCard(title: "Points", value: "50"),
                       const SizedBox(width: 10),
-                      _infoCard("XP", "100"),
+                      InfoCard(title: "XP", value: "100"),
                     ],
                   ),
 
                   const SizedBox(height: 20),
 
                   /// Curriculum
-                  _sectionCard(
+                  SectionCard(
                     title: "Curriculum Overview",
                     child: Column(
                       children: const [
@@ -497,12 +470,12 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   const SizedBox(height: 16),
 
                   /// Requirements
-                  _sectionCard(
+                  SectionCard(
                     title: "Requirements",
                     child: Column(
                       children: const [
-                        _rowItem("Passing Score", "70%"),
-                        _rowItem("Target Audience", "Student"),
+                        RowItem(title: "Passing Score", value: "70%"),
+                        RowItem(title: "Target Audience", value: "Student"),
                       ],
                     ),
                   ),
@@ -510,7 +483,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   const SizedBox(height: 16),
 
                   /// Students
-                  _sectionCard(
+                  SectionCard(
                     title: "Enrolled Students",
                     child: const Text(
                       "0 Learners",
@@ -521,162 +494,16 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   const SizedBox(height: 20),
 
                   /// Price + enroll
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white12),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          "PRICE",
-                          style: TextStyle(color: Colors.white54),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          course!.category ?? "Free",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: isPaymentProcessing
-                                ? null
-                                : isEnrolled
-                                ? _resumeCourse
-                                : _startPayment,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isPaymentProcessing
-                                  ? Colors.grey
-                                  : isEnrolled
-                                  ? Colors.orange
-                                  : const Color(0xFF00C853),
-                              foregroundColor: Colors.black,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: isPaymentProcessing
-                                ? const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                Colors.black,
-                                              ),
-                                        ),
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text('Processing...'),
-                                    ],
-                                  )
-                                : Text(
-                                    isEnrolled ? "RESUME COURSE" : "ENROLL NOW",
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  PriceEnrollCard(
+                    priceText: course!.category ?? "Free",
+                    isEnrolled: isEnrolled,
+                    isPaymentProcessing: isPaymentProcessing,
+                    onEnroll: _startPayment,
+                    onResume: _resumeCourse,
                   ),
                 ],
               ),
             ),
-    );
-  }
-
-  Widget _infoCard(String title, String value) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.white12),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Text(title, style: const TextStyle(color: Colors.white54)),
-            const SizedBox(height: 6),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _sectionCard({required String title, required Widget child}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.white12),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          child,
-        ],
-      ),
-    );
-  }
-}
-
-class _rowItem extends StatelessWidget {
-  final String title;
-  final String value;
-
-  const _rowItem(this.title, this.value);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: const TextStyle(color: Colors.white54)),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
