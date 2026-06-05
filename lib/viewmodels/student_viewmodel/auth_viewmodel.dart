@@ -117,7 +117,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   // LOGIN
-  Future<void> login(BuildContext context) async {
+  Future<void> login(BuildContext context, {required String selectedRole}) async {
     // 🚧 TEMPORARY DEVELOPMENT BYPASS: Set to true to bypass login validation and mock credentials
     const bool useDevBypass = false;
     if (useDevBypass) {
@@ -142,11 +142,20 @@ class AuthViewModel extends ChangeNotifier {
     _setLoading(true);
     try {
       print("🕵️‍♂️ [AuthViewModel.login] Sending login request for email: $email");
-      final result = await _auth.login(email: email, password: password);
+      final result = await _auth.login(email: email, password: password, role: selectedRole.toLowerCase());
       print("🕵️‍♂️ [AuthViewModel.login] Login API response received. success=${result.isSuccess}, statusCode=${result.statusCode}");
 
       if (result.isSuccess) {
         final data = result.data!;
+        
+        final actualRole = data.user.role.toLowerCase();
+        final expectedRole = selectedRole.toLowerCase();
+        if (actualRole != expectedRole) {
+          print("🕵️‍♂️ [AuthViewModel.login] Role mismatch! expectedRole=$expectedRole actualRole=$actualRole");
+          _showError(context, "Credentials do not match the selected role. Please select the correct role and try again.");
+          return;
+        }
+
         user = data.user;
 
         print("🕵️‍♂️ [AuthViewModel.login] Raw extracted token: ${data.accessToken}");

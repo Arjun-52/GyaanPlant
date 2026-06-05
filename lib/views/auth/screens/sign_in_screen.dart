@@ -4,6 +4,7 @@ import 'package:gyaanplant/views/auth/widgets/custom_text_field.dart';
 import 'package:gyaanplant/views/auth/widgets/primary_button.dart';
 import 'package:provider/provider.dart';
 
+import '../../../network/auth_cache.dart';
 import '../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -15,6 +16,50 @@ class SignInScreen extends StatefulWidget {
 
 class _SignInScreenState extends State<SignInScreen> {
   bool _isPasswordVisible = false;
+  late final TextEditingController roleController;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialRole = _mapRoleToDropdownOption(AuthCache.role ?? 'student');
+    roleController = TextEditingController(text: initialRole);
+  }
+
+  @override
+  void dispose() {
+    roleController.dispose();
+    super.dispose();
+  }
+
+  String _mapRoleToHeading(String role) {
+    switch (role.toLowerCase()) {
+      case 'student':
+        return "Logging in as Student";
+      case 'hod':
+        return "Logging in as HOD";
+      case 'mentor':
+        return "Logging in as Mentor";
+      case 'tpo':
+        return "Logging in as TPO";
+      default:
+        return "Logging in as Student";
+    }
+  }
+
+  String _mapRoleToDropdownOption(String role) {
+    switch (role.toLowerCase()) {
+      case 'student':
+        return "Student";
+      case 'hod':
+        return "HOD";
+      case 'mentor':
+        return "Mentor";
+      case 'tpo':
+        return "TPO";
+      default:
+        return "Student";
+    }
+  }
 
   ///  THEME COLORS
   static const bgColor = Color(0xFF020B08);
@@ -128,6 +173,72 @@ class _SignInScreenState extends State<SignInScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            /// DYNAMIC ROLE HEADING
+                            Text(
+                              _mapRoleToHeading(roleController.text),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            /// ROLE DROPDOWN FIELD LABEL
+                            const Text(
+                              "ROLE",
+                              style: TextStyle(
+                                color: Color(0xA8FFFFFF),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+
+                            /// ROLE DROPDOWN FIELD
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              margin: const EdgeInsets.only(bottom: 20),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF061410).withOpacity(0.85),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: const Color(0xFF132B22),
+                                  width: 1.0,
+                                ),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButtonFormField<String>(
+                                  value: roleController.text,
+                                  dropdownColor: const Color(0xFF0D1F1A),
+                                  icon: const Icon(Icons.keyboard_arrow_down, color: accentGreen),
+                                  style: const TextStyle(
+                                    color: Color(0xE6FFFFFF),
+                                    fontSize: 15,
+                                  ),
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.zero,
+                                  ),
+                                  items: const [
+                                    DropdownMenuItem(value: "Student", child: Text("Student")),
+                                    DropdownMenuItem(value: "HOD", child: Text("HOD")),
+                                    DropdownMenuItem(value: "Mentor", child: Text("Mentor")),
+                                    DropdownMenuItem(value: "TPO", child: Text("TPO")),
+                                  ],
+                                  onChanged: (String? newValue) {
+                                    if (newValue != null) {
+                                      setState(() {
+                                        roleController.text = newValue;
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+
                             /// EMAIL LABEL
                             const Text(
                               "EMAIL",
@@ -210,7 +321,7 @@ class _SignInScreenState extends State<SignInScreen> {
                               onPressed: vm.isLoading
                                   ? null
                                   : () {
-                                      vm.login(context);
+                                      vm.login(context, selectedRole: roleController.text);
                                     },
                             ),
 

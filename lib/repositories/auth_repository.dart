@@ -12,10 +12,11 @@ class AuthRepository {
   Future<ApiResponse<AuthResponse>> login({
     required String email,
     required String password,
+    required String role,
   }) {
     return _api.post<AuthResponse>(
       ApiEndpoints.login,
-      data: {'email': email, 'password': password},
+      data: {'email': email, 'password': password, 'role': role},
       fromJson: (json) => AuthResponse.fromJson(json as Map<String, dynamic>),
     );
   }
