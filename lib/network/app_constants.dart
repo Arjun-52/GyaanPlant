@@ -5,12 +5,12 @@ class AppConstants {
   AppConstants._();
 
   static final String baseUrl = (() {
-    if (kIsWeb) return 'https://backend.gyaanplant.co.in';
+    if (kIsWeb) return 'http://192.168.10.64:5000';
     try {
-      if (Platform.isAndroid) return 'https://backend.gyaanplant.co.in';
-      if (Platform.isIOS) return 'https://backend.gyaanplant.co.in';
+      if (Platform.isAndroid) return 'http://192.168.10.64:5000';
+      if (Platform.isIOS) return 'http://192.168.10.64:5000';
     } catch (_) {}
-    return 'https://backend.gyaanplant.co.in';
+    return 'http://192.168.10.64:5000';
   })();
 
   static const int connectTimeout = 30000;

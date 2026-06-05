@@ -116,9 +116,9 @@ class NotificationService {
       print("🔑 FCM Token retrieved: $token");
       print("📱 Token length: ${token?.length ?? 0} characters");
 
-      // Save token to database immediately
+      // Save token to database immediately in background
       if (token != null) {
-        await saveFCMTokenToDatabase(token);
+        saveFCMTokenToDatabase(token);
       }
 
       return token;
@@ -151,11 +151,11 @@ class NotificationService {
     try {
       print("🔔 Initializing notification service...");
 
-      // Request permissions on app start
-      await requestNotificationPermissions();
+      // Request permissions on app start in background
+      requestNotificationPermissions();
 
-      // Get initial FCM token
-      await getFCMToken();
+      // Get initial FCM token in background
+      getFCMToken();
 
       // Initialize token refresh listener
       _initializeTokenListener();

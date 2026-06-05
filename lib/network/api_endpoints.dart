@@ -136,4 +136,10 @@ class ApiEndpoints {
   static const String assessmentCurrent = '/api/v1/assessment/current';
   static const String assessmentList = '/api/v1/assessment/list';
   static const String preparationPacks = '/api/v1/preparation/packs';
+
+  // Support Tickets
+  static const String tickets = '/api/v1/tickets';
+  static String ticketDetails(String id) => '/api/v1/tickets/$id';
+  static String ticketReply(String id) => '/api/v1/tickets/$id/replies';
+  static String ticketStatus(String id) => '/api/v1/tickets/$id/status';
 }

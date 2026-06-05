@@ -23,6 +23,7 @@ import 'viewmodels/student_viewmodel/notification_viewmodel.dart';
 import 'viewmodels/HOD_viewmodel/hod_dashboard_viewmodel.dart';
 import 'viewmodels/student_viewmodel/organization_viewmodel.dart';
 import 'viewmodels/mentor_viewmodel/mentor_earnings_controller.dart';
+import 'viewmodels/student_viewmodel/support_viewmodel.dart';
 import 'core/utils/app_logger.dart';
 
 void main() async {
@@ -85,6 +86,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => OrganizationViewModel()),
         ChangeNotifierProvider(create: (_) => MentorEarningsController()),
         ChangeNotifierProvider(create: (_) => TpoNotificationViewModel()),
+        ChangeNotifierProvider(create: (_) => SupportViewModel()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

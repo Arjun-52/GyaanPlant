@@ -15,6 +15,8 @@ import 'package:gyaanplant/views/auth/screens/sign_up_screen.dart';
 import 'package:gyaanplant/views/auth/screens/forgot_password_screen.dart';
 import 'package:gyaanplant/views/auth/screens/splash_screen.dart';
 import 'package:gyaanplant/views/student_role/role_/screens/role_screen.dart';
+import 'package:gyaanplant/views/student_role/support/screens/support_screen.dart';
+import 'package:gyaanplant/views/student_role/support/screens/ticket_details_screen.dart';
 import 'package:gyaanplant/views/student_role/student/widgets/leaderboard_view.dart';
 import 'package:gyaanplant/views/shells/student_shell.dart';
 import 'package:gyaanplant/views/shells/hod_shell.dart';
@@ -127,6 +129,17 @@ class AppRouter {
       GoRoute(
         path: '/student-dashboard',
         builder: (context, state) => const StudentShell(),
+      ),
+      GoRoute(
+        path: '/support',
+        builder: (context, state) => const SupportScreen(),
+      ),
+      GoRoute(
+        path: '/support/ticket/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return TicketDetailsScreen(ticketId: id);
+        },
       ),
       GoRoute(
         path: '/my-courses',

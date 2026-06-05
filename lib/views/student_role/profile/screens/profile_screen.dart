@@ -1,10 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/dashboard_viewmodel.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/certificates_viewmodel.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/achievements_viewmodel.dart';
 import 'package:gyaanplant/views/student_role/profile/widgets/badge_card.dart';
+import 'package:gyaanplant/views/student_role/profile/widgets/support_card.dart';
 import 'package:gyaanplant/views/student_role/profile/widgets/certificates_empty_state_fixed.dart';
 import 'package:gyaanplant/views/student_role/profile/widgets/achievements_empty_state_fixed.dart';
 import 'package:gyaanplant/views/student_role/profile/widgets/mentor_section.dart';
@@ -37,7 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
       duration: const Duration(milliseconds: 1000),
     );
 
-    _fadeAnims = List.generate(6, (index) {
+    _fadeAnims = List.generate(7, (index) {
       final double start = index * 0.08;
       final double end = (start + 0.35).clamp(0.0, 1.0);
       return Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -48,7 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
       );
     });
 
-    _slideAnims = List.generate(6, (index) {
+    _slideAnims = List.generate(7, (index) {
       final double start = index * 0.08;
       final double end = (start + 0.35).clamp(0.0, 1.0);
       return Tween<Offset>(
@@ -151,11 +151,21 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                       ),
                       const SizedBox(height: 18),
 
-                      // 2. Share Badge Card
+                      // Support Card
                       FadeTransition(
                         opacity: _fadeAnims[1],
                         child: SlideTransition(
                           position: _slideAnims[1],
+                          child: const SupportCard(),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+
+                      // 2. Share Badge Card
+                      FadeTransition(
+                        opacity: _fadeAnims[2],
+                        child: SlideTransition(
+                          position: _slideAnims[2],
                           child: const BadgeCard(),
                         ),
                       ),
@@ -163,9 +173,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
 
                       // 3. Stats Grid
                       FadeTransition(
-                        opacity: _fadeAnims[2],
+                        opacity: _fadeAnims[3],
                         child: SlideTransition(
-                          position: _slideAnims[2],
+                          position: _slideAnims[3],
                           child: StatsGrid(
                             readinessScore: student?['profileStrength'] ?? 0,
                             testsCompleted: student?['testsCompleted'] ?? 0,
@@ -178,9 +188,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
 
                       // 4. Certificates Section
                       FadeTransition(
-                        opacity: _fadeAnims[3],
+                        opacity: _fadeAnims[4],
                         child: SlideTransition(
-                          position: _slideAnims[3],
+                          position: _slideAnims[4],
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -273,9 +283,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
 
                       // 5. Achievements Section
                       FadeTransition(
-                        opacity: _fadeAnims[4],
+                        opacity: _fadeAnims[5],
                         child: SlideTransition(
-                          position: _slideAnims[4],
+                          position: _slideAnims[5],
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -355,9 +365,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
 
                       // 6. Alumni Mentors Section
                       FadeTransition(
-                        opacity: _fadeAnims[5],
+                        opacity: _fadeAnims[6],
                         child: SlideTransition(
-                          position: _slideAnims[5],
+                          position: _slideAnims[6],
                           child: const MentorSection(),
                         ),
                       ),
