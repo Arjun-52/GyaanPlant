@@ -185,60 +185,6 @@ class _SignInScreenState extends State<SignInScreen> {
                             ),
                             const SizedBox(height: 20),
 
-                            /// ROLE DROPDOWN FIELD LABEL
-                            const Text(
-                              "ROLE",
-                              style: TextStyle(
-                                color: Color(0xA8FFFFFF),
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-
-                            /// ROLE DROPDOWN FIELD
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              margin: const EdgeInsets.only(bottom: 20),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF061410).withOpacity(0.85),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: const Color(0xFF132B22),
-                                  width: 1.0,
-                                ),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButtonFormField<String>(
-                                  value: roleController.text,
-                                  dropdownColor: const Color(0xFF0D1F1A),
-                                  icon: const Icon(Icons.keyboard_arrow_down, color: accentGreen),
-                                  style: const TextStyle(
-                                    color: Color(0xE6FFFFFF),
-                                    fontSize: 15,
-                                  ),
-                                  decoration: const InputDecoration(
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.zero,
-                                  ),
-                                  items: const [
-                                    DropdownMenuItem(value: "Student", child: Text("Student")),
-                                    DropdownMenuItem(value: "HOD", child: Text("HOD")),
-                                    DropdownMenuItem(value: "Mentor", child: Text("Mentor")),
-                                    DropdownMenuItem(value: "TPO", child: Text("TPO")),
-                                  ],
-                                  onChanged: (String? newValue) {
-                                    if (newValue != null) {
-                                      setState(() {
-                                        roleController.text = newValue;
-                                      });
-                                    }
-                                  },
-                                ),
-                              ),
-                            ),
-
                             /// EMAIL LABEL
                             const Text(
                               "EMAIL",

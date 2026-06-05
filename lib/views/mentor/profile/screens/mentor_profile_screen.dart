@@ -5,6 +5,7 @@ import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/core/common_widgets/mentor_bottom_nav.dart';
 import 'package:gyaanplant/models/mentor_models/mentor_profile_model.dart';
+import '../../../student_role/profile/widgets/support_card.dart';
 
 import '../widgets/profile_header.dart';
 import '../widgets/expertise_section.dart';
@@ -265,6 +266,10 @@ class _MentorProfileScreenState extends State<MentorProfileScreen> with SingleTi
                                   expertise: vm.expertise,
                                   availability: vm.availability,
                                 ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                child: SupportCard(),
                               ),
                               ExpertiseSection(
                                 expertise: vm.expertise,

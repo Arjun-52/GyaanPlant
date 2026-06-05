@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../../../models/auth/college_dropdown_model.dart';
 import '../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
+import '../../../network/auth_cache.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -40,6 +41,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
     // Ensure colleges are fetched and initial controller values are set
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final vm = Provider.of<AuthViewModel>(context, listen: false);
+      
+      if (AuthCache.role != null && AuthCache.role!.isNotEmpty) {
+        String mappedRole = AuthCache.role!;
+        if (mappedRole.toLowerCase() == 'student') mappedRole = 'Student';
+        if (mappedRole.toLowerCase() == 'mentor') mappedRole = 'Mentor';
+        if (mappedRole.toLowerCase() == 'tpo') mappedRole = 'TPO';
+        if (mappedRole.toLowerCase() == 'hod') mappedRole = 'HOD';
+        vm.setRole(mappedRole);
+      }
+
       _customBranchController.text = vm.branch;
       _customPathController.text = vm.careerPath;
       if (vm.selectedCollege?.id == 'other_college') {
@@ -244,20 +255,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const FormLabel(text: "ROLE", color: Colors.white70),
-            const SizedBox(height: 6),
-
-            CustomDropdown(
-              value: vm.role,
-              items: const [
-                "Student",
-                "Mentor",
-                "Employee / Staff",
-              ],
-              onChanged: vm.setRole,
-            ),
-
-            const SizedBox(height: 16),
 
             const FormLabel(text: "COLLEGE", color: Colors.white70),
             const SizedBox(height: 6),

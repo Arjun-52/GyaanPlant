@@ -4,6 +4,7 @@ import 'package:gyaanplant/data/services/local_storage_service.dart';
 import 'package:gyaanplant/viewmodels/tpo_viewmodels/settings_viewmodel.dart';
 import 'package:gyaanplant/views/tpo_role/settings/screens/security_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:gyaanplant/views/student_role/profile/widgets/support_card.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -98,6 +99,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ),
                         ),
+
+                        /// 🎧 Support Center
+                        const SupportCard(),
+
+                        const SizedBox(height: 12),
 
                         /// 🔒 Security Card
                         _buildSecurityCard(),

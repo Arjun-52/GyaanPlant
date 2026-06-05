@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
 import '../../../../viewmodels/HOD_viewmodel/settings_view_model.dart';
+import 'package:gyaanplant/views/student_role/profile/widgets/support_card.dart';
 import 'security_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -251,6 +252,10 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                                   ),
                                 ),
                               ),
+                              const SizedBox(height: 24),
+                              
+                              const SupportCard(),
+                              
                               const SizedBox(height: 24),
                               
                               // Settings Options Section
