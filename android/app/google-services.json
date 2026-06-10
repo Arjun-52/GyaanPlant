@@ -14,7 +14,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "70936835012-kdj90854d9pdlj9hsdih5j5r9a5c3pb3.apps.googleusercontent.com",
+          "client_id": "70936835012-523fir1avb2b6lh5rq1d8bvilo9tfpf2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.gyaanplant",
+            "certificate_hash": "ed828c73955ace09debf9aff4069d548b9dd75df"
+          }
+        },
+        {
+          "client_id": "70936835012-6au2g3b2e3gda4rsa0g5jca0vua54um9.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -27,8 +35,15 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "70936835012-kdj90854d9pdlj9hsdih5j5r9a5c3pb3.apps.googleusercontent.com",
+              "client_id": "70936835012-6au2g3b2e3gda4rsa0g5jca0vua54um9.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "70936835012-0b27p1er3ns5c1ipo58pbpa5bt122ik7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.gyaanplant"
+              }
             }
           ]
         }
