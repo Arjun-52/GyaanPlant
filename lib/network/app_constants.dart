@@ -4,14 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 class AppConstants {
   AppConstants._();
 
-  static final String baseUrl = (() {
-    if (kIsWeb) return 'http://192.168.10.64:5000';
-    try {
-      if (Platform.isAndroid) return 'http://192.168.10.64:5000';
-      if (Platform.isIOS) return 'http://192.168.10.64:5000';
-    } catch (_) {}
-    return 'http://192.168.10.64:5000';
-  })();
+  static final String baseUrl = 'https://prod-apis.gyaanplant.co.in';
 
   static const int connectTimeout = 30000;
   static const int receiveTimeout = 30000;

@@ -46,15 +46,50 @@ class MentorBookingService {
       );
     }
 
+    // Validation
+    if (keyId.isEmpty) {
+      const errorMsg = 'Razorpay Key ID is empty. Please check your configuration.';
+      print('❌ ERROR: $errorMsg');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      throw ArgumentError(errorMsg);
+    }
+
+    if (totalAmount <= 0) {
+      final errorMsg = 'Payment amount must be greater than 0 (got: $totalAmount).';
+      print('❌ ERROR: $errorMsg');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      throw ArgumentError(errorMsg);
+    }
+
+    final orderId = 'mentor_${DateTime.now().millisecondsSinceEpoch}';
+    final amount = (totalAmount * 100).toInt(); // Convert to paise
+
+    if (orderId.isEmpty) {
+      const errorMsg = 'Razorpay order ID could not be generated.';
+      print('❌ ERROR: $errorMsg');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      throw ArgumentError(errorMsg);
+    }
+
     try {
       print("🚀 START MENTOR BOOKING for mentor: $mentorId");
-
-      // TEMPORARY: Mock order creation to bypass backend
-      final orderId = 'mentor_${DateTime.now().millisecondsSinceEpoch}';
-      final amount = (totalAmount * 100).toInt(); // Convert to paise
-
       print("🧾 MOCK MENTOR BOOKING ORDER: orderId=$orderId, amount=$amount");
-
+      print("🔑 Razorpay Key: $keyId");
       print("💳 OPENING RAZORPAY for mentor booking: $orderId");
 
       // Open Razorpay checkout for mentor session
@@ -87,9 +122,22 @@ class MentorBookingService {
         print("  $key: $value (${value.runtimeType})");
       });
 
+      print("🏁 Attempting to open Razorpay Checkout sheet...");
       _razorpay.open(options);
-    } catch (e) {
-      print("❌ MENTOR BOOKING PAYMENT FAILED: $e");
+      print("✅ Razorpay Checkout open() call finished successfully.");
+    } catch (e, st) {
+      print("❌ MENTOR BOOKING PAYMENT EXCEPTION: $e");
+      print("Stack trace:\n$st");
+      
+      // Show snackbar with exact exception reason
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to open Razorpay checkout: $e'),
+          backgroundColor: Colors.redAccent,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+      
       throw Exception('Failed to initiate mentor booking payment: $e');
     }
   }

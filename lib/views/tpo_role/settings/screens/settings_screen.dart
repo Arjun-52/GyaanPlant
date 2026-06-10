@@ -113,28 +113,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         /// 🔔 Notification Card
                         _buildNotificationCard(),
 
-                        const SizedBox(height: 12),
-
-                        /// 👤 Account Details Card
-                        _buildSettingsCategoryCard(
-                          icon: Icons.person_outline,
-                          title: "Account Settings",
-                          subtitle: "Manage email, contact & system credentials",
-                          onTap: () {},
-                        ),
-
-                        const SizedBox(height: 12),
-
-                        /// 🏫 College Info Card
-                        _buildSettingsCategoryCard(
-                          icon: Icons.school_outlined,
-                          title: "College Information",
-                          subtitle: "View dynamic HOD & branch mapping details",
-                          onTap: () {},
-                        ),
-
-
-
                         const SizedBox(height: 24),
 
                         const Padding(
@@ -736,44 +714,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await LocalStorageService.clearToken();
       if (mounted) context.go('/');
     }
-  }
-
-  /// 🔷 GENERAL SETTINGS CARD TEMPLATE
-  Widget _buildSettingsCategoryCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF0C221B),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.greenAccent.withOpacity(0.08),
-        ),
-      ),
-      child: ListTile(
-        onTap: onTap,
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF00C853).withOpacity(0.12),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: const Color(0xFF00E676), size: 20),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: const TextStyle(color: Colors.white38, fontSize: 11),
-        ),
-        trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white30, size: 14),
-      ),
-    );
   }
 
   /// 🔷 PROFILE INSIGHTS FOOTER

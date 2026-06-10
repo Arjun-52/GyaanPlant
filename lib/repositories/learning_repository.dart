@@ -70,15 +70,28 @@ class LearningRepository {
 
   /// ✅ Get single course by ID (matches Postman: /api/v1/learning/{id})
   Future<DetailedCourseModel> getCourseById(String id) async {
+    if (id.isEmpty) {
+      AppLogger.error(_tag, 'getCourseById failed: Course ID is empty');
+      throw Exception('Course details not found: ID is empty.');
+    }
+
     final response = await _api.get<Map<String, dynamic>>(
       '${ApiEndpoints.learning}/$id',
       fromJson: (json) => json as Map<String, dynamic>,
     );
 
-    AppLogger.debug(_tag, 'Course details response: ${response.data}');
+    AppLogger.debug(_tag, 'Course details response for ID ($id): ${response.data}');
+    
+    if (response.data == null || response.data!['data'] == null) {
+      throw Exception('Course details not found on the server (null response).');
+    }
+
     final rawData = response.data!['data'];
     final Map<String, dynamic> courseData;
     if (rawData is List) {
+      if (rawData.isEmpty) {
+        throw Exception('Course details not found on the server (empty list).');
+      }
       courseData = rawData[0] as Map<String, dynamic>;
     } else {
       courseData = rawData as Map<String, dynamic>;

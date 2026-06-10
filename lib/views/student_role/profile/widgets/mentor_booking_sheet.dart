@@ -154,8 +154,6 @@ class _MentorBookingSheetState extends State<MentorBookingSheet> with SingleTick
 
   @override
   Widget build(BuildContext context) {
-    final keyboardPadding = MediaQuery.of(context).viewInsets.bottom;
-
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
       child: AnimatedBuilder(
@@ -174,7 +172,7 @@ class _MentorBookingSheetState extends State<MentorBookingSheet> with SingleTick
           insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: Container(
             constraints: const BoxConstraints(maxWidth: 420),
-            padding: EdgeInsets.only(bottom: keyboardPadding),
+            padding: EdgeInsets.zero,
             decoration: BoxDecoration(
               color: const Color(0xFF020B08).withOpacity(0.95),
               borderRadius: BorderRadius.circular(28),

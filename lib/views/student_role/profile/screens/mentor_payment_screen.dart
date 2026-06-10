@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../../services/mentor_booking_service.dart';
 
 class MentorPaymentScreen extends StatefulWidget {
@@ -854,7 +855,7 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
         selectedTime: widget.selectedTime,
         selectedDuration: widget.selectedDuration,
         totalAmount: _totalAmount,
-        keyId: const String.fromEnvironment('RAZORPAY_KEY'),
+        keyId: dotenv.env['RAZORPAY_KEY_ID'] ?? '',
         bookingDetails: {
           'sessionFee': _sessionFee,
           'platformFee': _platformFee,

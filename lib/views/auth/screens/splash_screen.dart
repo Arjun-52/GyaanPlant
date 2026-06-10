@@ -169,8 +169,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                             children: [
                               // Soft radial glow behind logo
                               Container(
-                                width: 260,
-                                height: 260,
+                                width: 150,
+                                height: 150,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   gradient: RadialGradient(
@@ -223,7 +223,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 40.0),
+                  padding: const EdgeInsets.only(bottom: 80.0),
                   child: SlideTransition(
                     position: _buttonOffset,
                     child: FadeTransition(
@@ -247,7 +247,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
-                              borderRadius: BorderRadius.circular(50),
+                              borderRadius: BorderRadius.circular(9),
                               boxShadow: [
                                 BoxShadow(
                                   color: const Color(0xFF00E676).withAlpha(100),

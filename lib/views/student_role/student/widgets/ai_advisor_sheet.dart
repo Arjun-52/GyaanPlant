@@ -115,8 +115,8 @@ class _AiAdvisorSheetState extends State<AiAdvisorSheet> with SingleTickerProvid
               /// GyaanBot Card (Premium AI Card)
               ScaleTransition(
                 scale: _scaleAnimation,
-                child: Opacity(
-                  opacity: _fadeAnimation.value,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -205,8 +205,8 @@ class _AiAdvisorSheetState extends State<AiAdvisorSheet> with SingleTickerProvid
               /// ROADMAP CARD (Premium Glass Container)
               ScaleTransition(
                 scale: _scaleAnimation,
-                child: Opacity(
-                  opacity: _fadeAnimation.value,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -387,8 +387,8 @@ class _AiAdvisorSheetState extends State<AiAdvisorSheet> with SingleTickerProvid
               /// START MY ROADMAP BUTTON (Gradient CTA)
               ScaleTransition(
                 scale: _scaleAnimation,
-                child: Opacity(
-                  opacity: _fadeAnimation.value,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
                   child: Container(
                     width: double.infinity,
                     height: 52,

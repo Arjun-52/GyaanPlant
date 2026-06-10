@@ -151,9 +151,7 @@ class ProfileHeader extends StatelessWidget {
                         ),
                         const Spacer(),
                         GestureDetector(
-                          onTap: () {
-                            // Edit Profile callback / dialog / route if needed
-                          },
+                          onTap: () => _showEditProfileBottomSheet(context, authVM),
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
@@ -268,6 +266,191 @@ class ProfileHeader extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showEditProfileBottomSheet(BuildContext context, AuthViewModel authVM) {
+    final textController = TextEditingController(text: authVM.user?.name);
+    final formKey = GlobalKey<FormState>();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              decoration: const BoxDecoration(
+                color: Color(0xFF02100C),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(28),
+                  topRight: Radius.circular(28),
+                ),
+                border: Border(
+                  top: BorderSide(
+                    color: Color(0x3300E676),
+                    width: 1.5,
+                  ),
+                ),
+              ),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 48,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      "Edit Profile",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Update your display name to reflect across GyaanPlant.",
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.5),
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    TextFormField(
+                      controller: textController,
+                      style: const TextStyle(color: Colors.white, fontSize: 15),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return "Name cannot be empty";
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                        labelText: "Full Name",
+                        labelStyle: TextStyle(
+                          color: const Color(0xFF00E676).withOpacity(0.7),
+                          fontSize: 13,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.person_outline_rounded,
+                          color: Color(0xFF00E676),
+                          size: 20,
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFF041511),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                            color: const Color(0xFF00E676).withOpacity(0.15),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                            color: const Color(0xFF00E676).withOpacity(0.15),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF00E676),
+                            width: 1.5,
+                          ),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Colors.redAccent,
+                            width: 1,
+                          ),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Colors.redAccent,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00E676),
+                          foregroundColor: Colors.black,
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        onPressed: authVM.isLoading
+                            ? null
+                            : () async {
+                                if (formKey.currentState!.validate()) {
+                                  final newName = textController.text.trim();
+                                  setModalState(() {});
+                                  final success = await authVM.updateProfile(
+                                    context,
+                                    newName: newName,
+                                  );
+                                  if (success && context.mounted) {
+                                    try {
+                                      context.read<DashboardViewModel>().fetchDashboard();
+                                    } catch (_) {}
+                                    Navigator.pop(context);
+                                  }
+                                }
+                              },
+                        child: authVM.isLoading
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.black,
+                                  ),
+                                ),
+                              )
+                            : const Text(
+                                "Save Changes",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

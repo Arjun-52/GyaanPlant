@@ -7,6 +7,7 @@ import '../../models/auth/college_dropdown_model.dart';
 import '../../network/auth_cache.dart';
 import '../../core/utils/app_logger.dart';
 import '../../routes/app_router.dart';
+import '../../services/google_auth_service.dart';
 
 class AuthViewModel extends ChangeNotifier {
   static const _tag = 'AuthViewModel';
@@ -117,6 +118,46 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   // LOGIN
+  Future<void> signInWithGoogle(BuildContext context) async {
+    _setLoading(true);
+    try {
+      final googleUser = await GoogleAuthService().signIn();
+      final result = await _auth.loginWithGoogle(googleUser);
+      if (result.isSuccess) {
+        final authResult = result.data!;
+        // Save token
+        if (authResult.token != null) {
+          AuthCache.token = authResult.token!;
+          await LocalStorageService.saveToken(authResult.token!);
+        }
+        // Save role
+        final roleStr = authResult.role.toString().split('.').last.toLowerCase();
+        AuthCache.role = roleStr;
+        await LocalStorageService.saveRole(roleStr);
+        // Save user info
+        await LocalStorageService.saveUser({
+          'name': authResult.name ?? '',
+          'email': authResult.email ?? '',
+          'role': roleStr,
+          'id': authResult.googleId ?? '',
+          'photoUrl': authResult.photoUrl ?? '',
+        });
+        // Navigate to home/dashboard
+        if (!_disposed && context.mounted) {
+          context.go('/');
+        }
+      } else {
+        _showError(context, result.error?.message ?? 'Google login failed');
+      }
+    } catch (e) {
+      if (!_disposed && context.mounted) {
+        _showError(context, e.toString());
+      }
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<void> login(BuildContext context, {required String selectedRole}) async {
     // 🚧 TEMPORARY DEVELOPMENT BYPASS: Set to true to bypass login validation and mock credentials
     const bool useDevBypass = false;
@@ -526,5 +567,26 @@ class AuthViewModel extends ChangeNotifier {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<bool> updateProfile(BuildContext context, {required String newName}) async {
+    _setLoading(true);
+    try {
+      final result = await _apiService.auth.updateProfile({'name': newName});
+      if (result.isSuccess && result.data != null) {
+        user = result.data;
+        await LocalStorageService.saveUser(user!.toJson());
+        notifyListeners();
+        return true;
+      } else {
+        _showError(context, result.error?.message ?? 'Failed to update profile');
+        return false;
+      }
+    } catch (e) {
+      _showError(context, e.toString());
+      return false;
+    } finally {
+      _setLoading(false);
+    }
   }
 }

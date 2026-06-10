@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 import 'network/api_manager.dart';
 import 'network/interceptors/auth_interceptor.dart';
@@ -29,6 +30,10 @@ import 'core/utils/app_logger.dart';
 void main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
+
+    // 0. Load Environment Variables
+    await dotenv.load(fileName: ".env");
+    debugPrint("Loaded env variables: ${dotenv.env.keys}");
 
     // 1. Initialize Firebase
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);

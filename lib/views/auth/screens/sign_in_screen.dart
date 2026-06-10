@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:gyaanplant/views/auth/widgets/custom_text_field.dart';
 import 'package:gyaanplant/views/auth/widgets/primary_button.dart';
-import 'package:provider/provider.dart';
+import 'package:gyaanplant/views/auth/widgets/google_sign_in_button.dart';
 
 import '../../../network/auth_cache.dart';
 import '../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
@@ -23,6 +24,13 @@ class _SignInScreenState extends State<SignInScreen> {
     super.initState();
     final initialRole = _mapRoleToDropdownOption(AuthCache.role ?? 'student');
     roleController = TextEditingController(text: initialRole);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final vm = Provider.of<AuthViewModel>(context, listen: false);
+        vm.setEmail('');
+        vm.setPassword('');
+      }
+    });
   }
 
   @override
@@ -272,6 +280,29 @@ class _SignInScreenState extends State<SignInScreen> {
                             ),
 
                             const SizedBox(height: 20),
+              // OR divider
+              Row(
+                children: [
+                  Expanded(child: Divider(color: Colors.white54)),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      'OR',
+                      style: TextStyle(
+                        color: Colors.white60,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Expanded(child: Divider(color: Colors.white54)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              GoogleSignInButton(
+                onPressed: () => vm.signInWithGoogle(context),
+              ),
+              const SizedBox(height: 20),
 
                             /// SIGNUP
                             Center(

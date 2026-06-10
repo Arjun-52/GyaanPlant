@@ -1,5 +1,7 @@
 import '../models/auth/auth_response_model.dart';
 import '../models/auth/auth_user_model.dart';
+import '../models/auth/google_user.dart';
+import '../models/auth/auth_result.dart';
 import '../network/api_endpoints.dart';
 import '../network/api_manager.dart';
 import '../network/api_response.dart';
@@ -8,6 +10,19 @@ class AuthRepository {
   final NetworkAPIManager _api;
 
   AuthRepository(this._api);
+
+  Future<ApiResponse<AuthResult>> loginWithGoogle(GoogleUser user) {
+    return _api.post<AuthResult>(
+      ApiEndpoints.googleAuth,
+      data: {
+        'email': user.email,
+        'name': user.name,
+        'googleId': user.uid,
+        'photoUrl': user.photoUrl,
+      },
+      fromJson: (json) => AuthResult.fromJson(json as Map<String, dynamic>),
+    );
+  }
 
   Future<ApiResponse<AuthResponse>> login({
     required String email,
@@ -124,6 +139,18 @@ class AuthRepository {
     return _api.post<void>(
       ApiEndpoints.changePassword,
       data: {'currentPassword': currentPassword, 'newPassword': newPassword},
+    );
+  }
+
+  Future<ApiResponse<AuthUser>> updateProfile(Map<String, dynamic> data) {
+    return _api.put<AuthUser>(
+      ApiEndpoints.updateMyProfile,
+      data: data,
+      fromJson: (json) {
+        final map = json as Map<String, dynamic>;
+        final userData = map['data'] as Map<String, dynamic>? ?? map;
+        return AuthUser.fromJson(userData);
+      },
     );
   }
 }
