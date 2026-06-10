@@ -300,7 +300,7 @@ class _AddCollegeDepartmentScreenState extends State<AddCollegeDepartmentScreen>
                                     ),
                                     SizedBox(height: 4),
                                     Text(
-                                      'Fill in the department details below.\nThe API endpoint will be wired when available.',
+                                      'Fill in the department details below to create a new department.',
                                       style: TextStyle(
                                         color: Colors.white60,
                                         fontSize: 12,
@@ -333,7 +333,14 @@ class _AddCollegeDepartmentScreenState extends State<AddCollegeDepartmentScreen>
                             BoxShadow(
                               color: Colors.black.withOpacity(0.4),
                               blurRadius: 25,
-                              offset: const Of                            // ── Department Name Field ─────────────────────────────────
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // ── Department Name Field ─────────────────────────────────
                             GlassTextField(
                               controller: _nameController,
                               label: 'Department Name',
@@ -368,13 +375,6 @@ class _AddCollegeDepartmentScreenState extends State<AddCollegeDepartmentScreen>
                               controller: _locationController,
                               label: 'Location',
                               hint: 'e.g. Block A',
-                              validator: (v) =>
-                                  (v == null || v.trim().isEmpty) ? 'Required' : null,
-                            ),�─────
-                            GlassTextField(
-                              controller: _codeController,
-                              label: 'Department Code',
-                              hint: 'e.g. CSE',
                               validator: (v) =>
                                   (v == null || v.trim().isEmpty) ? 'Required' : null,
                             ),

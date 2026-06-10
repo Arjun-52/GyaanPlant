@@ -29,6 +29,7 @@ class Department {
   final Head? head;
   final College? college;
   final String icon;
+  final String? location;
 
   Department({
     required this.id,
@@ -37,6 +38,7 @@ class Department {
     this.head,
     this.college,
     required this.icon,
+    this.location,
   });
 
   factory Department.fromJson(Map<String, dynamic> json) {
@@ -86,9 +88,12 @@ class Department {
     final deptIcon = json["icon"]?.toString() ?? "📚";
     print("🔍 DEPARTMENT ICON: $deptIcon");
 
+    final deptLocation = json["location"]?.toString();
+    print("🔍 DEPARTMENT LOCATION: $deptLocation");
+
     // Log final department info
     print(
-      "✅ DEPARTMENT CREATED: $deptName (${deptCode ?? 'No Code'}) - HOD: ${deptHead?.name ?? 'None'} - College: ${deptCollege?.name ?? 'None'}",
+      "✅ DEPARTMENT CREATED: $deptName (${deptCode ?? 'No Code'}) - HOD: ${deptHead?.name ?? 'None'} - College: ${deptCollege?.name ?? 'None'} - Location: $deptLocation",
     );
 
     return Department(
@@ -98,6 +103,7 @@ class Department {
       head: deptHead,
       college: deptCollege,
       icon: deptIcon,
+      location: deptLocation,
     );
   }
 }

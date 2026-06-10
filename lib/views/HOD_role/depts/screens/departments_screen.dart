@@ -310,7 +310,10 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> with TickerProvid
         _AddDeptButton(
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => const AddCollegeDepartmentScreen(),
+              builder: (_) => ChangeNotifierProvider.value(
+                value: _vm,
+                child: const AddCollegeDepartmentScreen(),
+              ),
             ),
           ),
         ),

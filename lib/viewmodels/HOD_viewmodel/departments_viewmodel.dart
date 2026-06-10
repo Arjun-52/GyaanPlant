@@ -169,6 +169,9 @@ class DepartmentsViewModel extends ChangeNotifier {
           print("   Check college field values in existing departments");
         }
       }
+    } catch (e) {
+      print("💥 EXCEPTION: $e");
+    }
   }
 
   /// Create a new department
