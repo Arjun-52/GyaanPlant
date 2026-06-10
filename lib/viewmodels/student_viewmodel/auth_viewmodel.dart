@@ -7,7 +7,7 @@ import '../../models/auth/college_dropdown_model.dart';
 import '../../network/auth_cache.dart';
 import '../../core/utils/app_logger.dart';
 import '../../routes/app_router.dart';
-import '../../services/google_auth_service.dart';
+
 
 class AuthViewModel extends ChangeNotifier {
   static const _tag = 'AuthViewModel';
@@ -37,8 +37,24 @@ class AuthViewModel extends ChangeNotifier {
   bool isLoading = false;
   String? errorMessage;
   AuthUser? user;
+  String? tempToken;
+  String? googlePicture;
 
   String? get userName => user?.name;
+
+  void prefillGoogleData({
+    required String name,
+    required String email,
+    required String tempToken,
+    String? picture,
+  }) {
+    this.name = name;
+    this.email = email;
+    this.tempToken = tempToken;
+    this.googlePicture = picture;
+    this.password = 'google_${DateTime.now().millisecondsSinceEpoch}';
+    notifyListeners();
+  }
 
   AuthViewModel() {
     _loadUser();
@@ -118,44 +134,8 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   // LOGIN
-  Future<void> signInWithGoogle(BuildContext context) async {
-    _setLoading(true);
-    try {
-      final googleUser = await GoogleAuthService().signIn();
-      final result = await _auth.loginWithGoogle(googleUser);
-      if (result.isSuccess) {
-        final authResult = result.data!;
-        // Save token
-        if (authResult.token != null) {
-          AuthCache.token = authResult.token!;
-          await LocalStorageService.saveToken(authResult.token!);
-        }
-        // Save role
-        final roleStr = authResult.role.toString().split('.').last.toLowerCase();
-        AuthCache.role = roleStr;
-        await LocalStorageService.saveRole(roleStr);
-        // Save user info
-        await LocalStorageService.saveUser({
-          'name': authResult.name ?? '',
-          'email': authResult.email ?? '',
-          'role': roleStr,
-          'id': authResult.googleId ?? '',
-          'photoUrl': authResult.photoUrl ?? '',
-        });
-        // Navigate to home/dashboard
-        if (!_disposed && context.mounted) {
-          context.go('/');
-        }
-      } else {
-        _showError(context, result.error?.message ?? 'Google login failed');
-      }
-    } catch (e) {
-      if (!_disposed && context.mounted) {
-        _showError(context, e.toString());
-      }
-    } finally {
-      _setLoading(false);
-    }
+  void signInWithGoogle(BuildContext context) {
+    context.push('/google-auth');
   }
 
   Future<void> login(BuildContext context, {required String selectedRole}) async {
@@ -366,6 +346,7 @@ class AuthViewModel extends ChangeNotifier {
         email: email,
         password: password,
         role: role.toLowerCase(),
+        tempToken: tempToken,
       );
       print("🕵️‍♂️ [AuthViewModel._register] Registration API response received. success=${result.isSuccess}, statusCode=${result.statusCode}");
 

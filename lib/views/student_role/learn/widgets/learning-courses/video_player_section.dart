@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:gyaanplant/models/learning/player_models.dart';
 
@@ -299,6 +300,56 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
     widget.onPlayTapped();
   }
 
+  void _toggleMute() {
+    if (_controller == null) return;
+    final isMuted = _controller!.value.volume == 0.0;
+    setState(() {
+      _controller!.setVolume(isMuted ? 1.0 : 0.0);
+    });
+  }
+
+  Future<void> _enterFullscreen() async {
+    if (_controller == null) return;
+
+    // Lock orientation to landscape
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    // Hide status bar and navigation bar
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+    if (!mounted) return;
+
+    // Push fullscreen player
+    await Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: true,
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return FullScreenVideoPlayer(
+            controller: _controller!,
+            lesson: widget.lesson,
+          );
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+    );
+
+    // Coming back from fullscreen:
+    // Restore orientation
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+    // Show status bar and navigation bar
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   String _formatDuration(Duration d) {
     String pad(int n) => n.toString().padLeft(2, '0');
     final mm = pad(d.inMinutes.remainder(60));
@@ -542,18 +593,28 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
                           ),
                           Row(
                             children: [
-                              Icon(
-                                _controller!.value.volume > 0
-                                    ? Icons.volume_up
-                                    : Icons.volume_off,
-                                color: Colors.white70,
-                                size: 20,
+                              IconButton(
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                icon: Icon(
+                                  _controller!.value.volume > 0
+                                      ? Icons.volume_up
+                                      : Icons.volume_off,
+                                  color: Colors.white70,
+                                  size: 20,
+                                ),
+                                onPressed: _toggleMute,
                               ),
                               const SizedBox(width: 14),
-                              const Icon(
-                                Icons.fullscreen,
-                                color: Colors.white,
-                                size: 22,
+                              IconButton(
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                icon: const Icon(
+                                  Icons.fullscreen,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
+                                onPressed: _enterFullscreen,
                               ),
                             ],
                           ),
@@ -701,6 +762,276 @@ class _VideoPlayerSectionState extends State<VideoPlayerSection> {
                   fontSize: 13,
                 ),
                 elevation: 0,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FULLSCREEN VIDEO PLAYER
+// ─────────────────────────────────────────────────────────────────────────────
+
+class FullScreenVideoPlayer extends StatefulWidget {
+  final VideoPlayerController controller;
+  final PlayerLesson lesson;
+
+  const FullScreenVideoPlayer({
+    super.key,
+    required this.controller,
+    required this.lesson,
+  });
+
+  @override
+  State<FullScreenVideoPlayer> createState() => _FullScreenVideoPlayerState();
+}
+
+class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
+  bool _showControls = true;
+  Timer? _controlsTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_videoListener);
+    _startControlsTimer();
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_videoListener);
+    _controlsTimer?.cancel();
+    super.dispose();
+  }
+
+  void _videoListener() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _startControlsTimer() {
+    _controlsTimer?.cancel();
+    _controlsTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted && widget.controller.value.isPlaying) {
+        setState(() => _showControls = false);
+      }
+    });
+  }
+
+  void _toggleControls() {
+    setState(() => _showControls = !_showControls);
+    if (_showControls) _startControlsTimer();
+  }
+
+  void _togglePlayPause() {
+    setState(() {
+      if (widget.controller.value.isPlaying) {
+        widget.controller.pause();
+        _controlsTimer?.cancel();
+      } else {
+        widget.controller.play();
+        _startControlsTimer();
+      }
+    });
+  }
+
+  void _toggleMute() {
+    final isMuted = widget.controller.value.volume == 0.0;
+    setState(() {
+      widget.controller.setVolume(isMuted ? 1.0 : 0.0);
+    });
+  }
+
+  String _formatDuration(Duration d) {
+    String pad(int n) => n.toString().padLeft(2, '0');
+    final mm = pad(d.inMinutes.remainder(60));
+    final ss = pad(d.inSeconds.remainder(60));
+    return d.inHours > 0 ? '${pad(d.inHours)}:$mm:$ss' : '$mm:$ss';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: GestureDetector(
+        onTap: _toggleControls,
+        behavior: HitTestBehavior.opaque,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Video Player
+            Center(
+              child: AspectRatio(
+                aspectRatio: widget.controller.value.aspectRatio,
+                child: VideoPlayer(widget.controller),
+              ),
+            ),
+
+            // Controls Overlay
+            AnimatedOpacity(
+              opacity: _showControls ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 300),
+              child: IgnorePointer(
+                ignoring: !_showControls,
+                child: Stack(
+                  children: [
+                    // Gradient Backplate
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.black.withValues(alpha: 0.8),
+                              Colors.transparent,
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: 0.8),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Top Bar (Back + Title)
+                    Positioned(
+                      top: 20,
+                      left: 20,
+                      right: 20,
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              widget.lesson.title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Center Play/Pause Button
+                    Center(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.6),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF00FFA3).withValues(alpha: 0.4),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: IconButton(
+                          iconSize: 64,
+                          icon: Icon(
+                            widget.controller.value.isPlaying
+                                ? Icons.pause_circle_filled
+                                : Icons.play_circle_filled,
+                            color: const Color(0xFF00FFA3),
+                          ),
+                          onPressed: _togglePlayPause,
+                        ),
+                      ),
+                    ),
+
+                    // Bottom Bar (Progress + Controls)
+                    Positioned(
+                      left: 20,
+                      right: 20,
+                      bottom: 20,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Progress Bar
+                          VideoProgressIndicator(
+                            widget.controller,
+                            allowScrubbing: true,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            colors: VideoProgressColors(
+                              playedColor: const Color(0xFF00FFA3),
+                              bufferedColor: Colors.white.withValues(alpha: 0.3),
+                              backgroundColor: Colors.white.withValues(alpha: 0.12),
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Play/Pause + Time Info
+                              Row(
+                                children: [
+                                  IconButton(
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    icon: Icon(
+                                      widget.controller.value.isPlaying
+                                          ? Icons.pause
+                                          : Icons.play_arrow,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                    onPressed: _togglePlayPause,
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Text(
+                                    '${_formatDuration(widget.controller.value.position)} / '
+                                    '${_formatDuration(widget.controller.value.duration)}',
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              // Mute + Exit Fullscreen
+                              Row(
+                                children: [
+                                  IconButton(
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    icon: Icon(
+                                      widget.controller.value.volume > 0
+                                          ? Icons.volume_up
+                                          : Icons.volume_off,
+                                      color: Colors.white70,
+                                      size: 22,
+                                    ),
+                                    onPressed: _toggleMute,
+                                  ),
+                                  const SizedBox(width: 20),
+                                  IconButton(
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    icon: const Icon(
+                                      Icons.fullscreen_exit,
+                                      color: Colors.white,
+                                      size: 26,
+                                    ),
+                                    onPressed: () => Navigator.of(context).pop(),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

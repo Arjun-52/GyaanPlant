@@ -11,19 +11,6 @@ class AuthRepository {
 
   AuthRepository(this._api);
 
-  Future<ApiResponse<AuthResult>> loginWithGoogle(GoogleUser user) {
-    return _api.post<AuthResult>(
-      ApiEndpoints.googleAuth,
-      data: {
-        'email': user.email,
-        'name': user.name,
-        'googleId': user.uid,
-        'photoUrl': user.photoUrl,
-      },
-      fromJson: (json) => AuthResult.fromJson(json as Map<String, dynamic>),
-    );
-  }
-
   Future<ApiResponse<AuthResponse>> login({
     required String email,
     required String password,
@@ -41,10 +28,20 @@ class AuthRepository {
     required String email,
     required String password,
     required String role,
+    String? tempToken,
   }) {
+    final Map<String, dynamic> body = {
+      'name': name,
+      'email': email,
+      'password': password,
+      'role': role,
+    };
+    if (tempToken != null) {
+      body['tempToken'] = tempToken;
+    }
     return _api.post<AuthResponse>(
       ApiEndpoints.register,
-      data: {'name': name, 'email': email, 'password': password, 'role': role},
+      data: body,
       fromJson: (json) => AuthResponse.fromJson(json as Map<String, dynamic>),
     );
   }

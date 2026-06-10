@@ -14,6 +14,7 @@ import 'package:gyaanplant/views/auth/screens/sign_in_screen.dart';
 import 'package:gyaanplant/views/auth/screens/sign_up_screen.dart';
 import 'package:gyaanplant/views/auth/screens/forgot_password_screen.dart';
 import 'package:gyaanplant/views/auth/screens/splash_screen.dart';
+import 'package:gyaanplant/views/auth/screens/google_auth_webview_screen.dart';
 import 'package:gyaanplant/views/student_role/role_/screens/role_screen.dart';
 import 'package:gyaanplant/views/student_role/support/screens/support_screen.dart';
 import 'package:gyaanplant/views/student_role/support/screens/ticket_details_screen.dart';
@@ -59,7 +60,7 @@ class AppRouter {
 
       // NOT LOGGED IN → allow only auth screens
       if (!isLoggedIn) {
-        const authPaths = {'/role', '/signin', '/', '/signup', '/forgot-password', '/splash'};
+        const authPaths = {'/role', '/signin', '/', '/signup', '/forgot-password', '/splash', '/google-auth'};
         return authPaths.contains(location) ? null : '/role';
       }
 
@@ -106,6 +107,12 @@ class AppRouter {
         path: '/signin',
         name: 'signIn',
         builder: (context, state) => const SignInScreen(),
+      ),
+
+      GoRoute(
+        path: '/google-auth',
+        name: 'googleAuth',
+        builder: (context, state) => const GoogleAuthWebViewScreen(),
       ),
 
       GoRoute(

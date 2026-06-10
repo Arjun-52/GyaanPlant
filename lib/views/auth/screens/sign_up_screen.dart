@@ -24,6 +24,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   late TextEditingController _customBranchController;
   late TextEditingController _customPathController;
   late TextEditingController _customCollegeController;
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
+  late TextEditingController _passwordController;
 
   ///  THEME COLORS
   static const bgColor = Color(0xFF020B08);
@@ -34,14 +37,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void initState() {
     super.initState();
+    final vm = Provider.of<AuthViewModel>(context, listen: false);
     _customBranchController = TextEditingController();
     _customPathController = TextEditingController();
     _customCollegeController = TextEditingController();
+    _nameController = TextEditingController(text: vm.name);
+    _emailController = TextEditingController(text: vm.email);
+    _passwordController = TextEditingController(text: vm.password);
     
     // Ensure colleges are fetched and initial controller values are set
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final vm = Provider.of<AuthViewModel>(context, listen: false);
-      
       if (AuthCache.role != null && AuthCache.role!.isNotEmpty) {
         String mappedRole = AuthCache.role!;
         if (mappedRole.toLowerCase() == 'student') mappedRole = 'Student';
@@ -65,6 +70,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _customBranchController.dispose();
     _customPathController.dispose();
     _customCollegeController.dispose();
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -210,7 +218,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
           children: [
             const FormLabel(text: "FULL NAME", color: Colors.white70),
             const SizedBox(height: 6),
-            CustomTextField(hint: "e.g. Alan Turing", onChanged: vm.setName),
+            CustomTextField(
+              hint: "e.g. Alan Turing",
+              onChanged: vm.setName,
+              controller: _nameController,
+            ),
 
             const SizedBox(height: 16),
 
@@ -219,6 +231,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             CustomTextField(
               hint: "name@institution.edu",
               onChanged: vm.setEmail,
+              controller: _emailController,
             ),
 
             const SizedBox(height: 16),
@@ -229,6 +242,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               hint: "Min. 8 chars",
               isPassword: !_isPasswordVisible,
               onChanged: vm.setPassword,
+              controller: _passwordController,
               suffix: IconButton(
                 icon: Icon(
                   _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
