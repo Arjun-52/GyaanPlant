@@ -559,7 +559,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
                 const SizedBox(height: 18),
 
                 // Continuing Button
-                _buildContinueLearningButton(course, progress),
+                _buildContinueLearningButton(enrollment, progress),
               ],
             ),
           ),
@@ -618,7 +618,8 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
     );
   }
 
-  Widget _buildContinueLearningButton(dynamic course, double progress) {
+  Widget _buildContinueLearningButton(Enrollment enrollment, double progress) {
+    final course = enrollment.course;
     final isCompleted = progress >= 100;
 
     return Container(
@@ -640,6 +641,22 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
         child: InkWell(
           onTap: () {
             Feedback.forTap(context);
+            final courseId = course.id;
+            print('Enrollment JSON: $enrollment');
+            print('Course object: ${enrollment.course}');
+            print('Extracted courseId: $courseId');
+            
+            if (courseId.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Course details not found: ID is empty.'),
+                  backgroundColor: Colors.redAccent,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              return;
+            }
+
             Navigator.push(
               context,
               MaterialPageRoute(

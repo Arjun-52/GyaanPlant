@@ -75,11 +75,36 @@ class Enrollment {
     final courseData = json['course'];
     print("🔧 COURSE DATA: $courseData");
 
-    final course = courseData != null
-        ? Course.fromJson(courseData)
-        : Course(id: '', title: 'Unknown', totalModules: 0);
+    final String courseIdFromEnrollment = (json['courseId'] ?? json['course_id'] ?? '').toString();
 
-    print("🔧 PARSED COURSE: ${course.title}");
+    Course course;
+    if (courseData is Map<String, dynamic>) {
+      course = Course.fromJson(courseData);
+      if (course.id.isEmpty && courseIdFromEnrollment.isNotEmpty) {
+        course = Course(
+          id: courseIdFromEnrollment,
+          title: course.title,
+          thumbnail: course.thumbnail,
+          description: course.description,
+          totalModules: course.totalModules,
+          category: course.category,
+        );
+      }
+    } else if (courseData is String) {
+      course = Course(
+        id: courseData,
+        title: 'Unknown',
+        totalModules: 0,
+      );
+    } else {
+      course = Course(
+        id: courseIdFromEnrollment,
+        title: 'Unknown',
+        totalModules: 0,
+      );
+    }
+
+    print("🔧 PARSED COURSE: ${course.title} (ID: ${course.id})");
 
     final enrollment = Enrollment(
       id: json['_id'] ?? '',
@@ -141,7 +166,7 @@ class Course {
     print("🔧 PARSING COURSE: $json");
 
     final course = Course(
-      id: json['_id'] ?? json['id'] ?? '',
+      id: json['_id'] ?? json['id'] ?? json['courseId'] ?? json['course_id'] ?? '',
       title: json['title'] ?? '',
       thumbnail: json['thumbnail'],
       description: json['description'],
@@ -150,7 +175,7 @@ class Course {
     );
 
     print(
-      "🔧 CREATED COURSE: ${course.title} (${course.totalModules} modules)",
+      "🔧 CREATED COURSE: ${course.title} (ID: ${course.id}, ${course.totalModules} modules)",
     );
     return course;
   }

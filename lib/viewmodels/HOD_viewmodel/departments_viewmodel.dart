@@ -169,8 +169,59 @@ class DepartmentsViewModel extends ChangeNotifier {
           print("   Check college field values in existing departments");
         }
       }
+  }
+
+  /// Create a new department
+  Future<String?> createDepartment({
+    required String name,
+    required String code,
+    required String head,
+    required String location,
+  }) async {
+    print("🚀 ViewModel: createDepartment called");
+    isLoading = true;
+    error = null;
+    notifyListeners();
+
+    try {
+      final userRes = await ApiService().auth.getCurrentUser();
+      final collegeId = userRes.data?.college?.id;
+
+      print("🏫 Extracted collegeId from userRes: $collegeId");
+
+      if (collegeId == null) {
+        throw Exception('No college assigned to current user');
+      }
+
+      print("🌐 API CALL: POST /api/v1/departments");
+      final result = await _hod.createDepartment(
+        collegeId: collegeId,
+        name: name,
+        code: code,
+        head: head,
+        location: location,
+      );
+
+      print("📦 API RESPONSE: success=${result.isSuccess}, data=${result.data}");
+
+      if (result.isSuccess && result.data != null) {
+        final message = result.data!['message']?.toString() ?? 'Department created successfully!';
+        print("✅ Department created successfully: $message");
+        await loadDepartments(); // Refresh list
+        return message;
+      } else {
+        final errMsg = result.error?.message ?? 'Failed to create department';
+        print("❌ Create department API failed: $errMsg");
+        error = errMsg;
+        return null;
+      }
     } catch (e) {
-      print("💥 DEBUG Exception: $e");
+      print("💥 EXCEPTION in createDepartment: $e");
+      error = e.toString();
+      return null;
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
   }
 }

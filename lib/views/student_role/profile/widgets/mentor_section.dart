@@ -84,6 +84,7 @@ class _MentorSectionState extends State<MentorSection> {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 14),
                     child: MentorCard(
+                      mentorId: mentor.id,
                       name: mentor.name,
 
                       /// EXPERTISE / ROLE

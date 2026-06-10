@@ -122,4 +122,25 @@ class HodRepository {
     );
   }
 
+  /// Create a new department in a college
+  Future<ApiResponse<Map<String, dynamic>>> createDepartment({
+    required String collegeId,
+    required String name,
+    required String code,
+    required String head,
+    required String location,
+  }) {
+    AppLogger.info('HodRepository', '➕ HOD REPO: Creating department at ${ApiEndpoints.departments}');
+    return _api.post<Map<String, dynamic>>(
+      ApiEndpoints.departments,
+      data: {
+        'college': collegeId,
+        'name': name,
+        'code': code,
+        'head': head,
+        'location': location,
+      },
+      fromJson: (json) => json as Map<String, dynamic>,
+    );
+  }
 }

@@ -147,6 +147,8 @@ class _MentorBookingSheetState extends State<MentorBookingSheet> with SingleTick
           selectedDate: _selectedDate!,
           selectedTime: formattedTime,
           selectedDuration: _selectedDuration!,
+          topic: _topicController.text,
+          description: _notesController.text,
         ),
       ),
     );

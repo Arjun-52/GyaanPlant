@@ -236,7 +236,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                           },
                           child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 40),
-                            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [
@@ -271,18 +271,18 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                     "Let\u2019s Start Your Learning Journey",
                                     style: TextStyle(
                                       fontFamily: 'Gilroy-Semibold',
-                                      fontSize: 16,
+                                      fontSize: 13.5,
                                       fontWeight: FontWeight.w700,
                                       color: Colors.white,
                                       letterSpacing: 0.3,
                                     ),
                                   ),
                                 ),
-                                SizedBox(width: 10),
+                                SizedBox(width: 8),
                                 Icon(
                                   Icons.arrow_forward_rounded,
                                   color: Colors.white,
-                                  size: 22,
+                                  size: 18,
                                 ),
                               ],
                             ),

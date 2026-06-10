@@ -5,31 +5,64 @@ import '../network/api_response.dart';
 class MentorPaymentRepository {
   final NetworkAPIManager _api = NetworkAPIManager.instance;
 
-  /// Create mentor booking order
-  Future<Map<String, dynamic>> createMentorBookingOrder({
+  /// Create a mentor booking session on the backend
+  Future<Map<String, dynamic>> createBooking({
     required String mentorId,
-    required DateTime selectedDate,
-    required String selectedTime,
-    required String selectedDuration,
-    required double totalAmount,
-    required Map<String, dynamic> bookingDetails,
+    required String topic,
+    required String description,
+    required DateTime date,
+    required int duration,
   }) async {
     try {
+      final endpoint = '/api/v1/mentor/$mentorId/book';
+      final payload = {
+        'topic': topic,
+        'description': description,
+        'date': date.toUtc().toIso8601String(),
+        'duration': duration,
+      };
+
+      print("🧾 POSTing to booking endpoint $endpoint with payload: $payload");
+
       final response = await _api.post<Map<String, dynamic>>(
-        '/api/v1/mentor/booking/create-order',
-        data: {
-          'mentorId': mentorId,
-          'selectedDate': selectedDate.toIso8601String(),
-          'selectedTime': selectedTime,
-          'selectedDuration': selectedDuration,
-          'totalAmount': totalAmount,
-          'bookingDetails': bookingDetails,
-          'itemType': ItemType.session.value,
-        },
+        endpoint,
+        data: payload,
         fromJson: (json) => json as Map<String, dynamic>,
       );
 
-      print("🧾 MENTOR BOOKING ORDER CREATED: ${response.data}");
+      print("🧾 BOOKING CREATION RESPONSE: ${response.data}");
+
+      if (response.data == null) {
+        throw Exception('Failed to create mentor booking: No response data');
+      }
+
+      return response.data!;
+    } catch (e) {
+      print("❌ BOOKING CREATION FAILED: $e");
+      throw Exception('Failed to create mentor booking: $e');
+    }
+  }
+
+  /// Create mentor booking order
+  Future<Map<String, dynamic>> createMentorBookingOrder({
+    required String sessionId,
+  }) async {
+    try {
+      final endpoint = '/api/v1/payments/create-order';
+      final payload = {
+        'itemId': sessionId,
+        'itemType': ItemType.session.value,
+      };
+
+      print("🧾 POSTing to $endpoint with payload: $payload");
+
+      final response = await _api.post<Map<String, dynamic>>(
+        endpoint,
+        data: payload,
+        fromJson: (json) => json as Map<String, dynamic>,
+      );
+
+      print("🧾 MENTOR BOOKING ORDER CREATION RESPONSE: ${response.data}");
 
       if (response.data == null) {
         throw Exception(
@@ -48,16 +81,21 @@ class MentorPaymentRepository {
   Future<Map<String, dynamic>> verifyMentorBookingPayment({
     required String razorpayPaymentId,
     required String razorpayOrderId,
-    required String mentorId,
+    required String razorpaySignature,
   }) async {
     try {
+      final endpoint = '/api/v1/payments/verify';
+      final payload = {
+        'razorpay_payment_id': razorpayPaymentId,
+        'razorpay_order_id': razorpayOrderId,
+        'razorpay_signature': razorpaySignature,
+      };
+
+      print("🔍 POSTing verification to $endpoint with payload: $payload");
+
       final response = await _api.post<Map<String, dynamic>>(
-        '/api/v1/mentor/booking/verify-payment',
-        data: {
-          'razorpayPaymentId': razorpayPaymentId,
-          'razorpayOrderId': razorpayOrderId,
-          'mentorId': mentorId,
-        },
+        endpoint,
+        data: payload,
         fromJson: (json) => json as Map<String, dynamic>,
       );
 
@@ -71,42 +109,6 @@ class MentorPaymentRepository {
     } catch (e) {
       print("❌ MENTOR BOOKING PAYMENT VERIFICATION FAILED: $e");
       throw Exception('Mentor booking payment verification failed: $e');
-    }
-  }
-
-  /// Confirm mentor session booking
-  Future<Map<String, dynamic>> confirmMentorBooking({
-    required String mentorId,
-    required DateTime selectedDate,
-    required String selectedTime,
-    required String selectedDuration,
-    required String razorpayPaymentId,
-    required String razorpayOrderId,
-  }) async {
-    try {
-      final response = await _api.post<Map<String, dynamic>>(
-        '/api/v1/mentor/booking/confirm',
-        data: {
-          'mentorId': mentorId,
-          'selectedDate': selectedDate.toIso8601String(),
-          'selectedTime': selectedTime,
-          'selectedDuration': selectedDuration,
-          'razorpayPaymentId': razorpayPaymentId,
-          'razorpayOrderId': razorpayOrderId,
-        },
-        fromJson: (json) => json as Map<String, dynamic>,
-      );
-
-      print("✅ MENTOR BOOKING CONFIRMED: ${response.data}");
-
-      if (response.data == null || response.data!['success'] != true) {
-        throw Exception('Failed to confirm mentor booking');
-      }
-
-      return response.data!;
-    } catch (e) {
-      print("❌ MENTOR BOOKING CONFIRMATION FAILED: $e");
-      throw Exception('Failed to confirm mentor booking: $e');
     }
   }
 

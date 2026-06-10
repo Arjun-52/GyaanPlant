@@ -12,6 +12,9 @@ class MentorPaymentScreen extends StatefulWidget {
   final String selectedTime;
   final String selectedDuration;
 
+  final String topic;
+  final String description;
+
   const MentorPaymentScreen({
     super.key,
     required this.mentorId,
@@ -22,6 +25,8 @@ class MentorPaymentScreen extends StatefulWidget {
     required this.selectedDate,
     required this.selectedTime,
     required this.selectedDuration,
+    required this.topic,
+    required this.description,
   });
 
   @override
@@ -854,6 +859,8 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
         selectedDate: widget.selectedDate,
         selectedTime: widget.selectedTime,
         selectedDuration: widget.selectedDuration,
+        topic: widget.topic,
+        description: widget.description,
         totalAmount: _totalAmount,
         keyId: dotenv.env['RAZORPAY_KEY_ID'] ?? '',
         bookingDetails: {
@@ -870,14 +877,56 @@ class _MentorPaymentScreenState extends State<MentorPaymentScreen> {
     }
   }
 
-  void _handlePaymentSuccess(dynamic response) {
+  void _handlePaymentSuccess(dynamic response) async {
     print('✅ Mentor Booking Payment Success: ${response.paymentId}');
     print('📋 Mentor Booking Details: $response');
 
-    // Show success dialog
-    _showSuccessDialog(
-      'Mentor session booked successfully! Your booking is confirmed.',
+    // Show loading dialog for verification and confirmation
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00E676)),
+        ),
+      ),
     );
+
+    try {
+      final paymentId = response.paymentId ?? '';
+      final orderId = response.orderId ?? '';
+      final signature = response.signature ?? '';
+
+      // Verify payment on backend
+      await _mentorBookingService.verifyMentorBookingPayment(
+        razorpayPaymentId: paymentId,
+        razorpayOrderId: orderId,
+        razorpaySignature: signature,
+      );
+
+      // Refresh user sessions
+      await _mentorBookingService.refreshSessions();
+
+      // Pop loading dialog
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      // Show success dialog
+      _showSuccessDialog(
+        'Mentor session booked successfully! Your booking is confirmed.',
+      );
+    } catch (e) {
+      // Pop loading dialog
+      if (mounted) {
+        try {
+          Navigator.of(context).pop();
+        } catch (_) {}
+      }
+      
+      print('❌ Error verifying/refreshing mentor booking on backend: $e');
+      _showErrorDialog('Payment succeeded, but we encountered an error during verification: $e');
+    }
   }
 
   void _handlePaymentError(dynamic response) {

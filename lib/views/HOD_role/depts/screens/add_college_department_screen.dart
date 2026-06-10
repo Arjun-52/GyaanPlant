@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../../viewmodels/student_viewmodel/auth_viewmodel.dart';
+import '../../../../viewmodels/HOD_viewmodel/departments_viewmodel.dart';
 
 /// Redesigned premium screen for adding a new college department.
 /// Wire up form fields and API call when the endpoint is ready.
@@ -15,6 +18,9 @@ class _AddCollegeDepartmentScreenState extends State<AddCollegeDepartmentScreen>
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _codeController = TextEditingController();
+  final _headController = TextEditingController();
+  final _locationController = TextEditingController();
+  bool _isSubmitting = false;
 
   // Entrance animations
   AnimationController? _animController;
@@ -28,6 +34,12 @@ class _AddCollegeDepartmentScreenState extends State<AddCollegeDepartmentScreen>
   @override
   void initState() {
     super.initState();
+
+    // Prefill current user's name as department head
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authUser = context.read<AuthViewModel>().user;
+      _headController.text = authUser?.name ?? '';
+    });
 
     _animController = AnimationController(
       vsync: this,
@@ -87,8 +99,71 @@ class _AddCollegeDepartmentScreenState extends State<AddCollegeDepartmentScreen>
   void dispose() {
     _nameController.dispose();
     _codeController.dispose();
+    _headController.dispose();
+    _locationController.dispose();
     _animController?.dispose();
     super.dispose();
+  }
+
+  Future<void> _submitDepartment() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      final authVM = context.read<AuthViewModel>();
+      final departmentsVM = context.read<DepartmentsViewModel>();
+      
+      final currentUserId = authVM.user?.id ?? '';
+      
+      print("🚀 UI: Requesting department creation...");
+      print("  Name: ${_nameController.text}");
+      print("  Code: ${_codeController.text}");
+      print("  Head ID (User ID): $currentUserId");
+      print("  Location: ${_locationController.text}");
+
+      final message = await departmentsVM.createDepartment(
+        name: _nameController.text.trim(),
+        code: _codeController.text.trim(),
+        head: currentUserId,
+        location: _locationController.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      if (message != null) {
+        // Success
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: const Color(0xFF00E676),
+          ),
+        );
+        Navigator.of(context).pop();
+      } else {
+        // Failure (ViewModel sets the error field)
+        final errMsg = departmentsVM.error ?? 'Failed to create department';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errMsg),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
   }
 
   @override
@@ -258,14 +333,7 @@ class _AddCollegeDepartmentScreenState extends State<AddCollegeDepartmentScreen>
                             BoxShadow(
                               color: Colors.black.withOpacity(0.4),
                               blurRadius: 25,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // ── Department Name Field ─────────────────────────────────
+                              offset: const Of                            // ── Department Name Field ─────────────────────────────────
                             GlassTextField(
                               controller: _nameController,
                               label: 'Department Name',
@@ -276,6 +344,33 @@ class _AddCollegeDepartmentScreenState extends State<AddCollegeDepartmentScreen>
                             const SizedBox(height: 20),
 
                             // ── Department Code Field ─────────────────────────────────
+                            GlassTextField(
+                              controller: _codeController,
+                              label: 'Department Code',
+                              hint: 'e.g. CSE',
+                              validator: (v) =>
+                                  (v == null || v.trim().isEmpty) ? 'Required' : null,
+                            ),
+                            const SizedBox(height: 20),
+
+                            // ── Department Head Field ─────────────────────────────────
+                            GlassTextField(
+                              controller: _headController,
+                              label: 'Department Head',
+                              hint: 'e.g. Dr. Rao',
+                              validator: (v) =>
+                                  (v == null || v.trim().isEmpty) ? 'Required' : null,
+                            ),
+                            const SizedBox(height: 20),
+
+                            // ── Location Field ─────────────────────────────────────────
+                            GlassTextField(
+                              controller: _locationController,
+                              label: 'Location',
+                              hint: 'e.g. Block A',
+                              validator: (v) =>
+                                  (v == null || v.trim().isEmpty) ? 'Required' : null,
+                            ),�─────
                             GlassTextField(
                               controller: _codeController,
                               label: 'Department Code',
@@ -294,20 +389,16 @@ class _AddCollegeDepartmentScreenState extends State<AddCollegeDepartmentScreen>
                       position: _btnSlide ?? const AlwaysStoppedAnimation(Offset.zero),
                       child: FadeTransition(
                         opacity: _btnFade ?? const AlwaysStoppedAnimation(1.0),
-                        child: PremiumCTAButton(
-                          label: 'Add Department',
-                          onTap: () {
-                            if (_formKey.currentState!.validate()) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'API endpoint not yet wired. Coming soon!'),
-                                  backgroundColor: Color(0xFF0F3D34),
+                        child: _isSubmitting
+                            ? const Center(
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00E676)),
                                 ),
-                              );
-                            }
-                          },
-                        ),
+                              )
+                            : PremiumCTAButton(
+                                label: 'Add Department',
+                                onTap: _submitDepartment,
+                              ),
                       ),
                     ),
                   ],
