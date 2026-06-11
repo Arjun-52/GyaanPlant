@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../data/services/local_storage_service.dart';
 import '../../data/services/api_service.dart';
 import '../../models/auth/auth_user_model.dart';
@@ -134,8 +135,20 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   // LOGIN
-  void signInWithGoogle(BuildContext context) {
-    context.push('/google-auth');
+  Future<void> signInWithGoogle(BuildContext context) async {
+    final url = Uri.parse('https://prod-apis.gyaanplant.co.in/api/v1/auth/google');
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        _showError(context, 'Could not launch sign-in browser');
+      }
+    } catch (e) {
+      _showError(context, 'Error launching sign-in browser: $e');
+    }
   }
 
   Future<void> login(BuildContext context, {required String selectedRole}) async {

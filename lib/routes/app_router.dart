@@ -1,4 +1,7 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gyaanplant/viewmodels/student_viewmodel/auth_viewmodel.dart';
 import 'package:gyaanplant/views/student_role/learn/screens/course_details_screen.dart';
 import 'package:gyaanplant/views/student_role/learn/screens/my_courses_screen.dart';
 import 'package:gyaanplant/views/HOD_role/depts/screens/department_details_screen.dart';
@@ -14,7 +17,6 @@ import 'package:gyaanplant/views/auth/screens/sign_in_screen.dart';
 import 'package:gyaanplant/views/auth/screens/sign_up_screen.dart';
 import 'package:gyaanplant/views/auth/screens/forgot_password_screen.dart';
 import 'package:gyaanplant/views/auth/screens/splash_screen.dart';
-import 'package:gyaanplant/views/auth/screens/google_auth_webview_screen.dart';
 import 'package:gyaanplant/views/student_role/role_/screens/role_screen.dart';
 import 'package:gyaanplant/views/student_role/support/screens/support_screen.dart';
 import 'package:gyaanplant/views/student_role/support/screens/ticket_details_screen.dart';
@@ -58,10 +60,21 @@ class AppRouter {
 
       print("🔄 ROUTER: token=$isLoggedIn role=$role location=$location");
 
-      // NOT LOGGED IN → allow only auth screens
+      // NOT LOGGED IN → allow only auth screens & oauth callbacks
       if (!isLoggedIn) {
-        const authPaths = {'/role', '/signin', '/', '/signup', '/forgot-password', '/splash', '/google-auth'};
-        return authPaths.contains(location) ? null : '/role';
+        final path = state.uri.path;
+        print("🔄 ROUTER (Not Logged In): Checking access to path=$path");
+        const authPaths = {
+          '/role',
+          '/signin',
+          '/',
+          '/signup',
+          '/forgot-password',
+          '/splash',
+          '/auth/success',
+          '/auth/signup'
+        };
+        return authPaths.contains(path) ? null : '/role';
       }
 
       // LOGGED IN → prevent going to auth screens
@@ -108,11 +121,93 @@ class AppRouter {
         name: 'signIn',
         builder: (context, state) => const SignInScreen(),
       ),
+      GoRoute(
+        path: '/auth/success',
+        name: 'authSuccess',
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'];
+          final encodedUser = state.uri.queryParameters['user'];
+
+          print("🌐 GoRouter incoming deep link '/auth/success': token=$token, user=$encodedUser");
+
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            if (token != null && token.isNotEmpty && encodedUser != null) {
+              try {
+                final userData = jsonDecode(Uri.decodeComponent(encodedUser));
+                final roleStr = userData['role']?.toString().toLowerCase() ?? 'student';
+
+                print("✅ [DeepLink Success] Saving Credentials. Token=$token, Role=$roleStr, UserData=$userData");
+
+                // Save credentials in cache and local storage
+                AuthCache.token = token;
+                AuthCache.role = roleStr;
+                await LocalStorageService.saveToken(token);
+                await LocalStorageService.saveRole(roleStr);
+                await LocalStorageService.saveUser(userData);
+
+                print("🚀 [DeepLink Success] Credentials saved. Redirecting to root /");
+                AppRouter.router.go('/');
+              } catch (e) {
+                print("💥 [DeepLink Success] Error parsing success redirect: $e");
+              }
+            } else {
+              print("💥 [DeepLink Success] Missing token or user parameter.");
+            }
+          });
+
+          return const Scaffold(
+            backgroundColor: Color(0xFF020B08),
+            body: Center(
+              child: CircularProgressIndicator(color: Color(0xFF00E676)),
+            ),
+          );
+        },
+      ),
 
       GoRoute(
-        path: '/google-auth',
-        name: 'googleAuth',
-        builder: (context, state) => const GoogleAuthWebViewScreen(),
+        path: '/auth/signup',
+        name: 'authSignup',
+        builder: (context, state) {
+          final tempToken = state.uri.queryParameters['tempToken'];
+          final email = state.uri.queryParameters['email'];
+          final name = state.uri.queryParameters['name'];
+          final picture = state.uri.queryParameters['picture'];
+
+          print("🌐 GoRouter incoming deep link '/auth/signup': tempToken=$tempToken, email=$email, name=$name");
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (tempToken != null && tempToken.isNotEmpty) {
+              try {
+                final decodedName = Uri.decodeComponent(name ?? '');
+                final decodedPicture = picture != null ? Uri.decodeComponent(picture) : null;
+
+                print("✅ [DeepLink Signup] Prefilling registration. TempToken=$tempToken, Name=$decodedName, Email=$email");
+
+                final vm = Provider.of<AuthViewModel>(context, listen: false);
+                vm.prefillGoogleData(
+                  name: decodedName,
+                  email: email ?? '',
+                  tempToken: tempToken,
+                  picture: decodedPicture,
+                );
+
+                print("🚀 [DeepLink Signup] Prefilled state updated. Redirecting to /signup");
+                AppRouter.router.go('/signup');
+              } catch (e) {
+                print("💥 [DeepLink Signup] Error parsing signup redirect: $e");
+              }
+            } else {
+              print("💥 [DeepLink Signup] Missing tempToken parameter.");
+            }
+          });
+
+          return const Scaffold(
+            backgroundColor: Color(0xFF020B08),
+            body: Center(
+              child: CircularProgressIndicator(color: Color(0xFF00E676)),
+            ),
+          );
+        },
       ),
 
       GoRoute(
